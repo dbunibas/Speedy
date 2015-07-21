@@ -34,7 +34,7 @@ public class TestDBMS {
         String password = "pguser";
         database = daoDatabase.loadXMLDatabase(driver, uri, schema, login, password);
         database.getInitDBConfiguration().setCreateTablesFromXML(true);
-        database.getInitDBConfiguration().addXmlFileToImport(UtilityForTests.getAbsoluteFileName("/resources/employees/xml/50.xml"));
+        database.getInitDBConfiguration().addXmlFileToImport(UtilityForTests.getAbsoluteFileName("/resources/employees/xml/50_emp.xml"));
         queryRunner = OperatorFactory.getInstance().getQueryRunner(database);
     }
 
