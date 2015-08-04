@@ -1,4 +1,4 @@
-package speedy.model.algebra;
+package speedy.model.algebra.aggregatefunctions;
 
 import speedy.model.database.AttributeRef;
 import speedy.model.database.IValue;

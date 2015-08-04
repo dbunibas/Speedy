@@ -46,8 +46,8 @@ public class Select extends AbstractOperator {
     public ITupleIterator execute(IDatabase source, IDatabase target) {
         SelectTupleIterator  tupleIterator = new SelectTupleIterator(children.get(0).execute(source, target));
 //        if (logger.isDebugEnabled()) logger.debug("Executing select: " + getName() + " on source\n" + (source == null ? "" : source.printInstances()) + "\nand target:\n" + target.printInstances());
-        if (logger.isDebugEnabled()) logger.debug("Executing select: " + getName() + " on tuples:\n" + SpeedyUtility.printIterator(children.get(0).execute(source, target)));
-        if (logger.isDebugEnabled()) logger.debug("Result:\n" + SpeedyUtility.printIterator(tupleIterator));
+        if (logger.isDebugEnabled()) logger.debug("Executing select: " + getName() + " on tuples:\n" + SpeedyUtility.printIteratorAndReset(children.get(0).execute(source, target)));
+        if (logger.isDebugEnabled()) logger.debug("Result:\n" + SpeedyUtility.printIteratorAndReset(tupleIterator));
         if (logger.isDebugEnabled()) tupleIterator.reset();
         return tupleIterator;
     }

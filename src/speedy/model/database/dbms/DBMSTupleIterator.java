@@ -8,6 +8,7 @@ import speedy.persistence.relational.QueryManager;
 import speedy.persistence.relational.QueryStatManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import speedy.SpeedyConstants;
 
 public class DBMSTupleIterator implements ITupleIterator {
 
@@ -67,12 +68,15 @@ public class DBMSTupleIterator implements ITupleIterator {
     }
 
     public void reset() {
-        throw new UnsupportedOperationException("Unable to reset DBMS result set");
-//        try {
-//            resultSet.beforeFirst();
-//        } catch (SQLException ex) {
-//            throw new DBMSException("Exception in running result set:" + ex);
-//        }
+        if (!SpeedyConstants.DBMS_DEBUG) {
+            throw new UnsupportedOperationException("Unable to reset DBMS result set");
+        } else {
+            try {
+                resultSet.beforeFirst();
+            } catch (SQLException ex) {
+                throw new DBMSException("Exception in running result set:" + ex);
+            }
+        }
     }
 
     public void remove() {

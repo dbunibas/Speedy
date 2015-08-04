@@ -1,5 +1,6 @@
 package speedy.model.algebra;
 
+import speedy.model.algebra.aggregatefunctions.IAggregateFunction;
 import speedy.utility.SpeedyUtility;
 import speedy.model.algebra.operators.ListTupleIterator;
 import speedy.model.algebra.operators.IAlgebraTreeVisitor;

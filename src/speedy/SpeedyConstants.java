@@ -90,4 +90,7 @@ public class SpeedyConstants {
     public static String CSV = "CSV";
     public static String XML = "XML";
 
+    ///////////////    DEBUG MODE     ///////////////////
+    public static final boolean DBMS_DEBUG = true;
+//    public static final boolean DBMS_DEBUG = false;
 }

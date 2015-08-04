@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import speedy.SpeedyConstants;
 import speedy.model.database.Attribute;
 import speedy.model.database.AttributeRef;
 import speedy.model.database.Cell;
@@ -45,8 +46,9 @@ public class Scan extends AbstractOperator {
     }
 
     public ITupleIterator execute(IDatabase source, IDatabase target) {
-        if(!(source == null || source instanceof MainMemoryDB || source instanceof MainMemoryVirtualDB || source instanceof EmptyDB) || 
-             !(target instanceof MainMemoryDB || target instanceof MainMemoryVirtualDB)){
+        if (!SpeedyConstants.DBMS_DEBUG && 
+                (!(source == null || source instanceof MainMemoryDB || source instanceof MainMemoryVirtualDB || source instanceof EmptyDB)
+                || !(target instanceof MainMemoryDB || target instanceof MainMemoryVirtualDB))) {
             throw new IllegalArgumentException("Algebra execution is allowed only on MainMemoryDB");
         }
         IDatabase database = null;    

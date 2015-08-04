@@ -165,7 +165,7 @@ public class SpeedyUtility {
         int counter = 0;
         while (iterator.hasNext()) {
             Tuple tuple = iterator.next();
-            result.append(tuple.toStringWithAlias()).append("\n");
+            result.append(tuple.toStringWithOIDAndAlias()).append("\n");
             counter++;
         }
         result.insert(0, "Number of tuples: " + counter + "\n");
@@ -179,7 +179,7 @@ public class SpeedyUtility {
         result.delete(result.length() - charsToRemove, result.length());
     }
 
-    public static String printIterator(ITupleIterator iterator) {
+    public static String printIteratorAndReset(ITupleIterator iterator) {
         StringBuilder result = new StringBuilder();
         while (iterator.hasNext()) {
             result.append(SpeedyConstants.INDENT).append(iterator.next().toStringWithOID()).append("\n");
@@ -322,7 +322,6 @@ public class SpeedyUtility {
     }
 
     // NUMERICAL METHOD
-
     public static boolean isNumeric(String type) {
         return (type.equals(SpeedyConstants.NUMERIC) || type.equals(Types.LONG) || type.equals(Types.DOUBLE) || type.equals(Types.INTEGER));
     }

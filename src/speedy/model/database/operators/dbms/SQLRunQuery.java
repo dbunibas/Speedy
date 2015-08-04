@@ -16,8 +16,14 @@ import speedy.persistence.relational.QueryManager;
 import speedy.utility.DBMSUtility;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import speedy.SpeedyConstants;
+import speedy.model.database.Cell;
+import speedy.model.database.Tuple;
 import speedy.utility.SpeedyUtility;
 
 public class SQLRunQuery implements IRunQuery {
@@ -26,7 +32,15 @@ public class SQLRunQuery implements IRunQuery {
 
     private AlgebraTreeToSQL translator = new AlgebraTreeToSQL();
 
-    public ITupleIterator run(IAlgebraOperator operator, IDatabase source, IDatabase target) {
+    public ITupleIterator run(IAlgebraOperator query, IDatabase source, IDatabase target) {
+        if (SpeedyConstants.DBMS_DEBUG) {
+            return runDebug(query, source, target);
+        } else {
+            return runStandard(query, source, target);
+        }
+    }
+
+    private ITupleIterator runStandard(IAlgebraOperator operator, IDatabase source, IDatabase target) {
         AccessConfiguration accessConfiguration = getAccessConfiguration(target);
         if (logger.isDebugEnabled()) logger.debug("Executing query \n" + operator);
         String sqlCode = translator.treeToSQL(operator, source, target, "");
@@ -78,5 +92,64 @@ public class SQLRunQuery implements IRunQuery {
             throw new IllegalArgumentException("Unable to execute SQL on main memory db. " + target);
         }
         return accessConfiguration;
+    }
+
+    ///////////////////////////
+    /////////     DEBUG
+    ///////////////////////////
+    private ITupleIterator runDebug(IAlgebraOperator query, IDatabase source, IDatabase target) {
+        //DEBUG MODE
+        AccessConfiguration accessConfiguration;
+        if (target instanceof DBMSDB) {
+            accessConfiguration = ((DBMSDB) target).getAccessConfiguration();
+        } else if (target instanceof DBMSVirtualDB) {
+            accessConfiguration = ((DBMSVirtualDB) target).getAccessConfiguration();
+        } else {
+            throw new IllegalArgumentException("Unable to execute SQL on main memory db.");
+        }
+        if (logger.isDebugEnabled()) logger.debug("Executing query \n" + query);
+
+        ITupleIterator mainMemoryTupleIterator = query.execute(source, target);
+        String sqlCode = translator.treeToSQL(query, source, target, "");
+        ResultSet resultSet = QueryManager.executeQuery(sqlCode, accessConfiguration);
+        ITupleIterator dbmsTupleIterator = new DBMSTupleIterator(resultSet);
+        compare(mainMemoryTupleIterator, dbmsTupleIterator, query, sqlCode);
+        mainMemoryTupleIterator.close();
+        dbmsTupleIterator.reset();
+        return dbmsTupleIterator;
+    }
+
+    private void compare(ITupleIterator mainMemoryTupleIterator, ITupleIterator dbmsTupleIterator, IAlgebraOperator query, String sqlCode) {
+        List<String> mainMemoryResult = materializeResult(mainMemoryTupleIterator);
+        List<String> dbmsResult = materializeResult(dbmsTupleIterator);
+        Collections.sort(mainMemoryResult);
+        Collections.sort(dbmsResult);
+        if (mainMemoryResult.size() != dbmsResult.size() || !mainMemoryResult.equals(dbmsResult)) {
+            logger.error("\n\n\n#############################\n");
+            logger.error("\n#### Query:\n" + query);
+            logger.error("\n#### SQLCode:\n" + sqlCode);
+            logger.error("\n#### MainMemoryResult:\n" + SpeedyUtility.printCollection(mainMemoryResult));
+            logger.error("\n#### DbmsResult:\n" + SpeedyUtility.printCollection(dbmsResult));
+            logger.error("\n#############################\n\n\n");
+//            throw new IllegalArgumentException("WRONG EXECUTION");
+        }
+    }
+
+    private List<String> materializeResult(ITupleIterator iterator) {
+        List<String> result = new ArrayList<String>();
+        while (iterator.hasNext()) {
+            result.add(createString(iterator.next()));
+        }
+        return result;
+    }
+
+    private String createString(Tuple next) {
+        String result = "";
+        for (Cell cell : next.getCells()) {
+            if (!cell.isOID()) {
+                result += cell.getAttribute() + ":" + cell.getValue() + " | ";
+            }
+        }
+        return result.toLowerCase();
     }
 }

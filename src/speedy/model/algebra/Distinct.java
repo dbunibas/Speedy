@@ -39,8 +39,8 @@ public class Distinct extends AbstractOperator {
         List<Tuple> materializedTuples = materialize(it);
         removeDuplicates(materializedTuples);
         ITupleIterator result = new ListTupleIterator(materializedTuples);
-        if (logger.isDebugEnabled()) logger.debug("Executing select: " + getName() + " on tuples:\n" + SpeedyUtility.printIterator(children.get(0).execute(source, target)));
-        if (logger.isDebugEnabled()) logger.debug("Result:\n" + SpeedyUtility.printIterator(result));
+        if (logger.isDebugEnabled()) logger.debug("Executing select: " + getName() + " on tuples:\n" + SpeedyUtility.printIteratorAndReset(children.get(0).execute(source, target)));
+        if (logger.isDebugEnabled()) logger.debug("Result:\n" + SpeedyUtility.printIteratorAndReset(result));
         if (logger.isDebugEnabled()) result.reset();
         return result;
     }

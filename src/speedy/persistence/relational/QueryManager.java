@@ -10,6 +10,7 @@ import java.util.Date;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import speedy.SpeedyConstants;
 
 public class QueryManager {
 
@@ -88,8 +89,11 @@ public class QueryManager {
             connection.setAutoCommit(false);
             if (logger.isTraceEnabled()) logger.trace("Executing query " + intoSingleLine(query));
             long start = new Date().getTime();
-//          statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-            statement = connection.createStatement();
+            if (SpeedyConstants.DBMS_DEBUG) {
+                statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            } else {
+                statement = connection.createStatement();
+            }
             resultSet = statement.executeQuery(query);
             long finish = new Date().getTime();
             if (logger.isDebugEnabled()) logger.debug((finish - start) + " ~ " + intoSingleLine(query));

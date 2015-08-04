@@ -15,17 +15,20 @@ import java.util.Collections;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import speedy.model.algebra.aggregatefunctions.AvgAggregateFunction;
 import speedy.model.algebra.CartesianProduct;
+import speedy.model.algebra.aggregatefunctions.CountAggregateFunction;
 import speedy.model.algebra.CreateTableAs;
 import speedy.model.algebra.Difference;
 import speedy.model.algebra.Distinct;
 import speedy.model.algebra.ExtractRandomSample;
 import speedy.model.algebra.GroupBy;
-import speedy.model.algebra.IAggregateFunction;
+import speedy.model.algebra.aggregatefunctions.IAggregateFunction;
 import speedy.model.algebra.IAlgebraOperator;
 import speedy.model.algebra.Join;
 import speedy.model.algebra.Limit;
-import speedy.model.algebra.MaxAggregateFunction;
+import speedy.model.algebra.aggregatefunctions.MaxAggregateFunction;
+import speedy.model.algebra.aggregatefunctions.MinAggregateFunction;
 import speedy.model.algebra.Offset;
 import speedy.model.algebra.OrderBy;
 import speedy.model.algebra.Partition;
@@ -35,7 +38,8 @@ import speedy.model.algebra.Scan;
 import speedy.model.algebra.Select;
 import speedy.model.algebra.SelectIn;
 import speedy.model.algebra.Union;
-import speedy.model.algebra.ValueAggregateFunction;
+import speedy.model.algebra.aggregatefunctions.SumAggregateFunction;
+import speedy.model.algebra.aggregatefunctions.ValueAggregateFunction;
 
 public class AlgebraTreeToSQL {
 
@@ -738,6 +742,18 @@ public class AlgebraTreeToSQL {
             }
             if (aggregateFunction instanceof MaxAggregateFunction) {
                 return "max(" + aggregateFunction.getAttributeRef() + ") as " + DBMSUtility.attributeRefToAliasSQL(aggregateFunction.getAttributeRef());
+            }
+            if (aggregateFunction instanceof MinAggregateFunction) {
+                return "min(" + aggregateFunction.getAttributeRef() + ") as " + DBMSUtility.attributeRefToAliasSQL(aggregateFunction.getAttributeRef());
+            }
+            if (aggregateFunction instanceof AvgAggregateFunction) {
+                return "avg(" + aggregateFunction.getAttributeRef() + ") as " + DBMSUtility.attributeRefToAliasSQL(aggregateFunction.getAttributeRef());
+            }
+            if (aggregateFunction instanceof SumAggregateFunction) {
+                return "sum(" + aggregateFunction.getAttributeRef() + ") as " + DBMSUtility.attributeRefToAliasSQL(aggregateFunction.getAttributeRef());
+            }
+            if (aggregateFunction instanceof CountAggregateFunction) {
+                return "count(*) as " + DBMSUtility.attributeRefToAliasSQL(aggregateFunction.getAttributeRef());
             }
             throw new UnsupportedOperationException("Unable generate SQL for aggregate function" + aggregateFunction);
         }
