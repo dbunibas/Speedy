@@ -4,10 +4,16 @@ import java.io.File;
 import java.net.URL;
 import java.text.NumberFormat;
 import java.util.Locale;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import speedy.exceptions.DBMSException;
 import speedy.model.database.ITable;
+import speedy.persistence.relational.AccessConfiguration;
+import speedy.utility.DBMSUtility;
 
 public class UtilityForTests {
 
+    private static Logger logger = LoggerFactory.getLogger(UtilityForTests.class);
     private static Runtime runtime = Runtime.getRuntime();
     public static final String RESOURCES_FOLDER = "/resources/";
 
@@ -18,7 +24,7 @@ public class UtilityForTests {
 
     public static String getAbsoluteFileName(String fileName) {
         URL url = UtilityForTests.class.getResource(fileName);
-        if(url == null) return null;
+        if (url == null) return null;
         return UtilityForTests.class.getResource(fileName).getFile();
     }
 
@@ -42,4 +48,16 @@ public class UtilityForTests {
 
     }
 
+    public static void deleteDB(AccessConfiguration accessConfiguration) {
+        try {
+            System.out.println("Removing db " + accessConfiguration.getDatabaseName() + ", if exist...");
+            DBMSUtility.deleteDB(accessConfiguration);
+            System.out.println("Database removed!");
+        } catch (DBMSException ex) {
+            String message = ex.getMessage();
+            if (!message.contains("does not exist")) {
+                logger.warn("Unable to drop database.\n" + ex.getLocalizedMessage());
+            }
+        }
+    }
 }

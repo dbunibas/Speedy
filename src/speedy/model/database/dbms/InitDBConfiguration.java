@@ -1,13 +1,16 @@
 package speedy.model.database.dbms;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class InitDBConfiguration {
 
     private String initDBScript;
-    private List<String> xmlFilesToImport = new ArrayList<String>();
-    private boolean createTablesFromXML = true;
+    private Map<String, List<String>> filesToImport = new HashMap<String, List<String>>();
+    private boolean createTablesFromFiles = true;
 
     public String getInitDBScript() {
         return initDBScript;
@@ -17,35 +20,42 @@ public class InitDBConfiguration {
         this.initDBScript = initDBScript;
     }
 
-    public List<String> getXmlFilesToImport() {
-        return xmlFilesToImport;
+    public void addFileToImportForTable(String tableName, String fileName) {
+        List<String> files = filesToImport.get(tableName);
+        if (files == null) {
+            files = new ArrayList<String>();
+            this.filesToImport.put(tableName, files);
+        }
+        files.add(fileName);
     }
 
-    public void setXmlFilesToImport(List<String> xmlFilesToImport) {
-        this.xmlFilesToImport = xmlFilesToImport;
+    public boolean hasFilesToImport() {
+        return !filesToImport.isEmpty();
     }
 
-    public void addXmlFileToImport(String xmlFileToImport) {
-        this.xmlFilesToImport.add(xmlFileToImport);
+    public List<String> getFilesToImport(String tableName) {
+        return filesToImport.get(tableName);
     }
 
-    public boolean isCreateTablesFromXML() {
-        return createTablesFromXML;
+    public Set<String> getTablesToImport() {
+        return filesToImport.keySet();
     }
 
-    public void setCreateTablesFromXML(boolean createTablesFromXML) {
-        this.createTablesFromXML = createTablesFromXML;
+    public boolean isCreateTablesFromFiles() {
+        return createTablesFromFiles;
+    }
+
+    public void setCreateTablesFromFiles(boolean createTablesFromFiles) {
+        this.createTablesFromFiles = createTablesFromFiles;
     }
 
     public boolean isEmpty() {
-        return initDBScript == null && xmlFilesToImport.isEmpty();
+        return initDBScript == null && filesToImport.isEmpty();
     }
 
     @Override
     public String toString() {
-        return "InitDBConfiguration{" + "initDBScript=" + initDBScript + ", xmlFilesToImport=" + xmlFilesToImport + ", createTablesFromXML=" + createTablesFromXML + '}';
+        return "InitDBConfiguration{" + "initDBScript=" + initDBScript + ", filesToImport=" + filesToImport + ", createTablesFromXML=" + createTablesFromFiles + '}';
     }
-    
-    
 
 }
