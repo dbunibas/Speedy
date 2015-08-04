@@ -8,16 +8,16 @@ import org.slf4j.LoggerFactory;
 import speedy.model.database.AttributeRef;
 import speedy.model.database.IDatabase;
 
-public class CreateTable extends AbstractOperator {
+public class CreateTableAs extends AbstractOperator {
 
-    private static Logger logger = LoggerFactory.getLogger(CreateTable.class);
+    private static Logger logger = LoggerFactory.getLogger(CreateTableAs.class);
 
     private String tableName;
     private String tableAlias;
     private String schemaName;
     private boolean withOIDs;
 
-    public CreateTable(String tableName, String tableAlias, String schemaName, boolean withOIDs) {
+    public CreateTableAs(String tableName, String tableAlias, String schemaName, boolean withOIDs) {
         this.tableName = tableName;
         this.tableAlias = tableAlias;
         this.schemaName = schemaName;

@@ -2,7 +2,7 @@ package speedy.model.algebra.operators;
 
 import java.util.List;
 import speedy.model.algebra.CartesianProduct;
-import speedy.model.algebra.CreateTable;
+import speedy.model.algebra.CreateTableAs;
 import speedy.model.algebra.Difference;
 import speedy.model.algebra.Distinct;
 import speedy.model.algebra.ExtractRandomSample;
@@ -120,7 +120,7 @@ class AlgebraTreeToStringVisitor implements IAlgebraTreeVisitor {
         visitChildren(operator);
     }
 
-    public void visitCreateTable(CreateTable operator) {
+    public void visitCreateTable(CreateTableAs operator) {
         result.append(this.indentString()).append(operator.getName()).append("\n");
         visitChildren(operator);
     }

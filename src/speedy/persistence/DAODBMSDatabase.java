@@ -10,7 +10,7 @@ public class DAODBMSDatabase {
 
     private static Logger logger = LoggerFactory.getLogger(DAODBMSDatabase.class);
 
-    public DBMSDB loadXMLDatabase(String driver, String uri, String schemaName, String username, String password) throws DAOException {
+    public DBMSDB loadDatabase(String driver, String uri, String schemaName, String username, String password) throws DAOException {
         AccessConfiguration accessConfiguration = new AccessConfiguration();
         accessConfiguration.setDriver(driver);
         accessConfiguration.setUri(uri);

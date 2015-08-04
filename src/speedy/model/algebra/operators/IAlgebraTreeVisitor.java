@@ -1,7 +1,7 @@
 package speedy.model.algebra.operators;
 
 import speedy.model.algebra.CartesianProduct;
-import speedy.model.algebra.CreateTable;
+import speedy.model.algebra.CreateTableAs;
 import speedy.model.algebra.Difference;
 import speedy.model.algebra.Distinct;
 import speedy.model.algebra.ExtractRandomSample;
@@ -35,7 +35,7 @@ public interface IAlgebraTreeVisitor {
     void visitLimit(Limit operator);
     void visitOffset(Offset operator);
     void visitRestoreOIDs(RestoreOIDs operator);
-    void visitCreateTable(CreateTable operator);
+    void visitCreateTable(CreateTableAs operator);
     void visitExtractRandomSample(ExtractRandomSample operator);
     Object getResult();
 }

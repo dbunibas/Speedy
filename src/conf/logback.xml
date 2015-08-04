@@ -22,8 +22,8 @@
     <!--     TEST     -->
     <logger name="speedy.test" level="DEBUG"/>
     <!--     STATS     -->
-    <!--<logger name="speedy.persistence.relational.QueryStatManager" level="DEBUG"/>-->
-    <!--<logger name="speedy.persistence.relational.QueryManager" level="TRACE"/>-->
+    <logger name="speedy.persistence.relational.QueryStatManager" level="DEBUG"/>
+    <logger name="speedy.persistence.relational.QueryManager" level="TRACE"/>
   
     <logger name="com.mchange" level="WARN"/>
     <logger name="com.sun" level="WARN"/>
