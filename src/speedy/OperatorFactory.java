@@ -5,8 +5,8 @@ import speedy.model.database.operators.dbms.SQLRunQuery;
 import speedy.model.database.operators.mainmemory.MainMemoryRunQuery;
 import speedy.model.algebra.operators.IInsertTuple;
 import speedy.model.algebra.operators.IUpdateCell;
-import speedy.model.algebra.operators.mainmemory.InsertTuple;
-import speedy.model.algebra.operators.mainmemory.UpdateCell;
+import speedy.model.algebra.operators.mainmemory.MainMemoryInsertTuple;
+import speedy.model.algebra.operators.mainmemory.MainMemoryUpdateCell;
 import speedy.model.algebra.operators.sql.SQLInsertTuple;
 import speedy.model.algebra.operators.sql.SQLUpdateCell;
 import speedy.model.database.operators.IDatabaseManager;
@@ -17,6 +17,12 @@ import speedy.model.database.operators.mainmemory.MainMemoryDatabaseManager;
 import speedy.model.database.operators.mainmemory.MainMemoryExplainQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import speedy.model.algebra.operators.IBatchInsert;
+import speedy.model.algebra.operators.ICreateTable;
+import speedy.model.algebra.operators.mainmemory.MainMemoryBatchInsert;
+import speedy.model.algebra.operators.mainmemory.MainMemoryCreateTable;
+import speedy.model.algebra.operators.sql.SQLBatchInsert;
+import speedy.model.algebra.operators.sql.SQLCreateTable;
 import speedy.model.database.IDatabase;
 import speedy.model.database.mainmemory.MainMemoryDB;
 
@@ -31,14 +37,20 @@ public class OperatorFactory {
     private IExplainQuery mainMemoryQueryExplanator = new MainMemoryExplainQuery();
     private IExplainQuery sqlQueryExplanator = new SQLExplainQuery();
     //
-    private IUpdateCell mainMemoryCellUpdater = new UpdateCell();
+    private IUpdateCell mainMemoryCellUpdater = new MainMemoryUpdateCell();
     private IUpdateCell sqlCellUpdater = new SQLUpdateCell();
     //
-    private IInsertTuple mainMemoryInsertOperator = new InsertTuple();
+    private IInsertTuple mainMemoryInsertOperator = new MainMemoryInsertTuple();
     private IInsertTuple sqlInsertOperator = new SQLInsertTuple();
     //
     private IDatabaseManager mainMemoryDatabaseManager = new MainMemoryDatabaseManager();
     private IDatabaseManager sqlDatabaseManager = new SQLDatabaseManager();
+    //
+    private ICreateTable mainMemoryTableCreator = new MainMemoryCreateTable();
+    private ICreateTable sqlTableCreator = new SQLCreateTable();
+    //
+    private IBatchInsert mainMemoryBatchInsertOperator = new MainMemoryBatchInsert();
+    private IBatchInsert sqlBatchInsertOperator  = new SQLBatchInsert();
 
     private OperatorFactory() {
     }
@@ -82,7 +94,28 @@ public class OperatorFactory {
         return sqlInsertOperator;
     }
 
+    public IBatchInsert getSingletonBatchInsertOperator(IDatabase database) {
+        if (this.isMainMemory(database)) {
+            return mainMemoryBatchInsertOperator;
+        }
+        return sqlBatchInsertOperator;
+    }
+
+    public IBatchInsert getNonSingletonBatchInsertOperator(IDatabase database) {
+        if (this.isMainMemory(database)) {
+            return new MainMemoryBatchInsert();
+        }
+        return new SQLBatchInsert();
+    }
+
     private boolean isMainMemory(IDatabase database) {
         return (database instanceof MainMemoryDB);
+    }
+
+    public ICreateTable getTableCreator(IDatabase database) {
+        if (this.isMainMemory(database)) {
+            return mainMemoryTableCreator;
+        }
+        return sqlTableCreator;
     }
 }

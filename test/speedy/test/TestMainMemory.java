@@ -12,7 +12,6 @@ import speedy.model.database.TableAlias;
 import speedy.model.database.mainmemory.MainMemoryDB;
 import speedy.model.database.operators.IRunQuery;
 import speedy.persistence.DAOMainMemoryDatabase;
-import speedy.persistence.relational.QueryStatManager;
 import speedy.test.utility.UtilityForTests;
 import speedy.utility.SpeedyUtility;
 

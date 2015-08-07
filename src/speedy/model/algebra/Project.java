@@ -10,26 +10,36 @@ import java.util.Iterator;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import speedy.model.algebra.aggregatefunctions.IAggregateFunction;
 import speedy.model.database.AttributeRef;
 import speedy.model.database.Cell;
 import speedy.model.database.IDatabase;
+import speedy.model.database.IValue;
 import speedy.model.database.TableAlias;
 import speedy.model.database.Tuple;
+import speedy.model.database.TupleOID;
+import speedy.model.database.mainmemory.datasource.IntegerOIDGenerator;
 
 public class Project extends AbstractOperator {
 
     private static Logger logger = LoggerFactory.getLogger(Project.class);
-    
-    private List<AttributeRef> attributes;
+
+    private List<ProjectionAttribute> attributes;
     private List<AttributeRef> newAttributes;
     private boolean discardOids;
 
-    public Project(List<AttributeRef> attributes) {
+    public Project(List<ProjectionAttribute> attributes) {
+        if (attributes.isEmpty()) {
+            throw new IllegalArgumentException("Unable to create a Project with no attributes");
+        }
+        if (!areCompatible(attributes)) {
+            throw new IllegalArgumentException("Unable to mix aggregative and non aggregative attributes " + attributes);
+        }
         this.attributes = attributes;
     }
 
-    public Project(List<AttributeRef> attributes, List<AttributeRef> newAttributes, boolean discardOids) {
-        this.attributes = attributes;
+    public Project(List<ProjectionAttribute> attributes, List<AttributeRef> newAttributes, boolean discardOids) {
+        this(attributes);
         this.newAttributes = newAttributes;
         this.discardOids = discardOids;
     }
@@ -48,51 +58,57 @@ public class Project extends AbstractOperator {
         materializeResult(originalTuples, result);
         if (logger.isDebugEnabled()) logger.debug(getName() + " - Result: \n" + SpeedyUtility.printCollection(result));
         originalTuples.close();
+        if (isAggregative()) {
+            result = aggregateResult(result);
+        }
+        checkResult(result);
         return new ListTupleIterator(result);
     }
 
     private void materializeResult(ITupleIterator originalTuples, List<Tuple> result) {
         while (originalTuples.hasNext()) {
             Tuple originalTuple = originalTuples.next();
-            if (logger.isDebugEnabled()) logger.debug("Originale tuple: " + originalTuple.toStringWithOIDAndAlias());
+            if (logger.isDebugEnabled()) logger.debug("Original tuple: " + originalTuple.toStringWithOIDAndAlias());
             Tuple projectedTuple = projectTuple(originalTuple);
             if (logger.isDebugEnabled()) logger.debug("Projected tuple: " + projectedTuple.toStringWithOIDAndAlias());
-            if (newAttributes != null) {
+            if (newAttributes != null && !isAggregative()) {
                 projectedTuple = renameAttributes(projectedTuple);
             }
             result.add(projectedTuple);
         }
-        checkResult(result);
 //        AlgebraUtility.removeDuplicates(result);
     }
 
     protected Tuple projectTuple(Tuple originalTuple) {
+        if (isAggregative()) {
+            return originalTuple;
+        }
         Tuple tuple = originalTuple.clone();
         List<Cell> cells = tuple.getCells();
         for (Iterator<Cell> it = cells.iterator(); it.hasNext();) {
             Cell cell = it.next();
             if (cell.getAttribute().equals(SpeedyConstants.OID) && !discardOids) {
                 TableAlias tableAlias = cell.getAttributeRef().getTableAlias();
-                if (isToRemove(tableAlias, attributes)) {
+                if (isToRemove(tableAlias)) {
                     it.remove();
                 }
-            } else if (!attributes.contains(cell.getAttributeRef())) {
+            } else if (!isToProject(cell.getAttributeRef(), this.attributes)) {
                 it.remove();
             }
         }
-        sortTupleAttributes(tuple, attributes);
+        sortTupleAttributes(tuple, this.attributes);
         return tuple;
     }
 
-    protected void sortTupleAttributes(Tuple tuple, List<AttributeRef> attributes) {
+    protected void sortTupleAttributes(Tuple tuple, List<ProjectionAttribute> peojectionAttributes) {
         List<Cell> sortedCells = new ArrayList<Cell>();
         for (Cell cell : tuple.getCells()) {
             if (cell.getAttribute().equalsIgnoreCase(SpeedyConstants.OID)) {
                 SpeedyUtility.addIfNotContained(sortedCells, cell);
             }
         }
-        for (AttributeRef attributeRef : attributes) {
-            SpeedyUtility.addIfNotContained(sortedCells, tuple.getCell(attributeRef));
+        for (ProjectionAttribute projectionAttribute : peojectionAttributes) {
+            SpeedyUtility.addIfNotContained(sortedCells, tuple.getCell(projectionAttribute.getAttributeRef()));
         }
         if (tuple.getCells().size() != sortedCells.size()) {
             throw new IllegalArgumentException("Tuples after sorting have differents cells:\n" + tuple + "\n" + sortedCells);
@@ -101,20 +117,68 @@ public class Project extends AbstractOperator {
     }
 
     public List<AttributeRef> getAttributes(IDatabase source, IDatabase target) {
-        return this.attributes;
+        List<AttributeRef> result = new ArrayList<AttributeRef>();
+        for (ProjectionAttribute projectionAttribute : this.attributes) {
+            result.add(projectionAttribute.getAttributeRef());
+        }
+        return result;
+    }
+
+    public List<IAggregateFunction> getAggregateFunctions() {
+        List<IAggregateFunction> result = new ArrayList<IAggregateFunction>();
+        for (ProjectionAttribute projectionAttribute : this.attributes) {
+            result.add(projectionAttribute.getAggregateFunction());
+        }
+        return result;
+    }
+
+    private List<Tuple> aggregateResult(List<Tuple> tuplesToAggregate) {
+        Tuple tuple = new Tuple(new TupleOID(IntegerOIDGenerator.getNextOID()));
+        for (int i = 0; i < attributes.size(); i++) {
+            ProjectionAttribute attribute = attributes.get(i);
+            IAggregateFunction function = attribute.getAggregateFunction();
+            AttributeRef newAttribute = function.getAttributeRef();
+            if(newAttributes!=null){
+                newAttribute = newAttributes.get(i);
+            }
+            IValue aggregateValue = function.evaluate(tuplesToAggregate);
+            Cell cell = new Cell(tuple.getOid(), newAttribute, aggregateValue);
+            tuple.addCell(cell);
+        }
+        List<Tuple> result = new ArrayList<Tuple>();
+        result.add(tuple);
+        return result;
     }
 
     public List<AttributeRef> getNewAttributes() {
         return newAttributes;
     }
 
-    private boolean isToRemove(TableAlias tableAlias, List<AttributeRef> attributes) {
-        for (AttributeRef attribute : attributes) {
-            if (attribute.getTableAlias().equals(tableAlias)) {
+    public boolean isAggregative() {
+        for (ProjectionAttribute attribute : attributes) {
+            if (attribute.isAggregative()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isToRemove(TableAlias tableAlias) {
+        for (ProjectionAttribute attribute : attributes) {
+            if (attribute.getAttributeRef().getTableAlias().equals(tableAlias)) {
                 return false;
             }
         }
         return true;
+    }
+
+    protected boolean isToProject(AttributeRef attributeRef, List<ProjectionAttribute> peojectionAttributes) {
+        for (ProjectionAttribute attribute : peojectionAttributes) {
+            if (attribute.getAttributeRef().equals(attributeRef)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Tuple renameAttributes(Tuple projectedTuple) {
@@ -134,11 +198,17 @@ public class Project extends AbstractOperator {
             return;
         }
         Tuple firstTuple = result.get(0);
-        List<AttributeRef> attributesToCheck = (newAttributes == null ? attributes : newAttributes);
-        for (AttributeRef attribute : attributesToCheck) {
-            if (!containsAttribute(firstTuple, attribute)) {
-                throw new IllegalArgumentException("Missing attribute " + attribute + " after projection: " + firstTuple.getCells() + " - Expected attributes: " + attributesToCheck);
-//                throw new IllegalArgumentException("Missing attribute " + attribute + " after projection: " + firstTuple + " - Expected attributes: " + attributesToCheck);
+        if (newAttributes == null) {
+            for (ProjectionAttribute projectionAttribute : attributes) {
+                if (!containsAttribute(firstTuple, projectionAttribute.getAttributeRef())) {
+                    throw new IllegalArgumentException("Missing attribute " + projectionAttribute + " after projection: " + firstTuple.getCells() + " - Expected attributes: " + attributes);
+                }
+            }
+        } else {
+            for (AttributeRef attribute : newAttributes) {
+                if (!containsAttribute(firstTuple, attribute)) {
+                    throw new IllegalArgumentException("Missing attribute " + attribute + " after projection: " + firstTuple.getCells() + " - Expected attributes: " + newAttributes);
+                }
             }
         }
     }
@@ -150,5 +220,21 @@ public class Project extends AbstractOperator {
             }
         }
         return false;
+    }
+
+    private boolean areCompatible(List<ProjectionAttribute> attributes) {
+        boolean containsAggregative = false;
+        boolean containsNonAggregative = false;
+        for (ProjectionAttribute attribute : attributes) {
+            if (attribute.isAggregative()) {
+                containsAggregative = true;
+            } else {
+                containsNonAggregative = true;
+            }
+            if (containsAggregative && containsNonAggregative) {
+                return false;
+            }
+        }
+        return true;
     }
 }

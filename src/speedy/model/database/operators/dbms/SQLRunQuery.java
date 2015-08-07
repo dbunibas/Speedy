@@ -108,7 +108,6 @@ public class SQLRunQuery implements IRunQuery {
             throw new IllegalArgumentException("Unable to execute SQL on main memory db.");
         }
         if (logger.isDebugEnabled()) logger.debug("Executing query \n" + query);
-
         ITupleIterator mainMemoryTupleIterator = query.execute(source, target);
         String sqlCode = translator.treeToSQL(query, source, target, "");
         ResultSet resultSet = QueryManager.executeQuery(sqlCode, accessConfiguration);

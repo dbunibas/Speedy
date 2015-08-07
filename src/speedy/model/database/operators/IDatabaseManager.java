@@ -5,9 +5,11 @@ import speedy.model.database.dbms.DBMSDB;
 
 public interface IDatabaseManager {
 
-    public IDatabase cloneTarget(DBMSDB target, String suffix);
+    public IDatabase createDatabase(IDatabase target, String suffix);
+    
+    public IDatabase cloneTarget(IDatabase target, String suffix);
 
-    public void removeClone(DBMSDB target, String suffix);
+    public void removeClone(IDatabase target, String suffix);
 
     public void analyzeDatabase(IDatabase database);
 

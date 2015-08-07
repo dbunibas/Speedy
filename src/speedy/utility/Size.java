@@ -1,0 +1,36 @@
+package speedy.utility;
+
+public class Size {
+
+    public static final Size S_1 = new Size(1, "1");
+    public static final Size S_5 = new Size(5, "5");
+    public static final Size S_1K = new Size(1000, "1k");
+    public static final Size S_2K = new Size(2000, "2k");
+    public static final Size S_5K = new Size(5000, "5k");
+    public static final Size S_10K = new Size(10000, "10k");
+    public static final Size S_20K = new Size(20000, "20k");
+    public static final Size S_50K = new Size(50000, "50k");
+    public static final Size S_100K = new Size(100000, "100k");
+    public static final Size S_200K = new Size(200000, "200k");
+    public static final Size S_250K = new Size(250000, "250k");
+    public static final Size S_400K = new Size(400000, "400k");
+    public static final Size S_800K = new Size(800000, "800k");
+    public static final Size S_500K = new Size(500000, "500k");
+    public static final Size S_1M = new Size(1000000, "1M");
+    private int size;
+    private String string;
+
+    public Size(int size, String string) {
+        this.size = size;
+        this.string = string;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    @Override
+    public String toString() {
+        return string;
+    }
+}

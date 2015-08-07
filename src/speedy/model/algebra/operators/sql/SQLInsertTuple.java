@@ -21,6 +21,12 @@ public class SQLInsertTuple implements IInsertTuple {
 
     public void execute(ITable table, Tuple tuple, IDatabase source, IDatabase target) {
         DBMSTable dbmsTable = (DBMSTable) table;
+        StringBuilder insertQuery = buildInsertScript(dbmsTable, tuple, source, target);
+        if (logger.isDebugEnabled()) logger.debug("Insert query:\n" + insertQuery.toString());
+        QueryManager.executeInsertOrDelete(insertQuery.toString(), ((DBMSTable) table).getAccessConfiguration());
+    }
+
+    public StringBuilder buildInsertScript(DBMSTable dbmsTable, Tuple tuple, IDatabase source, IDatabase target) {
         AccessConfiguration accessConfiguration = dbmsTable.getAccessConfiguration();
         StringBuilder insertQuery = new StringBuilder();
         insertQuery.append("INSERT INTO ");
@@ -47,8 +53,7 @@ public class SQLInsertTuple implements IInsertTuple {
         }
         SpeedyUtility.removeChars(", ".length(), insertQuery);
         insertQuery.append(");");
-        if (logger.isDebugEnabled()) logger.debug("Insert query:\n" + insertQuery.toString());
-        QueryManager.executeInsertOrDelete(insertQuery.toString(), ((DBMSTable) table).getAccessConfiguration());
+        return insertQuery;
     }
 
     private String getAttributeType(AttributeRef attributeRef, IDatabase source, IDatabase target) {

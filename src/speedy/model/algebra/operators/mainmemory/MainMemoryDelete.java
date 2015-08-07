@@ -14,9 +14,9 @@ import speedy.model.database.IDatabase;
 import speedy.model.database.Tuple;
 import speedy.model.database.TupleOID;
 
-public class Delete implements IDelete {
+public class MainMemoryDelete implements IDelete {
 
-    private static Logger logger = LoggerFactory.getLogger(Delete.class);
+    private static Logger logger = LoggerFactory.getLogger(MainMemoryDelete.class);
 
     @Override
     public boolean execute(String tableName, IAlgebraOperator sourceQuery, IDatabase source, IDatabase target) {

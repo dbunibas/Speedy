@@ -10,15 +10,22 @@ import speedy.persistence.relational.QueryManager;
 
 public class SQLDatabaseManager implements IDatabaseManager {
 
-    public IDatabase cloneTarget(DBMSDB target, String suffix) {
-        AccessConfiguration targetConfiguration = target.getAccessConfiguration();
+    public IDatabase createDatabase(IDatabase target, String suffix) {
+        AccessConfiguration targetConfiguration = ((DBMSDB) target).getAccessConfiguration();
+        String originalTargetSchemaName = targetConfiguration.getSchemaName();
+        String newTargetSchemaName = originalTargetSchemaName + suffix;
+        AccessConfiguration newAccessConfiguration = targetConfiguration.clone();
+        newAccessConfiguration.setSchemaName(newTargetSchemaName);
+        DBMSUtility.createSchema(newAccessConfiguration);
+        DBMSDB database = new DBMSDB(newAccessConfiguration);
+        return database;
+    }
+
+    public IDatabase cloneTarget(IDatabase target, String suffix) {
+        AccessConfiguration targetConfiguration = ((DBMSDB) target).getAccessConfiguration();
         String originalTargetSchemaName = targetConfiguration.getSchemaName();
         String cloneTargetSchemaName = originalTargetSchemaName + suffix;
         cloneSchema(originalTargetSchemaName, cloneTargetSchemaName, targetConfiguration);
-//        AccessConfiguration workConfiguration = DBMSUtility.getWorkAccessConfiguration(targetConfiguration);
-//        String originalWorkSchema = workConfiguration.getSchemaName();
-//        String cloneWorkSchema = originalWorkSchema + suffix;
-//        cloneSchema(originalWorkSchema, cloneWorkSchema, workConfiguration);
         AccessConfiguration cloneAccessConfiguration = targetConfiguration.clone();
         cloneAccessConfiguration.setSchemaName(cloneTargetSchemaName);
 //        DBMSDB clone = new DBMSDB(target, cloneAccessConfiguration); //shallow copy
@@ -26,15 +33,11 @@ public class SQLDatabaseManager implements IDatabaseManager {
         return clone;
     }
 
-    public void removeClone(DBMSDB target, String suffix) {
-        AccessConfiguration targetConfiguration = target.getAccessConfiguration();
+    public void removeClone(IDatabase target, String suffix) {
+        AccessConfiguration targetConfiguration = ((DBMSDB) target).getAccessConfiguration();
         String originalTargetSchemaName = targetConfiguration.getSchemaName();
         String cloneTargetSchemaName = originalTargetSchemaName + suffix;
         removeSchema(cloneTargetSchemaName, targetConfiguration);
-//        AccessConfiguration workConfiguration = DBMSUtility.getWorkAccessConfiguration(targetConfiguration);
-//        String originalWorkSchema = workConfiguration.getSchemaName();
-//        String cloneWorkSchema = originalWorkSchema + suffix;
-//        removeSchema(cloneWorkSchema, targetConfiguration);
     }
 
     public void removeTable(String tableName, IDatabase db) {

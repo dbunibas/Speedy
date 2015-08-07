@@ -5,11 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import speedy.persistence.file.IImportFile;
 
 public class InitDBConfiguration {
 
     private String initDBScript;
-    private Map<String, List<String>> filesToImport = new HashMap<String, List<String>>();
+    private Map<String, List<IImportFile>> filesToImport = new HashMap<String, List<IImportFile>>();
     private boolean createTablesFromFiles = true;
 
     public String getInitDBScript() {
@@ -20,20 +21,20 @@ public class InitDBConfiguration {
         this.initDBScript = initDBScript;
     }
 
-    public void addFileToImportForTable(String tableName, String fileName) {
-        List<String> files = filesToImport.get(tableName);
+    public void addFileToImportForTable(String tableName, IImportFile fileToImport) {
+        List<IImportFile> files = filesToImport.get(tableName);
         if (files == null) {
-            files = new ArrayList<String>();
+            files = new ArrayList<IImportFile>();
             this.filesToImport.put(tableName, files);
         }
-        files.add(fileName);
+        files.add(fileToImport);
     }
 
     public boolean hasFilesToImport() {
         return !filesToImport.isEmpty();
     }
 
-    public List<String> getFilesToImport(String tableName) {
+    public List<IImportFile> getFilesToImport(String tableName) {
         return filesToImport.get(tableName);
     }
 

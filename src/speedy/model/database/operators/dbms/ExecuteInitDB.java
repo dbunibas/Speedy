@@ -10,10 +10,8 @@ import speedy.model.database.dbms.DBMSDB;
 import speedy.model.database.dbms.InitDBConfiguration;
 import speedy.persistence.Types;
 import speedy.persistence.relational.AccessConfiguration;
-import speedy.utility.DBMSUtility;
 import speedy.persistence.relational.QueryManager;
 import speedy.persistence.xml.DAOXmlUtility;
-import speedy.utility.SpeedyUtility;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,13 +24,31 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import speedy.OperatorFactory;
+import speedy.model.algebra.operators.IBatchInsert;
+import speedy.model.algebra.operators.ICreateTable;
+import speedy.model.database.AttributeRef;
+import speedy.model.database.Cell;
+import speedy.model.database.ConstantValue;
+import speedy.model.database.IDatabase;
+import speedy.model.database.IValue;
+import speedy.model.database.NullValue;
+import speedy.model.database.Tuple;
+import speedy.model.database.TupleOID;
+import speedy.model.database.mainmemory.datasource.IntegerOIDGenerator;
+import speedy.persistence.file.CSVFile;
+import speedy.persistence.file.IImportFile;
+import speedy.persistence.file.XMLFile;
 
 public class ExecuteInitDB {
 
     private static Logger logger = LoggerFactory.getLogger(ExecuteInitDB.class);
     private DAOXmlUtility daoUtility = new DAOXmlUtility();
+    private ICreateTable tableCreator;
+    private IBatchInsert batchInsertOperator;
 
     public void execute(DBMSDB db) {
+        initOperators(db);
         InitDBConfiguration configuration = db.getInitDBConfiguration();
         if (logger.isDebugEnabled()) logger.debug("Initializating DB with configuration " + configuration);
         AccessConfiguration accessConfiguration = db.getAccessConfiguration();
@@ -51,14 +67,14 @@ public class ExecuteInitDB {
         InitDBConfiguration configuration = db.getInitDBConfiguration();
         Map<String, List<Attribute>> tablesAdded = new HashMap<String, List<Attribute>>();
         for (String tableName : configuration.getTablesToImport()) {
-            for (String fileName : configuration.getFilesToImport(tableName)) {
-                if (logger.isDebugEnabled()) logger.debug("Importing file " + fileName + " into table " + tableName);
-                if (fileName.toUpperCase().endsWith(SpeedyConstants.XML)) {
-                    importXMLFile(tableName, fileName, tablesAdded, db);
-                } else if (fileName.toUpperCase().endsWith(SpeedyConstants.CSV)) {
-                    importCSVFile(tableName, fileName, tablesAdded, db);
+            for (IImportFile fileToImport : configuration.getFilesToImport(tableName)) {
+                if (logger.isDebugEnabled()) logger.debug("Importing file " + fileToImport.getFileName() + " into table " + tableName);
+                if (fileToImport.getType().equals(SpeedyConstants.XML)) {
+                    importXMLFile(tableName, (XMLFile) fileToImport, tablesAdded, db);
+                } else if (fileToImport.getType().equals(SpeedyConstants.CSV)) {
+                    importCSVFile(tableName, (CSVFile) fileToImport, tablesAdded, db);
                 } else {
-                    throw new DAOException("Unsupported file: " + fileName);
+                    throw new DAOException("Unsupported file: " + fileToImport.getType());
                 }
             }
         }
@@ -66,7 +82,8 @@ public class ExecuteInitDB {
 
     ///// XML
     @SuppressWarnings("unchecked")
-    private void importXMLFile(String tableName, String xmlFile, Map<String, List<Attribute>> tablesAdded, DBMSDB db) {
+    private void importXMLFile(String tableName, XMLFile fileToImport, Map<String, List<Attribute>> tablesAdded, DBMSDB db) {
+        String xmlFile = fileToImport.getFileName();
         InitDBConfiguration configuration = db.getInitDBConfiguration();
         try {
             Document document = daoUtility.buildDOM(xmlFile);
@@ -76,11 +93,11 @@ public class ExecuteInitDB {
             }
             System.out.println("Importing file " + xmlFile + " into table " + tableName + "...");
             if (!tablesAdded.containsKey(tableName)) {
-                List<Attribute> attributes = createXMLTable(tableName, tableElement, db.getAccessConfiguration(), configuration.isCreateTablesFromFiles());
+                List<Attribute> attributes = createXMLTable(tableName, tableElement, db, configuration.isCreateTablesFromFiles());
                 tablesAdded.put(tableName, attributes);
             }
             List<Attribute> attributes = tablesAdded.get(tableName);
-            insertXMLTuples(tableName, attributes, tableElement, db.getAccessConfiguration(), xmlFile);
+            insertXMLTuples(tableName, attributes, tableElement, db, xmlFile);
         } catch (DAOException ex) {
             logger.error(ex.getLocalizedMessage());
             ex.printStackTrace();
@@ -93,11 +110,8 @@ public class ExecuteInitDB {
     }
 
     @SuppressWarnings("unchecked")
-    private List<Attribute> createXMLTable(String tableName, Element tableElement, AccessConfiguration accessConfiguration, boolean createTable) {
+    private List<Attribute> createXMLTable(String tableName, Element tableElement, DBMSDB database, boolean createTable) {
         List<Attribute> attributes = new ArrayList<Attribute>();
-        StringBuilder sb = new StringBuilder();
-        sb.append("create table ").append(DBMSUtility.getSchema(accessConfiguration)).append(tableName).append("(\n");
-        sb.append(SpeedyConstants.INDENT).append("oid serial,\n");
         Element firstChild = (Element) tableElement.getChildren().get(0);
         for (Element attributeElement : (List<Element>) firstChild.getChildren()) {
             String attributeName = attributeElement.getName();
@@ -107,67 +121,47 @@ public class ExecuteInitDB {
             }
             Attribute attribute = new Attribute(tableName, attributeName, attributeType);
             attributes.add(attribute);
-            sb.append(SpeedyConstants.INDENT).append(attributeName).append(" ").append(DBMSUtility.convertDataSourceTypeToDBType(attributeType)).append(",\n");
         }
-        SpeedyUtility.removeChars(",\n".length(), sb);
-//        sb.append(") with oids;");
-        sb.append(");");
-        if (logger.isDebugEnabled()) logger.debug("Executing script " + sb.toString());
         if (createTable) {
-            QueryManager.executeScript(sb.toString(), accessConfiguration, false, true, false, false);
+            tableCreator.createTable(tableName, attributes, database);
         }
         return attributes;
     }
 
     @SuppressWarnings("unchecked")
-    private void insertXMLTuples(String tableName, List<Attribute> attributes, Element tableElement, AccessConfiguration accessConfiguration, String xmlFile) {
-        StringBuilder sb = new StringBuilder();
-        int count = 0;
+    private void insertXMLTuples(String tableName, List<Attribute> attributes, Element tableElement, IDatabase target, String xmlFile) {
         for (Element tupleElement : (List<Element>) tableElement.getChildren()) {
-            if (count > 0 && count % 10000 == 0) {
-                QueryManager.executeScript(sb.toString(), accessConfiguration, false, true, false, false);
-                sb = new StringBuilder();
-//                if (task.getConfiguration().isPrint()) 
-                System.out.println("..." + count + " tuple inserted in table " + tableName);
-                if (logger.isDebugEnabled()) logger.debug("..." + count + " tuple inserted in table " + tableName);
-            }
-            sb.append("insert into ").append(DBMSUtility.getSchema(accessConfiguration)).append(tableName).append("(");
-            for (Attribute attribute : attributes) {
-                sb.append(attribute.getName()).append(", ");
-            }
-            SpeedyUtility.removeChars(", ".length(), sb);
-            sb.append(") values (");
+            TupleOID tupleOID = new TupleOID(IntegerOIDGenerator.getNextOID());
+            Tuple tuple = new Tuple(tupleOID);
             for (Attribute attribute : attributes) {
                 Element attributeElement = tupleElement.getChild(attribute.getName());
                 if (attributeElement == null) {
                     throw new DAOException("Error importing " + xmlFile + ". Attribute " + attribute.getName() + " in table " + tableName + " is missing");
                 }
-                String value = attributeElement.getText();
-                if (notNull(value) && attribute.getType().equals(Types.STRING)) sb.append("'");
-                sb.append(cleanValue(value));
-                if (notNull(value) && attribute.getType().equals(Types.STRING)) sb.append("'");
-                sb.append(", ");
+                String stringValue = attributeElement.getText();
+                AttributeRef attributeRef = new AttributeRef(attribute.getTableName(), attribute.getName());
+                IValue value;
+                if (notNull(stringValue)) {
+                    value = new ConstantValue(stringValue);
+                } else {
+                    value = new NullValue(SpeedyConstants.NULL);
+                }
+                Cell cell = new Cell(tupleOID, attributeRef, value);
+                tuple.addCell(cell);
             }
-            SpeedyUtility.removeChars(", ".length(), sb);
-            sb.append(");\n");
-            count++;
+            batchInsertOperator.insert(target.getTable(tableName), tuple, target);
         }
-        if (sb.toString().isEmpty()) {
-            return;
-        }
-//        if (task.getConfiguration().isPrint()) 
-        System.out.println(count + " tuple inserted in table " + tableName);
-        if (logger.isDebugEnabled()) logger.debug(count + " tuple inserted in table " + tableName);
-        QueryManager.executeScript(sb.toString(), accessConfiguration, false, true, false, false);
+        batchInsertOperator.flush(target);
     }
 
     ///// CSV
-    private void importCSVFile(String tableName, String csvFile, Map<String, List<Attribute>> tablesAdded, DBMSDB db) {
-        InitDBConfiguration configuration = db.getInitDBConfiguration();
+    private void importCSVFile(String tableName, CSVFile fileToImport, Map<String, List<Attribute>> tablesAdded, DBMSDB database) {
+        String csvFile = fileToImport.getFileName();
+        InitDBConfiguration configuration = database.getInitDBConfiguration();
         Reader in = null;
         try {
             in = new FileReader(csvFile);
-            CSVFormat format = CSVFormat.newFormat(';').withHeader();
+            CSVFormat format = CSVFormat.newFormat(fileToImport.getSeparator()).withHeader();
             CSVParser parser = format.parse(in);
             List<Attribute> attributes = readCSVAttributes(tableName, parser.getHeaderMap().keySet());
             Iterable<CSVRecord> records = parser.getRecords();
@@ -176,10 +170,12 @@ public class ExecuteInitDB {
             }
             System.out.println("Importing file " + csvFile + " into table " + tableName + "...");
             if (!tablesAdded.containsKey(tableName)) {
-                createCSVTable(tableName, attributes, db.getAccessConfiguration(), configuration.isCreateTablesFromFiles());
                 tablesAdded.put(tableName, attributes);
+                if (configuration.isCreateTablesFromFiles()) {
+                    tableCreator.createTable(tableName, attributes, database);
+                }
             }
-            insertCSVTuples(tableName, attributes, records, db.getAccessConfiguration(), csvFile);
+            insertCSVTuples(tableName, attributes, records, database, csvFile, fileToImport.getRecordsToImport());
         } catch (Exception ex) {
             logger.error(ex.getLocalizedMessage());
             ex.printStackTrace();
@@ -217,70 +213,45 @@ public class ExecuteInitDB {
                 attributeType = Types.BOOLEAN;
                 attributeName = attributeName.substring(0, attributeName.length() - booleanSuffix.length()).trim();
             }
+            String dateSuffix = "(" + Types.DATE + ")";
+            if (attributeName.endsWith(dateSuffix)) {
+                attributeType = Types.DATE;
+                attributeName = attributeName.substring(0, attributeName.length() - dateSuffix.length()).trim();
+            }
             Attribute attribute = new Attribute(tableName, attributeName, attributeType);
             attributes.add(attribute);
         }
         return attributes;
     }
 
-    private List<Attribute> createCSVTable(String tableName, List<Attribute> attributes, AccessConfiguration accessConfiguration, boolean createTable) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("create table ").append(DBMSUtility.getSchema(accessConfiguration)).append(tableName).append("(\n");
-        sb.append(SpeedyConstants.INDENT).append("oid serial,\n");
-        for (Attribute attribute : attributes) {
-            String attributeName = attribute.getName();
-            String attributeType = attribute.getType();
-            sb.append(SpeedyConstants.INDENT).append(attributeName).append(" ").append(DBMSUtility.convertDataSourceTypeToDBType(attributeType)).append(",\n");
-        }
-        SpeedyUtility.removeChars(",\n".length(), sb);
-//        sb.append(") with oids;");
-        sb.append(");");
-        if (logger.isDebugEnabled()) logger.debug("Executing script " + sb.toString());
-        if (createTable) {
-            QueryManager.executeScript(sb.toString(), accessConfiguration, false, true, false, false);
-        }
-        return attributes;
-    }
-
-    private void insertCSVTuples(String tableName, List<Attribute> attributes, Iterable<CSVRecord> records, AccessConfiguration accessConfiguration, String csvFile) {
-        StringBuilder sb = new StringBuilder();
-        int count = 0;
+    private void insertCSVTuples(String tableName, List<Attribute> attributes, Iterable<CSVRecord> records, DBMSDB target, String csvFile, Integer recordsToImport) {
+        int importedRecords = 0;
         for (CSVRecord record : records) {
-            if (count > 0 && count % 10000 == 0) {
-                QueryManager.executeScript(sb.toString(), accessConfiguration, false, true, false, false);
-                sb = new StringBuilder();
-//                if (task.getConfiguration().isPrint()) 
-                System.out.println("..." + count + " tuple inserted in table " + tableName);
-                if (logger.isDebugEnabled()) logger.debug("..." + count + " tuple inserted in table " + tableName);
-            }
-            sb.append("insert into ").append(DBMSUtility.getSchema(accessConfiguration)).append(tableName).append("(");
-            for (Attribute attribute : attributes) {
-                sb.append(attribute.getName()).append(", ");
-            }
-            SpeedyUtility.removeChars(", ".length(), sb);
-            sb.append(") values (");
+            TupleOID tupleOID = new TupleOID(IntegerOIDGenerator.getNextOID());
+            Tuple tuple = new Tuple(tupleOID);
             for (int i = 0; i < attributes.size(); i++) {
                 Attribute attribute = attributes.get(i);
-                String value = record.get(i);
-                if (value == null) {
+                String stringValue = record.get(i);
+                if (stringValue == null) {
                     throw new DAOException("Error importing " + csvFile + ". Attribute " + attribute.getName() + " in table " + tableName + " is missing");
                 }
-                if (notNull(value) && attribute.getType().equals(Types.STRING)) sb.append("'");
-                sb.append(cleanValue(value));
-                if (notNull(value) && attribute.getType().equals(Types.STRING)) sb.append("'");
-                sb.append(", ");
+                AttributeRef attributeRef = new AttributeRef(attribute.getTableName(), attribute.getName());
+                IValue value;
+                if (notNull(stringValue)) {
+                    value = new ConstantValue(stringValue);
+                } else {
+                    value = new NullValue(SpeedyConstants.NULL);
+                }
+                Cell cell = new Cell(tupleOID, attributeRef, value);
+                tuple.addCell(cell);
             }
-            SpeedyUtility.removeChars(", ".length(), sb);
-            sb.append(");\n");
-            count++;
+            batchInsertOperator.insert(target.getTable(tableName), tuple, target);
+            importedRecords++;
+            if(importedRecords >= recordsToImport){
+                break;
+            }
         }
-        if (sb.toString().isEmpty()) {
-            return;
-        }
-//        if (task.getConfiguration().isPrint()) 
-        System.out.println(count + " tuple inserted in table " + tableName);
-        if (logger.isDebugEnabled()) logger.debug(count + " tuple inserted in table " + tableName);
-        QueryManager.executeScript(sb.toString(), accessConfiguration, false, true, false, false);
+        batchInsertOperator.flush(target);
     }
 
     private String cleanValue(String string) {
@@ -300,6 +271,11 @@ public class ExecuteInitDB {
 
     private boolean notNull(String value) {
         return value != null && !value.equalsIgnoreCase("NULL");
+    }
+
+    private void initOperators(DBMSDB database) {
+        this.tableCreator = OperatorFactory.getInstance().getTableCreator(database);
+        this.batchInsertOperator = OperatorFactory.getInstance().getSingletonBatchInsertOperator(database);
     }
 
 }

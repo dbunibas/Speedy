@@ -13,9 +13,9 @@ public class ProjectWithoutOIDs extends Project {
 
     private static Logger logger = LoggerFactory.getLogger(ProjectWithoutOIDs.class);
 
-    private List<AttributeRef> attributes;
+    private List<ProjectionAttribute> attributes;
 
-    public ProjectWithoutOIDs(List<AttributeRef> attributes) {
+    public ProjectWithoutOIDs(List<ProjectionAttribute> attributes) {
         super(attributes);
         this.attributes = attributes;
     }
@@ -33,7 +33,7 @@ public class ProjectWithoutOIDs extends Project {
             Cell cell = it.next();
             if (cell.getAttribute().equals(SpeedyConstants.OID)) {
                 it.remove();
-            } else if (!attributes.contains(cell.getAttributeRef())) {
+            } else if (!isToProject(cell.getAttributeRef(), this.attributes)) {
                 it.remove();
             }
         }

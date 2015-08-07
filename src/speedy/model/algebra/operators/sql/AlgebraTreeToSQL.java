@@ -232,7 +232,7 @@ public class AlgebraTreeToSQL {
                 if (attributeRef.toString().contains(SpeedyConstants.AGGR + "." + SpeedyConstants.COUNT)) {
                     continue;
                 }
-                result.append(aggregateFunctionToString(aggregateFunction, nestedTables)).append(", ");
+                result.append(aggregateFunctionToString(aggregateFunction, aggregateFunction.getAttributeRef(), nestedTables)).append(", ");
             }
             SpeedyUtility.removeChars(", ".length(), result.getStringBuilder());
             result.append("\n").append(this.indentString());
@@ -353,18 +353,26 @@ public class AlgebraTreeToSQL {
             }
             this.indentLevel++;
             List<AttributeRef> attributes = operator.getAttributes(source, target);
+            List<IAggregateFunction> aggregateFunctions = null;
             List<AttributeRef> newAttributes = null;
             IAlgebraOperator father = operator.getFather();
             if (father != null && (father instanceof Select)) {
                 father = father.getFather();
             }
             if (father != null && (father instanceof Project)) {
-                attributes = ((Project) father).getAttributes(source, target);
-                newAttributes = ((Project) father).getNewAttributes();
+                Project project = (Project) father;
+                if (!project.isAggregative()) {
+                    attributes = project.getAttributes(source, target);
+                    aggregateFunctions = null;
+                } else {
+                    attributes = null;
+                    aggregateFunctions = project.getAggregateFunctions();
+                }
+                newAttributes = project.getNewAttributes();
             }
             this.currentProjectionAttribute = attributes;
             result.append("\n").append(this.indentString());
-            result.append(attributesToSQL(attributes, newAttributes, nestedSelect, useTableName));
+            result.append(attributesToSQL(attributes, aggregateFunctions, newAttributes, nestedSelect, useTableName));
             this.indentLevel--;
             result.append("\n").append(this.indentString());
         }
@@ -642,24 +650,45 @@ public class AlgebraTreeToSQL {
             return havingFunctions;
         }
 
-        private String attributesToSQL(List<AttributeRef> attributes, List<AttributeRef> newAttributes, List<NestedOperator> nestedSelect, boolean useTableName) {
+        private String attributesToSQL(List<AttributeRef> attributes, List<IAggregateFunction> aggregateFunctions,
+                List<AttributeRef> newAttributes, List<NestedOperator> nestedSelect, boolean useTableName) {
             if (logger.isDebugEnabled()) logger.debug("Generating SQL for attributes\n\nAttributes: " + attributes + "\n\t" + newAttributes + "\n\tNested Select: " + nestedSelect + "\n\tuseTableName: " + useTableName);
-            List<String> sqlAttributes = new ArrayList<String>();
-            for (int i = 0; i < attributes.size(); i++) {
-                AttributeRef newAttributeRef = null;
-                if (newAttributes != null) {
-                    newAttributeRef = newAttributes.get(i);
-                }
-                String attribute = attributeToSQL(attributes.get(i), useTableName, nestedSelect, newAttributeRef);
-                if (!sqlAttributes.contains(attribute)) {
-                    sqlAttributes.add(attribute);
-                }
-            }
             StringBuilder sb = new StringBuilder();
-            for (String attribute : sqlAttributes) {
-                sb.append(attribute).append(",\n").append(this.indentString());
+            if (attributes != null) {
+                List<String> sqlAttributes = new ArrayList<String>();
+                for (int i = 0; i < attributes.size(); i++) {
+                    AttributeRef newAttributeRef = null;
+                    if (newAttributes != null) {
+                        newAttributeRef = newAttributes.get(i);
+                    }
+                    String attribute = attributeToSQL(attributes.get(i), useTableName, nestedSelect, newAttributeRef);
+                    if (!sqlAttributes.contains(attribute)) {
+                        sqlAttributes.add(attribute);
+                    }
+                }
+                for (String attribute : sqlAttributes) {
+                    sb.append(attribute).append(",\n").append(this.indentString());
+                }
+                SpeedyUtility.removeChars(",\n".length() + this.indentString().length(), sb);
+            } else {
+                for (int i = 0; i < aggregateFunctions.size(); i++) {
+                    AttributeRef newAttributeRef = null;
+                    if (newAttributes != null) {
+                        newAttributeRef = newAttributes.get(i);
+                    }
+                    IAggregateFunction aggregateFunction = aggregateFunctions.get(i);
+                    AttributeRef attributeRef = aggregateFunction.getAttributeRef();
+                    if (attributeRef.toString().contains(SpeedyConstants.AGGR + "." + SpeedyConstants.COUNT)) {
+                        continue;
+                    }
+                    if (newAttributeRef == null) {
+                        newAttributeRef = aggregateFunction.getAttributeRef();
+                    }
+                    sb.append(aggregateFunctionToString(aggregateFunction, newAttributeRef, null));
+                    sb.append(", ");
+                }
+                SpeedyUtility.removeChars(", ".length(), sb);
             }
-            SpeedyUtility.removeChars(",\n".length() + this.indentString().length(), sb);
             return sb.toString();
         }
 
@@ -736,21 +765,21 @@ public class AlgebraTreeToSQL {
             throw new IllegalArgumentException("Unable to find attribute " + originalAttribute + " into " + attributes);
         }
 
-        private String aggregateFunctionToString(IAggregateFunction aggregateFunction, List<NestedOperator> nestedTables) {
+        private String aggregateFunctionToString(IAggregateFunction aggregateFunction, AttributeRef newAttribute, List<NestedOperator> nestedTables) {
             if (aggregateFunction instanceof ValueAggregateFunction) {
                 return attributeToSQL(aggregateFunction.getAttributeRef(), true, nestedTables, null);
             }
             if (aggregateFunction instanceof MaxAggregateFunction) {
-                return "max(" + aggregateFunction.getAttributeRef() + ") as " + DBMSUtility.attributeRefToAliasSQL(aggregateFunction.getAttributeRef());
+                return "max(" + aggregateFunction.getAttributeRef() + ") as " + DBMSUtility.attributeRefToAliasSQL(newAttribute);
             }
             if (aggregateFunction instanceof MinAggregateFunction) {
-                return "min(" + aggregateFunction.getAttributeRef() + ") as " + DBMSUtility.attributeRefToAliasSQL(aggregateFunction.getAttributeRef());
+                return "min(" + aggregateFunction.getAttributeRef() + ") as " + DBMSUtility.attributeRefToAliasSQL(newAttribute);
             }
             if (aggregateFunction instanceof AvgAggregateFunction) {
-                return "avg(" + aggregateFunction.getAttributeRef() + ") as " + DBMSUtility.attributeRefToAliasSQL(aggregateFunction.getAttributeRef());
+                return "avg(" + aggregateFunction.getAttributeRef() + ") as " + DBMSUtility.attributeRefToAliasSQL(newAttribute);
             }
             if (aggregateFunction instanceof SumAggregateFunction) {
-                return "sum(" + aggregateFunction.getAttributeRef() + ") as " + DBMSUtility.attributeRefToAliasSQL(aggregateFunction.getAttributeRef());
+                return "sum(" + aggregateFunction.getAttributeRef() + ") as " + DBMSUtility.attributeRefToAliasSQL(newAttribute);
             }
             if (aggregateFunction instanceof CountAggregateFunction) {
                 return "count(*) as " + DBMSUtility.attributeRefToAliasSQL(aggregateFunction.getAttributeRef());

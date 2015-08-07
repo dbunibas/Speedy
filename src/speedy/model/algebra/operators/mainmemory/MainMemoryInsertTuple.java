@@ -13,9 +13,9 @@ import speedy.model.database.IDatabase;
 import speedy.model.database.ITable;
 import speedy.model.database.Tuple;
 
-public class InsertTuple implements IInsertTuple {
+public class MainMemoryInsertTuple implements IInsertTuple {
 
-    private static Logger logger = LoggerFactory.getLogger(InsertTuple.class);
+    private static Logger logger = LoggerFactory.getLogger(MainMemoryInsertTuple.class);
 
     @Override
     public void execute(ITable table, Tuple tuple, IDatabase source, IDatabase target) {

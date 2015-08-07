@@ -7,10 +7,15 @@ import speedy.model.database.Tuple;
 import speedy.model.database.NullValue;
 import java.util.Collections;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import speedy.utility.SpeedyUtility;
 import speedy.utility.comparator.TupleComparatorAttributeValue;
 
 public class MaxAggregateFunction implements IAggregateFunction {
 
+    private static Logger logger = LoggerFactory.getLogger(MaxAggregateFunction.class);
+    
     private AttributeRef attributeRef;
 
     public MaxAggregateFunction(AttributeRef attributeRef) {
@@ -21,6 +26,7 @@ public class MaxAggregateFunction implements IAggregateFunction {
         if (tuples.isEmpty()) {
             return new NullValue(SpeedyConstants.NULL_VALUE);
         }
+        if (logger.isDebugEnabled()) logger.debug("Computing max in " + SpeedyUtility.printCollection(tuples));
         Collections.sort(tuples, new TupleComparatorAttributeValue(attributeRef));
         return tuples.get(0).getCell(attributeRef).getValue();
     }

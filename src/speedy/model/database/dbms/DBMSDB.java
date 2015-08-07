@@ -48,6 +48,9 @@ public class DBMSDB implements IDatabase {
 
     public void addTable(ITable table) {
         tables.add((DBMSTable) table);
+        if (!getTableNames().contains(table.getName())) {
+            tableNames.add(table.getName());
+        }
     }
 
     public String getName() {
