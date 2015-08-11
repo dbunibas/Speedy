@@ -1,6 +1,6 @@
 package speedy.utility;
 
-public class Size {
+public class Size implements Comparable<Size> {
 
     public static final Size S_1 = new Size(1, "1");
     public static final Size S_5 = new Size(5, "5");
@@ -32,5 +32,9 @@ public class Size {
     @Override
     public String toString() {
         return string;
+    }
+
+    public int compareTo(Size o) {
+        return this.size - o.size;
     }
 }

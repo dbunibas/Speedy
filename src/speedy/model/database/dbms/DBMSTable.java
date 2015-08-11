@@ -45,7 +45,7 @@ public class DBMSTable implements ITable {
                 return attribute;
             }
         }
-        throw new IllegalArgumentException("Table " + tableName + " doesn't contain attribute " + name);
+        throw new IllegalArgumentException("Table " + tableName + " doesn't contain attribute " + name + ". Attributes " + attributes);
     }
 
     public ITupleIterator getTupleIterator(int offset, int limit) {

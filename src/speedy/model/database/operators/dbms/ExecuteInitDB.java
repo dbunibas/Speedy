@@ -247,7 +247,7 @@ public class ExecuteInitDB {
             }
             batchInsertOperator.insert(target.getTable(tableName), tuple, target);
             importedRecords++;
-            if(importedRecords >= recordsToImport){
+            if (recordsToImport != null && importedRecords >= recordsToImport) {
                 break;
             }
         }

@@ -31,9 +31,11 @@ public class PooledDbConnectionFactory implements IConnectionFactory {
             cpds.setPassword(configuration.getPassword());
             //       Pool configuration
 //            cpds.setMaxStatements(180);  //If you want to turn on PreparedStatement pooling, you must also set maxStatements and/or maxStatementsPerConnection
-//            cpds.setMinPoolSize(5);
-//            cpds.setAcquireIncrement(5);
+//            cpds.setMaxStatementsPerConnection(180);  //If you want to turn on PreparedStatement pooling, you must also set maxStatements and/or maxStatementsPerConnection
+//            cpds.setMinPoolSize(8);
+////            cpds.setAcquireIncrement(5);
 //            cpds.setMaxPoolSize(20);
+//            cpds.setNumHelperThreads(8);
             if (logger.isDebugEnabled()) logger.debug("Pool initialized: " + cpds.toString());
             currentConfiguration = configuration;
         } catch (Exception e) {
