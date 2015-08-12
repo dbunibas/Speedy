@@ -15,7 +15,7 @@ import speedy.utility.comparator.TupleComparatorAttributeValue;
 public class MaxAggregateFunction implements IAggregateFunction {
 
     private static Logger logger = LoggerFactory.getLogger(MaxAggregateFunction.class);
-    
+
     private AttributeRef attributeRef;
 
     public MaxAggregateFunction(AttributeRef attributeRef) {
@@ -41,6 +41,20 @@ public class MaxAggregateFunction implements IAggregateFunction {
 
     public AttributeRef getAttributeRef() {
         return attributeRef;
+    }
+
+    public void setAttributeRef(AttributeRef attributeRef) {
+        this.attributeRef = attributeRef;
+    }
+
+    public MaxAggregateFunction clone() {
+        try {
+            MaxAggregateFunction clone = (MaxAggregateFunction) super.clone();
+            clone.attributeRef = this.attributeRef.clone();
+            return clone;
+        } catch (CloneNotSupportedException ex) {
+            throw new IllegalArgumentException("Unable to clone " + ex.getLocalizedMessage());
+        }
     }
 
 }

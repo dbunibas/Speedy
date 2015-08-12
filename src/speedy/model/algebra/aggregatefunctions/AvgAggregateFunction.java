@@ -6,6 +6,8 @@ import speedy.model.database.IValue;
 import speedy.model.database.Tuple;
 import speedy.model.database.NullValue;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import speedy.model.database.ConstantValue;
 
 public class AvgAggregateFunction implements IAggregateFunction {
@@ -46,6 +48,20 @@ public class AvgAggregateFunction implements IAggregateFunction {
 
     public AttributeRef getAttributeRef() {
         return attributeRef;
+    }
+
+    public void setAttributeRef(AttributeRef attributeRef) {
+        this.attributeRef = attributeRef;
+    }
+
+    public AvgAggregateFunction clone() {
+        try {
+            AvgAggregateFunction clone = (AvgAggregateFunction) super.clone();
+            clone.attributeRef = this.attributeRef.clone();
+            return clone;
+        } catch (CloneNotSupportedException ex) {
+            throw new IllegalArgumentException("Unable to clone " + ex.getLocalizedMessage());
+        }
     }
 
 }

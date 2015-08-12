@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import speedy.utility.SpeedyUtility;
 
 public class DBMSTable implements ITable {
 
@@ -45,7 +46,7 @@ public class DBMSTable implements ITable {
                 return attribute;
             }
         }
-        throw new IllegalArgumentException("Table " + tableName + " doesn't contain attribute " + name + ". Attributes " + attributes);
+        throw new IllegalArgumentException("Table " + tableName + " doesn't contain attribute " + name + ". Attributes " + SpeedyUtility.printCollection(attributes));
     }
 
     public ITupleIterator getTupleIterator(int offset, int limit) {

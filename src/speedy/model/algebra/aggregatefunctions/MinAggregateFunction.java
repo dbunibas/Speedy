@@ -38,4 +38,18 @@ public class MinAggregateFunction implements IAggregateFunction {
         return attributeRef;
     }
 
+    public void setAttributeRef(AttributeRef attributeRef) {
+        this.attributeRef = attributeRef;
+    }
+
+    public MinAggregateFunction clone() {
+        try {
+            MinAggregateFunction clone = (MinAggregateFunction) super.clone();
+            clone.attributeRef = this.attributeRef.clone();
+            return clone;
+        } catch (CloneNotSupportedException ex) {
+            throw new IllegalArgumentException("Unable to clone " + ex.getLocalizedMessage());
+        }
+    }
+
 }

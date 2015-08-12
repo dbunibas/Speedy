@@ -40,7 +40,7 @@ abstract class AbstractOperator implements IAlgebraOperator {
             return null;
         }
     }
-    
+
     @Override
     public String toString() {
         return this.toString("");

@@ -19,6 +19,7 @@ import speedy.model.database.TableAlias;
 import speedy.model.database.Tuple;
 import speedy.model.database.TupleOID;
 import speedy.model.database.mainmemory.datasource.IntegerOIDGenerator;
+import speedy.model.expressions.Expression;
 
 public class Project extends AbstractOperator {
 
@@ -138,7 +139,7 @@ public class Project extends AbstractOperator {
             ProjectionAttribute attribute = attributes.get(i);
             IAggregateFunction function = attribute.getAggregateFunction();
             AttributeRef newAttribute = function.getAttributeRef();
-            if(newAttributes!=null){
+            if (newAttributes != null) {
                 newAttribute = newAttributes.get(i);
             }
             IValue aggregateValue = function.evaluate(tuplesToAggregate);
@@ -236,5 +237,23 @@ public class Project extends AbstractOperator {
             }
         }
         return true;
+    }
+
+    @Override
+    public IAlgebraOperator clone() {
+        Project clone = (Project) super.clone();
+        if (attributes != null) {
+            clone.attributes = new ArrayList<ProjectionAttribute>();
+            for (ProjectionAttribute newAttribute : attributes) {
+                clone.attributes.add(newAttribute.clone());
+            }
+        }
+        if (newAttributes != null) {
+            clone.newAttributes = new ArrayList<AttributeRef>();
+            for (AttributeRef newAttribute : newAttributes) {
+                clone.newAttributes.add(newAttribute.clone());
+            }
+        }
+        return clone;
     }
 }

@@ -9,7 +9,7 @@ import speedy.model.database.NullValue;
 import java.util.List;
 
 public class ValueAggregateFunction implements IAggregateFunction {
-    
+
     private AttributeRef attributeRef;
 
     public ValueAggregateFunction(AttributeRef attributeRef) {
@@ -23,7 +23,7 @@ public class ValueAggregateFunction implements IAggregateFunction {
         if (!checkValues(tuples, attributeRef)) {
             throw new AlgebraException("Trying to extract aggregate value " + attributeRef + " from tuples with different values " + tuples);
         }
-        return tuples.get(0).getCell(attributeRef).getValue();        
+        return tuples.get(0).getCell(attributeRef).getValue();
     }
 
     private boolean checkValues(List<Tuple> tuples, AttributeRef attribute) {
@@ -48,6 +48,18 @@ public class ValueAggregateFunction implements IAggregateFunction {
     public String toString() {
         return attributeRef.toString();
     }
-    
-    
+
+    public void setAttributeRef(AttributeRef attributeRef) {
+        this.attributeRef = attributeRef;
+    }
+
+    public ValueAggregateFunction clone() {
+        try {
+            ValueAggregateFunction clone = (ValueAggregateFunction) super.clone();
+            clone.attributeRef = this.attributeRef.clone();
+            return clone;
+        } catch (CloneNotSupportedException ex) {
+            throw new IllegalArgumentException("Unable to clone " + ex.getLocalizedMessage());
+        }
+    }
 }

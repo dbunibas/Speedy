@@ -45,4 +45,17 @@ public class SumAggregateFunction implements IAggregateFunction {
         return attributeRef;
     }
 
+    public void setAttributeRef(AttributeRef attributeRef) {
+        this.attributeRef = attributeRef;
+    }
+
+    public SumAggregateFunction clone() {
+        try {
+            SumAggregateFunction clone = (SumAggregateFunction) super.clone();
+            clone.attributeRef = this.attributeRef.clone();
+            return clone;
+        } catch (CloneNotSupportedException ex) {
+            throw new IllegalArgumentException("Unable to clone " + ex.getLocalizedMessage());
+        }
+    }
 }

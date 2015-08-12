@@ -3,7 +3,7 @@ package speedy.model.algebra;
 import speedy.model.algebra.aggregatefunctions.IAggregateFunction;
 import speedy.model.database.AttributeRef;
 
-public class ProjectionAttribute {
+public class ProjectionAttribute implements Cloneable {
 
     private AttributeRef attributeRef;
     private IAggregateFunction aggregateFunction;
@@ -39,5 +39,16 @@ public class ProjectionAttribute {
 
     public boolean isAggregative() {
         return aggregateFunction != null;
+    }
+
+    public ProjectionAttribute clone() {
+        try {
+            ProjectionAttribute clone = (ProjectionAttribute) super.clone();
+            if (this.attributeRef != null) clone.attributeRef = this.attributeRef.clone();
+            if (this.aggregateFunction != null) clone.aggregateFunction = this.aggregateFunction.clone();
+            return clone;
+        } catch (CloneNotSupportedException ex) {
+            throw new IllegalArgumentException("Unable to clone ProjectionAttribute");
+        }
     }
 }
