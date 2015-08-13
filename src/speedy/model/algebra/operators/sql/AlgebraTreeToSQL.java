@@ -226,7 +226,7 @@ public class AlgebraTreeToSQL {
             }
             List<NestedOperator> nestedTables = findNestedTablesForGroupBy(operator);
             List<IAggregateFunction> aggregateFunctions = operator.getAggregateFunctions();
-            List<String> havingFunctions = extractHavingFunctions(aggregateFunctions, operator);
+            List<String> havingFunctions = extractHavingFunctions(operator);
             for (IAggregateFunction aggregateFunction : aggregateFunctions) {
                 AttributeRef attributeRef = aggregateFunction.getAttributeRef();
                 if (attributeRef.toString().contains(SpeedyConstants.AGGR + "." + SpeedyConstants.COUNT)) {
@@ -633,7 +633,7 @@ public class AlgebraTreeToSQL {
         }
 
         @SuppressWarnings("unchecked")
-        private List<String> extractHavingFunctions(List<IAggregateFunction> aggregateFunctions, GroupBy operator) {
+        private List<String> extractHavingFunctions(GroupBy operator) {
             if (!(operator.getFather() instanceof Select)) {
                 return Collections.EMPTY_LIST;
             }
@@ -641,13 +641,24 @@ public class AlgebraTreeToSQL {
             if (select.getSelections().size() != 1) {
                 return Collections.EMPTY_LIST;
             }
-            Expression expression = select.getSelections().get(0);
+            Expression expression = select.getSelections().get(0).clone();
             if (!expression.toString().contains(SpeedyConstants.AGGR + "." + SpeedyConstants.COUNT)) {
                 return Collections.EMPTY_LIST;
             }
             List<String> havingFunctions = new ArrayList<String>();
-            havingFunctions.add("count(*) > 1");
+            if (expression.toString().contains("count")) {
+                havingFunctions.add(getCountHavingSQL(expression));
+            } else {
+                throw new IllegalArgumentException("Having function " + expression + " is not yet supported!");
+            }
             return havingFunctions;
+        }
+
+        private String getCountHavingSQL(Expression expression) {
+            String variableName = expression.getVariables().get(0);
+            String expressionString = expression.toString();
+            expressionString = expressionString.replace(variableName, "count(*) ");
+            return expressionString;
         }
 
         private String attributesToSQL(List<AttributeRef> attributes, List<IAggregateFunction> aggregateFunctions,

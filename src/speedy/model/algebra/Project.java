@@ -19,7 +19,6 @@ import speedy.model.database.TableAlias;
 import speedy.model.database.Tuple;
 import speedy.model.database.TupleOID;
 import speedy.model.database.mainmemory.datasource.IntegerOIDGenerator;
-import speedy.model.expressions.Expression;
 
 public class Project extends AbstractOperator {
 
