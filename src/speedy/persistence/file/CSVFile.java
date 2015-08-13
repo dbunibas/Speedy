@@ -7,6 +7,7 @@ public class CSVFile implements IImportFile {
     private String fileName;
     private Integer recordsToImport;
     private char separator = ';';
+    private Character quoteCharacter;
 
     public CSVFile(String fileName) {
         this.fileName = fileName;
@@ -34,6 +35,14 @@ public class CSVFile implements IImportFile {
 
     public void setSeparator(char separator) {
         this.separator = separator;
+    }
+
+    public Character getQuoteCharacter() {
+        return quoteCharacter;
+    }
+
+    public void setQuoteCharacter(Character quoteCharacter) {
+        this.quoteCharacter = quoteCharacter;
     }
 
 }

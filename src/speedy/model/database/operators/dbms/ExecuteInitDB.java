@@ -161,7 +161,9 @@ public class ExecuteInitDB {
         Reader in = null;
         try {
             in = new FileReader(csvFile);
-            CSVFormat format = CSVFormat.newFormat(fileToImport.getSeparator()).withHeader();
+            CSVFormat format = CSVFormat.newFormat(fileToImport.getSeparator())
+                    .withQuote(fileToImport.getQuoteCharacter())
+                    .withHeader();
             CSVParser parser = format.parse(in);
             List<Attribute> attributes = readCSVAttributes(tableName, parser.getHeaderMap().keySet());
             Iterable<CSVRecord> records = parser.getRecords();
