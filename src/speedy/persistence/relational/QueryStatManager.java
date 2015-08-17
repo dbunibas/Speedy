@@ -34,7 +34,7 @@ public class QueryStatManager {
 
     private void printStatisticsAfterSeconds() {
         if (!logger.isDebugEnabled()) return;
-        if(SEC < 0) return;
+        if (SEC < 0) return;
         Date nowDate = new Date();
         if (lastPrint == null || (nowDate.getTime() - lastPrint.getTime() > SEC * 1000)) {
             lastPrint = nowDate;
@@ -59,25 +59,51 @@ public class QueryStatManager {
         sb.append("--------------------------").append("\n");
         sb.append("Number of queries:\t").append(statistics.size()).append("\n");
         sb.append("Total execution time:\t").append(getTotalExecutionTime()).append("\n");
-        sb.append("Type of queries:").append("\n");
         int select = 0;
         int insert = 0;
         int update = 0;
         int delete = 0;
         int create = 0;
+        long selectTime = 0;
+        long insertTime = 0;
+        long updateTime = 0;
+        long deleteTime = 0;
+        long createTime = 0;
         for (QueryStat queryStat : statistics) {
             String query = queryStat.getQuery();
-            if (query.startsWith("SELECT")) select++;
-            if (query.startsWith("INSERT")) insert++;
-            if (query.startsWith("UPDATE")) update++;
-            if (query.startsWith("DELETE")) delete++;
-            if (query.startsWith("CREATE")) create++;
+            if (query.startsWith("SELECT")) {
+                select++;
+                selectTime += queryStat.getExecutionTime();
+            }
+            if (query.startsWith("INSERT")) {
+                insert++;
+                insertTime += queryStat.getExecutionTime();
+            }
+            if (query.startsWith("UPDATE")) {
+                update++;
+                updateTime += queryStat.getExecutionTime();
+            }
+            if (query.startsWith("DELETE")) {
+                delete++;
+                deleteTime += queryStat.getExecutionTime();
+            }
+            if (query.startsWith("CREATE")) {
+                create++;
+                createTime += queryStat.getExecutionTime();
+            }
         }
+        sb.append("Number of queries:").append("\n");
         sb.append("\t").append("Create").append("\t").append(create).append("\n");
         sb.append("\t").append("Select").append("\t").append(select).append("\n");
         sb.append("\t").append("Insert").append("\t").append(insert).append("\n");
         sb.append("\t").append("Update").append("\t").append(update).append("\n");
         sb.append("\t").append("Delete").append("\t").append(delete).append("\n");
+        sb.append("Time for queries:").append("\n");
+        sb.append("\t").append("Create").append("\t").append(createTime).append("\n");
+        sb.append("\t").append("Select").append("\t").append(selectTime).append("\n");
+        sb.append("\t").append("Insert").append("\t").append(insertTime).append("\n");
+        sb.append("\t").append("Update").append("\t").append(updateTime).append("\n");
+        sb.append("\t").append("Delete").append("\t").append(deleteTime).append("\n");
         sb.append("Read tuples:\t").append(readTuples).append("\n");
         if (TOP_K_QUERIES > 0) sb.append("Most expensive queries:").append("\n");
         for (int i = 0; i < Math.min(TOP_K_QUERIES, statistics.size()); i++) {
@@ -128,6 +154,13 @@ class QueryStat implements Comparable<QueryStat> {
     }
 
     public int compareTo(QueryStat o) {
-        return (int) (o.executionTime - executionTime);
+        if (this.executionTime > o.executionTime) {
+            return -1;
+        }
+        if (this.executionTime < o.executionTime) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 }

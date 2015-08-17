@@ -19,10 +19,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.model.algebra.operators.IBatchInsert;
 import speedy.model.algebra.operators.ICreateTable;
+import speedy.model.algebra.operators.IDelete;
 import speedy.model.algebra.operators.mainmemory.MainMemoryBatchInsert;
 import speedy.model.algebra.operators.mainmemory.MainMemoryCreateTable;
+import speedy.model.algebra.operators.mainmemory.MainMemoryDelete;
 import speedy.model.algebra.operators.sql.SQLBatchInsert;
 import speedy.model.algebra.operators.sql.SQLCreateTable;
+import speedy.model.algebra.operators.sql.SQLDelete;
 import speedy.model.database.IDatabase;
 import speedy.model.database.mainmemory.MainMemoryDB;
 
@@ -48,6 +51,9 @@ public class OperatorFactory {
     //
     private ICreateTable mainMemoryTableCreator = new MainMemoryCreateTable();
     private ICreateTable sqlTableCreator = new SQLCreateTable();
+    //
+    private IDelete mainMemoryDeleteOperator = new MainMemoryDelete();
+    private IDelete sqlDeleteOperator = new SQLDelete();
     //
     private IBatchInsert mainMemoryBatchInsertOperator = new MainMemoryBatchInsert();
     private IBatchInsert sqlBatchInsertOperator  = new SQLBatchInsert();
@@ -92,6 +98,13 @@ public class OperatorFactory {
             return mainMemoryInsertOperator;
         }
         return sqlInsertOperator;
+    }
+
+    public IDelete getDeleteOperator(IDatabase database) {
+        if (this.isMainMemory(database)) {
+            return mainMemoryDeleteOperator;
+        }
+        return sqlDeleteOperator;
     }
 
     public IBatchInsert getSingletonBatchInsertOperator(IDatabase database) {

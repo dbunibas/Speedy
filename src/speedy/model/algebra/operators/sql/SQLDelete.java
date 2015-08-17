@@ -21,7 +21,11 @@ public class SQLDelete implements IDelete {
     public boolean execute(String tableName, IAlgebraOperator operator, IDatabase source, IDatabase target) {
         StringBuilder deleteQuery = new StringBuilder();
         deleteQuery.append("DELETE FROM ");
-        deleteQuery.append(getScanQuery(operator, source, target));
+        if (operator == null) {
+            deleteQuery.append(tableAliasToSQL(new TableAlias(tableName), source, target));
+        } else {
+            deleteQuery.append(getScanQuery(operator, source, target));
+        }
         deleteQuery.append(getSelectQuery(operator));
         deleteQuery.append(";");
         if (logger.isDebugEnabled()) logger.debug("Delete query:\n" + deleteQuery.toString());
@@ -40,6 +44,9 @@ public class SQLDelete implements IDelete {
     }
 
     private String getSelectQuery(IAlgebraOperator operator) {
+        if (operator == null) {
+            return "";
+        }
         if (operator instanceof Select) {
             StringBuilder result = new StringBuilder();
             result.append(" WHERE ");
