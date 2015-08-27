@@ -808,7 +808,7 @@ public class AlgebraTreeToSQL {
                 aggregateAttribute = DBMSUtility.attributeRefToSQLDot(aggregateFunction.getAttributeRef());
             }
             if (aggregateFunction instanceof ValueAggregateFunction) {
-                return aggregateAttribute;
+                return aggregateAttribute+ " as " + DBMSUtility.attributeRefToAliasSQL(newAttribute);
             }
             if (aggregateFunction instanceof MaxAggregateFunction) {
                 return "max(" + aggregateAttribute + ") as " + DBMSUtility.attributeRefToAliasSQL(newAttribute);
