@@ -13,9 +13,9 @@ public class Offset extends AbstractOperator {
 
     private static Logger logger = LoggerFactory.getLogger(Offset.class);
 
-    private int offset;
+    private long offset;
 
-    public Offset(int size) {
+    public Offset(long size) {
         this.offset = size;
     }
 
@@ -23,7 +23,7 @@ public class Offset extends AbstractOperator {
         return "OFFSET " + offset;
     }
 
-    public int getOffset() {
+    public long getOffset() {
         return offset;
     }
 
@@ -45,7 +45,7 @@ class OffsetTupleIterator implements ITupleIterator {
 
     private ITupleIterator tupleIterator;
 
-    public OffsetTupleIterator(ITupleIterator tupleIterator, int offset) {
+    public OffsetTupleIterator(ITupleIterator tupleIterator, long offset) {
         this.tupleIterator = tupleIterator;
         for (int i = 0; i < offset; i++) {
             if (tupleIterator.hasNext()) {

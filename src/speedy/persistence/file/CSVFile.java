@@ -8,6 +8,7 @@ public class CSVFile implements IImportFile {
     private Integer recordsToImport;
     private char separator = ';';
     private Character quoteCharacter;
+    private boolean randomizeInput;
 
     public CSVFile(String fileName) {
         this.fileName = fileName;
@@ -43,6 +44,14 @@ public class CSVFile implements IImportFile {
 
     public void setQuoteCharacter(Character quoteCharacter) {
         this.quoteCharacter = quoteCharacter;
+    }
+
+    public boolean isRandomizeInput() {
+        return randomizeInput;
+    }
+
+    public void setRandomizeInput(boolean randomizeInput) {
+        this.randomizeInput = randomizeInput;
     }
 
 }

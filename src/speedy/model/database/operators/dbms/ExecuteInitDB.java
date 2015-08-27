@@ -13,6 +13,7 @@ import speedy.persistence.relational.AccessConfiguration;
 import speedy.persistence.relational.QueryManager;
 import speedy.persistence.xml.DAOXmlUtility;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -177,7 +178,7 @@ public class ExecuteInitDB {
                     tableCreator.createTable(tableName, attributes, database);
                 }
             }
-            insertCSVTuples(tableName, attributes, records, database, csvFile, fileToImport.getRecordsToImport());
+            insertCSVTuples(tableName, attributes, records, database, csvFile, fileToImport.getRecordsToImport(), fileToImport.isRandomizeInput());
         } catch (Exception ex) {
             logger.error(ex.getLocalizedMessage());
             ex.printStackTrace();
@@ -226,8 +227,11 @@ public class ExecuteInitDB {
         return attributes;
     }
 
-    private void insertCSVTuples(String tableName, List<Attribute> attributes, Iterable<CSVRecord> records, DBMSDB target, String csvFile, Integer recordsToImport) {
+    private void insertCSVTuples(String tableName, List<Attribute> attributes, Iterable<CSVRecord> records, DBMSDB target, String csvFile, Integer recordsToImport, boolean randomizeInput) {
         int importedRecords = 0;
+        if (randomizeInput) {
+            records = randomizeCSVRecords(records, recordsToImport);
+        }
         for (CSVRecord record : records) {
             TupleOID tupleOID = new TupleOID(IntegerOIDGenerator.getNextOID());
             Tuple tuple = new Tuple(tupleOID);
@@ -256,12 +260,24 @@ public class ExecuteInitDB {
         batchInsertOperator.flush(target);
     }
 
-    private String cleanValue(String string) {
-        String sqlValue = string;
-        sqlValue = sqlValue.replaceAll("'", "''");
-        return sqlValue;
+    private Iterable<CSVRecord> randomizeCSVRecords(Iterable<CSVRecord> records, Integer recordsToImport) {
+        List<CSVRecord> result = new ArrayList<CSVRecord>();
+        int importedRecords = 0;
+        for (CSVRecord record : records) {
+            result.add(record);
+            if (recordsToImport != null && importedRecords >= recordsToImport) {
+                break;
+            }
+        }
+        Collections.shuffle(result);
+        return result;
     }
 
+//    private String cleanValue(String string) {
+//        String sqlValue = string;
+//        sqlValue = sqlValue.replaceAll("'", "''");
+//        return sqlValue;
+//    }
     private String createSchemaScript(String schemaName) {
         if (schemaName.isEmpty()) {
             return "";

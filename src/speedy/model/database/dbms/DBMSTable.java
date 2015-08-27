@@ -60,7 +60,7 @@ public class DBMSTable implements ITable {
     }
 
     public ITupleIterator getTupleIterator() {
-        ResultSet resultSet = DBMSUtility.getTableResultSet(tableName, accessConfiguration);
+        ResultSet resultSet = DBMSUtility.getTableResultSetSortByOID(tableName, accessConfiguration);
         return new DBMSTupleIterator(resultSet, tableName);
     }
 

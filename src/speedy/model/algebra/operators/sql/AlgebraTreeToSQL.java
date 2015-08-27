@@ -38,6 +38,7 @@ import speedy.model.algebra.Scan;
 import speedy.model.algebra.Select;
 import speedy.model.algebra.SelectIn;
 import speedy.model.algebra.Union;
+import speedy.model.algebra.aggregatefunctions.StdDevAggregateFunction;
 import speedy.model.algebra.aggregatefunctions.SumAggregateFunction;
 import speedy.model.algebra.aggregatefunctions.ValueAggregateFunction;
 
@@ -57,6 +58,7 @@ public class AlgebraTreeToSQL {
 
         private int counter = 0;
         private int indentLevel = 0;
+        private boolean addOIDColumn = false;
         private SQLQuery result = new SQLQuery();
         private IDatabase source;
         private IDatabase target;
@@ -182,7 +184,21 @@ public class AlgebraTreeToSQL {
                 //Ignore Project of Project
                 child = child.getChildren().get(0);
             }
-            if (!(child instanceof Scan) && !(child instanceof Join) && !(child instanceof Select) && !(child instanceof CreateTableAs) && !(child instanceof RestoreOIDs) && !(child instanceof Difference)) {
+            if (child instanceof Limit) {
+                List<NestedOperator> innerOperators = new ArrayList<NestedOperator>();
+                for (AttributeRef nestedAttribute : getNestedAttributes(child)) {
+                    if (containsAlias(innerOperators, nestedAttribute.getTableAlias())) {
+                        continue;
+                    }
+                    NestedOperator nestedOperator = new NestedOperator(child, nestedAttribute.getTableAlias());
+                    innerOperators.add(nestedOperator);
+                }
+                createSQLSelectClause(child, innerOperators, true);
+                result.append(" FROM ");
+                generateNestedSelect(child);
+                return;
+            }
+            if (!(child instanceof Scan) && !(child instanceof Join) && !(child instanceof Select) && !(child instanceof CreateTableAs) && !(child instanceof RestoreOIDs) && !(child instanceof Difference) && !(child instanceof OrderBy)) {
                 throw new IllegalArgumentException("Project of a " + child.getName() + " is not supported");
             }
             child.accept(this);
@@ -314,7 +330,8 @@ public class AlgebraTreeToSQL {
             result.append("DROP TABLE IF EXISTS ").append(operator.getSchemaName()).append(".").append(tableName).append(";\n");
             result.append("CREATE TABLE ").append(operator.getSchemaName()).append(".").append(tableName);
             if (operator.isWithOIDs()) {
-                result.append(" WITH oids ");
+                addOIDColumn = true;
+//                result.append(" WITH oids ");
             }
             result.append(" AS (\n");
             IAlgebraOperator child = operator.getChildren().get(0);
@@ -372,6 +389,10 @@ public class AlgebraTreeToSQL {
             }
             this.currentProjectionAttribute = attributes;
             result.append("\n").append(this.indentString());
+            if (this.addOIDColumn) {
+                result.append("row_number() OVER () as oid, ");
+                this.addOIDColumn = false;
+            }
             result.append(attributesToSQL(attributes, aggregateFunctions, newAttributes, nestedSelect, useTableName));
             this.indentLevel--;
             result.append("\n").append(this.indentString());
@@ -569,6 +590,9 @@ public class AlgebraTreeToSQL {
             if (operator instanceof Project) {
                 attributes.addAll(operator.getAttributes(source, target));
             }
+            if (operator instanceof Limit) {
+                attributes.addAll(operator.getAttributes(source, target));
+            }
             if (operator instanceof Join) {
                 IAlgebraOperator leftChild = operator.getChildren().get(0);
                 attributes.addAll(getNestedAttributes(leftChild));
@@ -695,7 +719,7 @@ public class AlgebraTreeToSQL {
                     if (newAttributeRef == null) {
                         newAttributeRef = aggregateFunction.getAttributeRef();
                     }
-                    sb.append(aggregateFunctionToString(aggregateFunction, newAttributeRef, null));
+                    sb.append(aggregateFunctionToString(aggregateFunction, newAttributeRef, nestedSelect));
                     sb.append(", ");
                 }
                 SpeedyUtility.removeChars(", ".length(), sb);
@@ -777,20 +801,29 @@ public class AlgebraTreeToSQL {
         }
 
         private String aggregateFunctionToString(IAggregateFunction aggregateFunction, AttributeRef newAttribute, List<NestedOperator> nestedTables) {
+            String aggregateAttribute ;
+            if (containsNestedAttribute(nestedTables, aggregateFunction.getAttributeRef())) {
+                aggregateAttribute = DBMSUtility.attributeRefToAliasSQL(aggregateFunction.getAttributeRef());
+            } else {
+                aggregateAttribute = DBMSUtility.attributeRefToSQLDot(aggregateFunction.getAttributeRef());
+            }
             if (aggregateFunction instanceof ValueAggregateFunction) {
-                return attributeToSQL(aggregateFunction.getAttributeRef(), true, nestedTables, null);
+                return aggregateAttribute;
             }
             if (aggregateFunction instanceof MaxAggregateFunction) {
-                return "max(" + aggregateFunction.getAttributeRef() + ") as " + DBMSUtility.attributeRefToAliasSQL(newAttribute);
+                return "max(" + aggregateAttribute + ") as " + DBMSUtility.attributeRefToAliasSQL(newAttribute);
             }
             if (aggregateFunction instanceof MinAggregateFunction) {
-                return "min(" + aggregateFunction.getAttributeRef() + ") as " + DBMSUtility.attributeRefToAliasSQL(newAttribute);
+                return "min(" + aggregateAttribute + ") as " + DBMSUtility.attributeRefToAliasSQL(newAttribute);
             }
             if (aggregateFunction instanceof AvgAggregateFunction) {
-                return "avg(" + aggregateFunction.getAttributeRef() + ") as " + DBMSUtility.attributeRefToAliasSQL(newAttribute);
+                return "avg(" + aggregateAttribute + ") as " + DBMSUtility.attributeRefToAliasSQL(newAttribute);
+            }
+            if (aggregateFunction instanceof StdDevAggregateFunction) {
+                return "stddev(" + aggregateAttribute + ") as " + DBMSUtility.attributeRefToAliasSQL(newAttribute);
             }
             if (aggregateFunction instanceof SumAggregateFunction) {
-                return "sum(" + aggregateFunction.getAttributeRef() + ") as " + DBMSUtility.attributeRefToAliasSQL(newAttribute);
+                return "sum(" + aggregateAttribute + ") as " + DBMSUtility.attributeRefToAliasSQL(newAttribute);
             }
             if (aggregateFunction instanceof CountAggregateFunction) {
                 return "count(*) as " + DBMSUtility.attributeRefToAliasSQL(aggregateFunction.getAttributeRef());

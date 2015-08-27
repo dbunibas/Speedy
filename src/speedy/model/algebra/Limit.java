@@ -14,9 +14,9 @@ public class Limit extends AbstractOperator {
 
     private static Logger logger = LoggerFactory.getLogger(Limit.class);
 
-    private int size;
+    private long size;
 
-    public Limit(int size) {
+    public Limit(long size) {
         this.size = size;
     }
 
@@ -24,7 +24,7 @@ public class Limit extends AbstractOperator {
         return "LIMIT " + size;
     }
 
-    public int getSize() {
+    public long getSize() {
         return size;
     }
 
@@ -45,10 +45,10 @@ public class Limit extends AbstractOperator {
 class LimitTupleIterator implements ITupleIterator {
 
     private ITupleIterator tupleIterator;
-    private int read = 0;
-    private int limit;
+    private long read = 0;
+    private long limit;
 
-    public LimitTupleIterator(ITupleIterator tupleIterator, int limit) {
+    public LimitTupleIterator(ITupleIterator tupleIterator, long limit) {
         this.tupleIterator = tupleIterator;
         this.limit = limit;
     }

@@ -53,7 +53,7 @@ public class DBMSVirtualTable implements ITable {
     }
 
     public ITupleIterator getTupleIterator() {
-        ResultSet resultSet = DBMSUtility.getTableResultSet(tableName + suffix, accessConfiguration);
+        ResultSet resultSet = DBMSUtility.getTableResultSetSortByOID(tableName + suffix, accessConfiguration);
         return new DBMSTupleIterator(resultSet, tableName);
     }
 

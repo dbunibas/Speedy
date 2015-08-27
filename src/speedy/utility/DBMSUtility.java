@@ -249,9 +249,13 @@ public class DBMSUtility {
         return scriptRunner;
     }
 
-    public static ResultSet getTableResultSet(String tableName, AccessConfiguration accessConfiguration) {
-//        String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchema(accessConfiguration) + tableName;
+    public static ResultSet getTableResultSetSortByOID(String tableName, AccessConfiguration accessConfiguration) {
         String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchema(accessConfiguration) + tableName + " ORDER BY " + SpeedyConstants.OID;
+        return QueryManager.executeQuery(query, accessConfiguration);
+    }
+
+    public static ResultSet getTableResultSetUnsorted(String tableName, AccessConfiguration accessConfiguration) {
+        String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchema(accessConfiguration) + tableName;
         return QueryManager.executeQuery(query, accessConfiguration);
     }
 
@@ -360,7 +364,6 @@ public class DBMSUtility {
 //        workSchema.setSchemaName(SpeedyConstants.WORK_SCHEMA);
 //        return workSchema;
 //    }
-
     private static String getTempDBName(AccessConfiguration accessConfiguration, String tempDBName) {
         String uri = accessConfiguration.getUri();
         if (uri.lastIndexOf("/") != -1) {

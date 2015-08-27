@@ -57,7 +57,7 @@ public class SQLBatchInsert implements IBatchInsert {
             sb.append(insertTupleOperator.buildInsertScript((DBMSTable) table, tuple, null, database));
         }
         if (logger.isDebugEnabled()) logger.debug(tuplesForTable.size() + " tuple inserted in table " + tableName);
-        QueryManager.executeScript(sb.toString(), accessConfiguration, false, true, false, false);
+        QueryManager.executeScript(sb.toString(), accessConfiguration, true, true, false, false);
     }
 
 }

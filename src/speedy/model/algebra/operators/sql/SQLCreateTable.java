@@ -27,7 +27,7 @@ public class SQLCreateTable implements ICreateTable {
         SpeedyUtility.removeChars(",\n".length(), sb);
 //        sb.append(") with oids;");
         sb.append(");");
-        QueryManager.executeScript(sb.toString(), accessConfiguration, false, true, false, false);
+        QueryManager.executeScript(sb.toString(), accessConfiguration, true, true, false, false);
         DBMSTable table = new DBMSTable(tableName, accessConfiguration);
         ((DBMSDB) target).addTable(table);
     }

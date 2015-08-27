@@ -14,7 +14,7 @@ public class QueryStatManager {
     private static QueryStatManager singleton = new QueryStatManager();
     private List<QueryStat> statistics = new ArrayList<QueryStat>();
     private long readTuples = 0;
-    private int TOP_K_QUERIES = 5; //0 Disabled
+    private int TOP_K_QUERIES = 1000; //0 Disabled
     private int QUERY_PREVIEW_LENGHT = -1; //-1 to print the whole query
     private Date lastPrint;
     private int SEC = -1; //-1 disabled
@@ -99,11 +99,31 @@ public class QueryStatManager {
         sb.append("\t").append("Update").append("\t").append(update).append("\n");
         sb.append("\t").append("Delete").append("\t").append(delete).append("\n");
         sb.append("Time for queries:").append("\n");
-        sb.append("\t").append("Create").append("\t").append(createTime).append("\n");
-        sb.append("\t").append("Select").append("\t").append(selectTime).append("\n");
-        sb.append("\t").append("Insert").append("\t").append(insertTime).append("\n");
-        sb.append("\t").append("Update").append("\t").append(updateTime).append("\n");
-        sb.append("\t").append("Delete").append("\t").append(deleteTime).append("\n");
+        sb.append("\t").append("Create").append("\t").append(createTime);
+        if (create > 0) {
+            sb.append("\t(").append(((int) createTime / create)).append(" avg)");
+        }
+        sb.append("\n");
+        sb.append("\t").append("Select").append("\t").append(selectTime);
+        if (select > 0) {
+            sb.append("\t(").append(((int) selectTime / select)).append(" avg)");
+        }
+        sb.append("\n");
+        sb.append("\t").append("Insert").append("\t").append(insertTime);
+        if (insert > 0) {
+            sb.append("\t(").append(((int) insertTime / insert)).append(" avg)");
+        }
+        sb.append("\n");
+        sb.append("\t").append("Update").append("\t").append(updateTime);
+        if (update > 0) {
+            sb.append("\t(").append(((int) updateTime / update)).append(" avg)");
+        }
+        sb.append("\n");
+        sb.append("\t").append("Delete").append("\t").append(deleteTime);
+        if (delete > 0) {
+            sb.append("\t(").append(((int) deleteTime / delete)).append(" avg)");
+        }
+        sb.append("\n");
         sb.append("Read tuples:\t").append(readTuples).append("\n");
         if (TOP_K_QUERIES > 0) sb.append("Most expensive queries:").append("\n");
         for (int i = 0; i < Math.min(TOP_K_QUERIES, statistics.size()); i++) {

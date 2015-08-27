@@ -55,17 +55,18 @@ public class OrderBy extends AbstractOperator {
     }
 
     public List<AttributeRef> getAttributes(IDatabase source, IDatabase target) {
-        return this.attributes;
+//        return this.attributes;
+        return this.children.get(0).getAttributes(source, target);
     }
 
-    private boolean containsAttribute(Tuple tuple, AttributeRef attribute) {
-        for (Cell cell : tuple.getCells()) {
-            if (cell.getAttributeRef().equals(attribute)) {
-                return true;
-            }
-        }
-        return false;
-    }
+//    private boolean containsAttribute(Tuple tuple, AttributeRef attribute) {
+//        for (Cell cell : tuple.getCells()) {
+//            if (cell.getAttributeRef().equals(attribute)) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 }
 
 
