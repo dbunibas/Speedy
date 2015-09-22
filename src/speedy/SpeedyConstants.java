@@ -19,6 +19,12 @@ public class SpeedyConstants {
     public static String LLUN = "llun";
     public static String NULL_VALUE = "NULL";
 
+    public static final String SKOLEM_PREFIX = "_SK";
+    public static final String SKOLEM_SEPARATOR = "-";
+    
+    public static final String LLUN_PREFIX = "_L";
+    public static final String LLUN_SEPARATOR = "|";
+
     public static String STANDARD_QUERY_TYPE = "Standard Query";
     public static String SYMMETRIC_QUERY_TYPE = "Symmetric Query";
     public static String INEQUALITY_QUERY_TYPE = "Inequality Query";
@@ -59,12 +65,6 @@ public class SpeedyConstants {
 
     public static String OCCURRENCE_TABLE = "OccurrenceTable";
     public static String PROVENANCE_TABLE = "ProvenanceTable";
-
-    public static String GROUP_ID = "cellGroupId";
-    public static String CELL_OID = "cellOid";
-    public static String CELL_TABLE = "cellTable";
-    public static String CELL_ATTRIBUTE = "cellAttr";
-    public static String PROVENANCE_CELL_VALUE = "provCellValue";
 
     public static String VALUE_LABEL = "_@=";
 

@@ -7,11 +7,14 @@ public class ConstantValue implements IValue {
     private Object value;
 
     public ConstantValue(Object value) {
-        if(value==null){
+        if (value == null) {
             throw new IllegalArgumentException("Unable to set NULL as constant value");
         }
+        if (value.toString().startsWith(SpeedyConstants.LLUN_PREFIX)) {
+            throw new IllegalArgumentException("Trying to create a constant value in place of a llun value");
+        }
         this.value = value;
-    }    
+    }
 
     public Object getPrimitiveValue() {
         return this.value;

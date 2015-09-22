@@ -3,7 +3,7 @@ package speedy.model.database;
 import speedy.SpeedyConstants;
 import java.io.Serializable;
 
-public class Cell implements Serializable {
+public class Cell implements Serializable, Cloneable {
 
     private TupleOID tupleOid;
     private AttributeRef attributeRef;
@@ -49,6 +49,22 @@ public class Cell implements Serializable {
         return tupleOid;
     }
 
+    public void setTupleOid(TupleOID tupleOid) {
+        this.tupleOid = tupleOid;
+    }
+
+    public boolean isSource() {
+        return this.attributeRef.isSource();
+    }
+
+    public boolean isTarget() {
+        return !isSource();
+    }
+
+    public boolean isAuthoritative() {
+        return this.attributeRef.isAuthoritative();
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -57,18 +73,23 @@ public class Cell implements Serializable {
         return this.toString().equals(obj.toString());
     }
 
-    public boolean equalsModuloAlias(Cell other) {
-        return this.getTupleOID().equals(other.getTupleOID()) && this.getAttributeRef().toStringNoAlias().equals(other.getAttributeRef().toStringNoAlias());
-    }
-
     @Override
     public int hashCode() {
         return this.toString().hashCode();
     }
 
     @Override
+    public Cell clone() {
+        try {
+            return (Cell) super.clone();
+        } catch (CloneNotSupportedException ex) {
+            throw new IllegalArgumentException(ex.getLocalizedMessage());
+        }
+    }
+
+    @Override
     public String toString() {
-        return tupleOid + ":" + attributeRef.toStringNoAlias() + "-" + value;
+        return tupleOid + ":" + attributeRef + "-" + value + (isAuthoritative() ? " (Auth)" : "");
     }
 
     public String toShortString() {

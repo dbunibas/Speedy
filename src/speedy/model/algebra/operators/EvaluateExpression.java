@@ -11,6 +11,7 @@ import org.nfunk.jep.SymbolTable;
 import org.nfunk.jep.Variable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import speedy.model.database.IVariableDescription;
 
 public class EvaluateExpression {
 
@@ -66,12 +67,24 @@ public class EvaluateExpression {
     private Object findAttributeValue(Tuple tuple, Object description) {
         if (logger.isTraceEnabled()) logger.trace("Searching variable: " + description + " in tuple " + tuple);
         AttributeRef attributeRef = null;
-        if (description instanceof AttributeRef) {
+        if (description instanceof IVariableDescription) {
+            IVariableDescription variableDescription = (IVariableDescription) description;
+            attributeRef = findOccurrenceInTuple(variableDescription, tuple);
+        } else if (description instanceof AttributeRef) {
             attributeRef = (AttributeRef) description;
         } else {
             throw new IllegalArgumentException("Illegal variable description in expression: " + description + " of type " + description.getClass().getName());
         }
         return AlgebraUtility.getCellValue(tuple, attributeRef).toString();
+    }
+
+    private AttributeRef findOccurrenceInTuple(IVariableDescription variableDescription, Tuple tuple) {
+        for (AttributeRef attributeRef : variableDescription.getAttributeRefs()) {
+            if (AlgebraUtility.contains(tuple, attributeRef)) {
+                return attributeRef;
+            }
+        }
+        throw new IllegalArgumentException("Unable to find values for variable " + variableDescription.toString() + " in tuple " + tuple);
     }
 
 }

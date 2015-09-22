@@ -151,4 +151,8 @@ public class SQLRunQuery implements IRunQuery {
         }
         return result.toLowerCase();
     }
+
+    public boolean isUseTrigger() {
+        return true;
+    }
 }

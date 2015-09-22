@@ -129,6 +129,10 @@ public class Expression implements Cloneable {
         return this.jepExpression.toSQLString();
     }
 
+    public String toVariableDelimitedString() {
+        return this.jepExpression.toVariableDelimitedString();
+    }
+
     public String toLongString() {
         StringBuilder sb = new StringBuilder();
         sb.append(toString()).append("\n");

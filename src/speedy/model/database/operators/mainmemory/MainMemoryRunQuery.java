@@ -45,4 +45,7 @@ public class MainMemoryRunQuery implements IRunQuery {
         return result;
     }
 
+    public boolean isUseTrigger() {
+        return false;
+    }
 }

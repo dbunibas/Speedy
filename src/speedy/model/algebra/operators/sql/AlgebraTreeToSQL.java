@@ -327,14 +327,17 @@ public class AlgebraTreeToSQL {
             if (operator.getFather() != null) {
                 tableName += "_" + counter++;
             }
+            IAlgebraOperator child = operator.getChildren().get(0);
             result.append("DROP TABLE IF EXISTS ").append(operator.getSchemaName()).append(".").append(tableName).append(";\n");
             result.append("CREATE TABLE ").append(operator.getSchemaName()).append(".").append(tableName);
             if (operator.isWithOIDs()) {
-                addOIDColumn = true;
-//                result.append(" WITH oids ");
+                if (child instanceof Distinct) {
+                    result.append(" WITH oids ");
+                } else {
+                    addOIDColumn = true;
+                }
             }
             result.append(" AS (\n");
-            IAlgebraOperator child = operator.getChildren().get(0);
             this.indentLevel++;
             child.accept(this);
             this.indentLevel--;
@@ -801,14 +804,14 @@ public class AlgebraTreeToSQL {
         }
 
         private String aggregateFunctionToString(IAggregateFunction aggregateFunction, AttributeRef newAttribute, List<NestedOperator> nestedTables) {
-            String aggregateAttribute ;
+            String aggregateAttribute;
             if (containsNestedAttribute(nestedTables, aggregateFunction.getAttributeRef())) {
                 aggregateAttribute = DBMSUtility.attributeRefToAliasSQL(aggregateFunction.getAttributeRef());
             } else {
                 aggregateAttribute = DBMSUtility.attributeRefToSQLDot(aggregateFunction.getAttributeRef());
             }
             if (aggregateFunction instanceof ValueAggregateFunction) {
-                return aggregateAttribute+ " as " + DBMSUtility.attributeRefToAliasSQL(newAttribute);
+                return aggregateAttribute + " as " + DBMSUtility.attributeRefToAliasSQL(newAttribute);
             }
             if (aggregateFunction instanceof MaxAggregateFunction) {
                 return "max(" + aggregateAttribute + ") as " + DBMSUtility.attributeRefToAliasSQL(newAttribute);

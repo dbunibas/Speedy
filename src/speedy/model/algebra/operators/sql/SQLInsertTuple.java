@@ -9,10 +9,10 @@ import speedy.persistence.relational.QueryManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.model.database.Attribute;
-import speedy.model.database.AttributeRef;
 import speedy.model.database.Cell;
 import speedy.model.database.IDatabase;
 import speedy.model.database.ITable;
+import speedy.model.database.TableAlias;
 import speedy.model.database.Tuple;
 
 public class SQLInsertTuple implements IInsertTuple {
@@ -41,7 +41,7 @@ public class SQLInsertTuple implements IInsertTuple {
         for (Cell cell : tuple.getCells()) {
             String cellValue = cell.getValue().toString();
             cellValue = cellValue.replaceAll("'", "''");
-            String attributeType = getAttributeType(cell.getAttributeRef(), source, target);
+            String attributeType = getAttributeType(dbmsTable, cell.getAttributeRef().getName());
             if (attributeType.equals(Types.STRING)) {
                 insertQuery.append("'");
             }
@@ -56,14 +56,24 @@ public class SQLInsertTuple implements IInsertTuple {
         return insertQuery;
     }
 
-    private String getAttributeType(AttributeRef attributeRef, IDatabase source, IDatabase target) {
-        ITable table = SpeedyUtility.getTable(attributeRef, source, target);
+    private String getAttributeType(DBMSTable table, String attributeName) {
         for (Attribute attribute : table.getAttributes()) {
-            if (attribute.getName().equals(attributeRef.getName())) {
+            if (attribute.getName().equalsIgnoreCase(attributeName)) {
                 return attribute.getType();
             }
         }
-        //Original table doesn't contain the attribute (delta db attribute)
-        return Types.STRING;
+        throw new IllegalArgumentException("Unable to find attribute " + attributeName + " into table " + table);
     }
+
+//    private String getAttributeType(TableAlias tableAlias, String attributeName, IDatabase source, IDatabase target) {
+//        logger.error("Finding TableAlias " + tableAlias);
+//        ITable table = SpeedyUtility.getTable(tableAlias, source, target);
+//        for (Attribute attribute : table.getAttributes()) {
+//            if (attribute.getName().equals(attributeName)) {
+//                return attribute.getType();
+//            }
+//        }
+//        //Original table doesn't contain the attribute (delta db attribute)
+//        return Types.STRING;
+//    }
 }

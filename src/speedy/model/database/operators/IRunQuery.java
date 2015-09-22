@@ -10,5 +10,7 @@ public interface IRunQuery {
     ITupleIterator run(IAlgebraOperator query, IDatabase source, IDatabase target);
 
     ResultInfo getSize(IAlgebraOperator query, IDatabase source, IDatabase target);
+    
+    public boolean isUseTrigger();
 
 }

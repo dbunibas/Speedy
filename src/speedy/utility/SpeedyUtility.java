@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import org.apache.commons.io.FilenameUtils;
+import speedy.model.algebra.ProjectionAttribute;
+import speedy.model.database.LLUNValue;
 
 public class SpeedyUtility {
 
@@ -201,6 +203,8 @@ public class SpeedyUtility {
                 value = new NullValue(attributeValue);
             } else if (attributeValue instanceof NullValue) {
                 value = (NullValue) attributeValue;
+            } else if (attributeValue instanceof LLUNValue) {
+                value = (LLUNValue) attributeValue;
             } else {
                 value = new ConstantValue(attributeValue);
             }
@@ -294,15 +298,15 @@ public class SpeedyUtility {
     }
 
     public static Attribute getAttribute(AttributeRef attributeRef, IDatabase source, IDatabase target) {
-        return getTable(attributeRef, source, target).getAttribute(attributeRef.getName());
+        return getTable(attributeRef.getTableAlias(), source, target).getAttribute(attributeRef.getName());
     }
 
-    public static ITable getTable(AttributeRef attributeRef, IDatabase source, IDatabase target) {
+    public static ITable getTable(TableAlias tableAlias, IDatabase source, IDatabase target) {
         ITable table;
-        if (attributeRef.isSource()) {
-            table = source.getTable(attributeRef.getTableName());
+        if (tableAlias.isSource()) {
+            table = source.getTable(tableAlias.getTableName());
         } else {
-            table = target.getTable(attributeRef.getTableName());
+            table = target.getTable(tableAlias.getTableName());
         }
         return table;
     }
@@ -321,6 +325,14 @@ public class SpeedyUtility {
         return new CellRef(cell.getTupleOID(), attributeRefNoAlias);
     }
 
+    public static List<ProjectionAttribute> createProjectionAttributes(List<AttributeRef> attributes) {
+        List<ProjectionAttribute> projectionAttributes = new ArrayList<ProjectionAttribute>();
+        for (AttributeRef attribute : attributes) {
+            projectionAttributes.add(new ProjectionAttribute(attribute));
+        }
+        return projectionAttributes;
+    }
+
     // NUMERICAL METHOD
     public static boolean isNumeric(String type) {
         return (type.equals(SpeedyConstants.NUMERIC) || type.equals(Types.LONG) || type.equals(Types.DOUBLE) || type.equals(Types.INTEGER));
@@ -330,4 +342,5 @@ public class SpeedyUtility {
         double random = new Random().nextDouble();
         return random < probability;
     }
+
 }

@@ -29,11 +29,14 @@ import speedy.model.database.Cell;
 import speedy.model.database.ConstantValue;
 import speedy.model.database.ForeignKey;
 import speedy.model.database.IValue;
+import speedy.model.database.IVariableDescription;
 import speedy.model.database.Key;
+import speedy.model.database.LLUNValue;
 import speedy.model.database.NullValue;
 import speedy.model.database.TableAlias;
 import speedy.model.database.Tuple;
 import speedy.model.database.TupleOID;
+import speedy.model.database.operators.lazyloading.DBMSTupleLoader;
 
 public class DBMSUtility {
 
@@ -290,6 +293,22 @@ public class DBMSUtility {
         return createTuple(resultSet, null);
     }
 
+    public static DBMSTupleLoader createTupleLoader(ResultSet resultSet, String tableName, String virtualTableName, AccessConfiguration configuration) {
+        try {
+            ResultSetMetaData metadata = resultSet.getMetaData();
+            Object oidValue = findOIDColumn(metadata, resultSet);
+            if (metadata.getColumnCount() >= 1 && metadata.getColumnName(1).equals(SpeedyConstants.OID)) {
+                oidValue = resultSet.getObject(1);
+            }
+            TupleOID tupleOID = new TupleOID(oidValue);
+            DBMSTupleLoader tuple = new DBMSTupleLoader(tableName, virtualTableName, tupleOID, configuration);
+            return tuple;
+        } catch (Exception daoe) {
+            daoe.printStackTrace();
+            throw new DBMSException("Unable to read tuple.\n" + daoe.getLocalizedMessage());
+        }
+    }
+
     public static Tuple createTuple(ResultSet resultSet, String tableName) {
         try {
             ResultSetMetaData metadata = resultSet.getMetaData();
@@ -421,8 +440,12 @@ public class DBMSUtility {
 
     public static IValue convertDBMSValue(Object attributeValue) {
         IValue value;
-        if (attributeValue == null) {
+        if (attributeValue == null || attributeValue.toString().equalsIgnoreCase(SpeedyConstants.NULL)) {
             value = new NullValue(SpeedyConstants.NULL_VALUE);
+        } else if (attributeValue.toString().startsWith(SpeedyConstants.SKOLEM_PREFIX)) {
+            value = new NullValue(attributeValue);
+        } else if (attributeValue.toString().startsWith(SpeedyConstants.LLUN_PREFIX)) {
+            value = new LLUNValue(attributeValue);
         } else {
             value = new ConstantValue(attributeValue);
         }
@@ -508,6 +531,18 @@ public class DBMSUtility {
 //            return variable;
         }
         Object objectVariable = variableExpression.getDescription();
+        if (objectVariable instanceof IVariableDescription) {
+            IVariableDescription variableDescription = (IVariableDescription) variableExpression.getDescription();
+            AttributeRef attributeRef = variableDescription.getAttributeRefs().get(0);
+            String result;
+            if (useAlias) {
+                result = DBMSUtility.attributeRefToSQLDot(attributeRef);
+            } else {
+                result = DBMSUtility.attributeRefToSQL(attributeRef);
+            }
+            if (logger.isDebugEnabled()) logger.debug("Return " + result);
+            return result;
+        }
         if (objectVariable instanceof AttributeRef) {
             AttributeRef attributeRef = (AttributeRef) objectVariable;
             String result;
