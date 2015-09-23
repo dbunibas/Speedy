@@ -185,13 +185,14 @@ public class DBMSUtility {
 
     public static boolean isSchemaExists(AccessConfiguration accessConfiguration) {
         Connection connection = null;
+        ResultSet schemaResultSet = null;
         try {
             if (logger.isDebugEnabled()) logger.debug("Checking if schema exists: " + accessConfiguration);
-            connection = new SimpleDbConnectionFactory().getConnection(accessConfiguration);
+//            connection = new SimpleDbConnectionFactory().getConnection(accessConfiguration);
             connection = simpleDataSourceDB.getConnection(accessConfiguration);
 //            connection = QueryManager.getConnection(accessConfiguration);
             DatabaseMetaData databaseMetaData = connection.getMetaData();
-            ResultSet schemaResultSet = databaseMetaData.getSchemas();
+            schemaResultSet = databaseMetaData.getSchemas();
             while (schemaResultSet.next()) {
                 String schemaName = schemaResultSet.getString("TABLE_SCHEM");
                 if (schemaName.equals(accessConfiguration.getSchemaName())) {
@@ -200,6 +201,7 @@ public class DBMSUtility {
             }
         } catch (Exception daoe) {
         } finally {
+            QueryManager.closeResultSet(schemaResultSet);
             QueryManager.closeConnection(connection);
         }
         return false;
