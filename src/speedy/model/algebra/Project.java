@@ -100,18 +100,18 @@ public class Project extends AbstractOperator {
         return tuple;
     }
 
-    protected void sortTupleAttributes(Tuple tuple, List<ProjectionAttribute> peojectionAttributes) {
+    protected void sortTupleAttributes(Tuple tuple, List<ProjectionAttribute> projectionAttributes) {
         List<Cell> sortedCells = new ArrayList<Cell>();
         for (Cell cell : tuple.getCells()) {
             if (cell.getAttribute().equalsIgnoreCase(SpeedyConstants.OID)) {
                 SpeedyUtility.addIfNotContained(sortedCells, cell);
             }
         }
-        for (ProjectionAttribute projectionAttribute : peojectionAttributes) {
+        for (ProjectionAttribute projectionAttribute : projectionAttributes) {
             SpeedyUtility.addIfNotContained(sortedCells, tuple.getCell(projectionAttribute.getAttributeRef()));
         }
         if (tuple.getCells().size() != sortedCells.size()) {
-            throw new IllegalArgumentException("Tuples after sorting have differents cells:\n" + tuple + "\n" + sortedCells);
+            throw new IllegalArgumentException("Tuples after sorting have differents cells:\n Tuple cells:" + tuple.getCells() + "\n Sorted cells:" + sortedCells + "\n Projection Attributes: " + this.attributes);
         }
         tuple.setCells(sortedCells);
     }
@@ -172,8 +172,8 @@ public class Project extends AbstractOperator {
         return true;
     }
 
-    protected boolean isToProject(AttributeRef attributeRef, List<ProjectionAttribute> peojectionAttributes) {
-        for (ProjectionAttribute attribute : peojectionAttributes) {
+    protected boolean isToProject(AttributeRef attributeRef, List<ProjectionAttribute> projectionAttributes) {
+        for (ProjectionAttribute attribute : projectionAttributes) {
             if (attribute.getAttributeRef().equals(attributeRef)) {
                 return true;
             }
