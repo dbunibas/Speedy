@@ -13,7 +13,10 @@ import speedy.model.database.mainmemory.datasource.INode;
 import speedy.model.database.mainmemory.datasource.operators.CalculateSize;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import speedy.model.database.operators.lazyloading.ITupleLoader;
+import speedy.model.database.operators.lazyloading.MainMemoryTupleLoaderIterator;
 
 public class MainMemoryTable implements ITable {
 
@@ -71,6 +74,10 @@ public class MainMemoryTable implements ITable {
 
     public ITupleIterator getTupleIterator() {
         return new MainMemoryTupleIterator(this);
+    }
+
+    public Iterator<ITupleLoader> getTupleLoaderIterator() {
+        return new MainMemoryTupleLoaderIterator(getTupleIterator());
     }
 
     public String printSchema(String indent) {

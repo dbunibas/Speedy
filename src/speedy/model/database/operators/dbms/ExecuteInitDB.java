@@ -221,7 +221,7 @@ public class ExecuteInitDB {
                 attributeType = Types.DATE;
                 attributeName = attributeName.substring(0, attributeName.length() - dateSuffix.length()).trim();
             }
-            Attribute attribute = new Attribute(tableName, attributeName, attributeType);
+            Attribute attribute = new Attribute(tableName.trim(), attributeName.trim(), attributeType);
             attributes.add(attribute);
         }
         return attributes;

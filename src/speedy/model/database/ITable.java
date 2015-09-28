@@ -1,7 +1,9 @@
 package speedy.model.database;
 
+import java.util.Iterator;
 import speedy.model.algebra.operators.ITupleIterator;
 import java.util.List;
+import speedy.model.database.operators.lazyloading.ITupleLoader;
 
 public interface ITable {
 
@@ -10,6 +12,8 @@ public interface ITable {
     public List<Attribute> getAttributes();
 
     public ITupleIterator getTupleIterator();
+    
+    public Iterator<ITupleLoader> getTupleLoaderIterator();
 
     public String printSchema(String indent);
 

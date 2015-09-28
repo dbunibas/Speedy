@@ -2,3 +2,5 @@ build
 nbproject/private
 nbproject.properties
 dist
+misc/resources/tpch-dbgen/part.csv
+misc/resources/tpch-dbgen/partsupp.csv

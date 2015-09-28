@@ -14,7 +14,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import speedy.model.database.operators.lazyloading.DBMSTupleLoaderIterator;
+import speedy.model.database.operators.lazyloading.ITupleLoader;
 import speedy.utility.SpeedyUtility;
 
 public class DBMSTable implements ITable {
@@ -39,10 +42,10 @@ public class DBMSTable implements ITable {
         }
         return attributes;
     }
-    
-    public Attribute getAttribute(String name){
+
+    public Attribute getAttribute(String name) {
         for (Attribute attribute : getAttributes()) {
-            if(attribute.getName().equals(name)){
+            if (attribute.getName().equals(name)) {
                 return attribute;
             }
         }
@@ -66,7 +69,7 @@ public class DBMSTable implements ITable {
 
     public long getSize() {
         if (size == null) {
-            String query = "SELECT count(*) as count FROM " +  DBMSUtility.getSchema(accessConfiguration) + tableName;
+            String query = "SELECT count(*) as count FROM " + DBMSUtility.getSchema(accessConfiguration) + tableName;
             ResultSet resultSet = null;
             try {
                 resultSet = QueryManager.executeQuery(query, accessConfiguration);
@@ -79,6 +82,11 @@ public class DBMSTable implements ITable {
             }
         }
         return size;
+    }
+
+    public Iterator<ITupleLoader> getTupleLoaderIterator() {
+        ResultSet resultSet = DBMSUtility.getTableOidsResultSet(tableName, accessConfiguration);
+        return new DBMSTupleLoaderIterator(resultSet, tableName, accessConfiguration);
     }
 
     public AccessConfiguration getAccessConfiguration() {

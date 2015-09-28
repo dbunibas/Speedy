@@ -62,7 +62,7 @@ public class SQLInsertTuple implements IInsertTuple {
                 return attribute.getType();
             }
         }
-        throw new IllegalArgumentException("Unable to find attribute " + attributeName + " into table " + table);
+        throw new IllegalArgumentException("Unable to find attribute " + attributeName + " into table " + table.printSchema(""));
     }
 
 //    private String getAttributeType(TableAlias tableAlias, String attributeName, IDatabase source, IDatabase target) {

@@ -14,7 +14,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import speedy.model.database.operators.lazyloading.DBMSTupleLoaderIterator;
+import speedy.model.database.operators.lazyloading.ITupleLoader;
 
 public class DBMSVirtualTable implements ITable {
 
@@ -65,6 +68,11 @@ public class DBMSVirtualTable implements ITable {
 
     public String getPaginationQuery(int offset, int limit) {
         return DBMSUtility.createTablePaginationQuery(tableName + suffix, accessConfiguration, offset, limit);
+    }
+
+    public Iterator<ITupleLoader> getTupleLoaderIterator() {
+        ResultSet resultSet = DBMSUtility.getTableOidsResultSet(tableName + suffix, accessConfiguration);
+        return new DBMSTupleLoaderIterator(resultSet, tableName, tableName + suffix, accessConfiguration);
     }
 
     public String printSchema(String indent) {

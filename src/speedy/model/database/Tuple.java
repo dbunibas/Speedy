@@ -22,6 +22,11 @@ public class Tuple implements Cloneable {
     }
 
     public void addCell(Cell cell) {
+        for (Cell existingCell : cells) {
+            if(cell.getAttributeRef().equals(existingCell.getAttributeRef())){
+                throw new IllegalArgumentException("Tuple " + this.toStringWithOIDAndAlias() + " already contains a cell for attribute " + cell.getAttributeRef());
+            }
+        }
         this.cells.add(cell);
     }
 

@@ -174,6 +174,15 @@ public class SpeedyUtility {
         return result.toString();
     }
 
+    public static long getTupleIteratorSize(Iterator<Tuple> iterator) {
+        long counter = 0;
+        while (iterator.hasNext()) {
+            iterator.next();
+            counter++;
+        }
+        return counter;
+    }
+
     public static void removeChars(int charsToRemove, StringBuilder result) {
         if (charsToRemove > result.length()) {
             throw new IllegalArgumentException("Unable to remove " + charsToRemove + " chars from a string with " + result.length() + " char!");

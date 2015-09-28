@@ -14,7 +14,7 @@ public class QueryStatManager {
     private static QueryStatManager singleton = new QueryStatManager();
     private List<QueryStat> statistics = new ArrayList<QueryStat>();
     private long readTuples = 0;
-    private int TOP_K_QUERIES = 1000; //0 Disabled
+    private int TOP_K_QUERIES = 5; //0 Disabled
     private int QUERY_PREVIEW_LENGHT = -1; //-1 to print the whole query
     private Date lastPrint;
     private int SEC = -1; //-1 disabled

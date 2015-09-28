@@ -13,7 +13,10 @@ import speedy.model.database.Tuple;
 import speedy.persistence.Types;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import speedy.model.database.operators.lazyloading.ITupleLoader;
+import speedy.model.database.operators.lazyloading.MainMemoryTupleLoaderIterator;
 
 public class MainMemoryVirtualTable implements ITable {
 
@@ -84,6 +87,10 @@ public class MainMemoryVirtualTable implements ITable {
 
     public ITupleIterator getTupleIterator() {
         return query.execute(null, database);
+    }
+
+    public Iterator<ITupleLoader> getTupleLoaderIterator() {
+        return new MainMemoryTupleLoaderIterator(getTupleIterator());
     }
 
     public void addTuple(Tuple tuple) {
