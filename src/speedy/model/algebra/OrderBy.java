@@ -22,7 +22,7 @@ public class OrderBy extends AbstractOperator {
     private List<AttributeRef> attributes;
 
     public OrderBy(List<AttributeRef> attributes) {
-        if(attributes.isEmpty()){
+        if (attributes.isEmpty()) {
             throw new IllegalArgumentException("Unable to create an OrderBy without attributes");
         }
         this.attributes = attributes;
@@ -55,20 +55,9 @@ public class OrderBy extends AbstractOperator {
     }
 
     public List<AttributeRef> getAttributes(IDatabase source, IDatabase target) {
-//        return this.attributes;
-        return this.children.get(0).getAttributes(source, target);
+        return this.attributes;
     }
-
-//    private boolean containsAttribute(Tuple tuple, AttributeRef attribute) {
-//        for (Cell cell : tuple.getCells()) {
-//            if (cell.getAttributeRef().equals(attribute)) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
 }
-
 
 class TupleOrderByComparator implements Comparator<Tuple> {
 
@@ -77,13 +66,13 @@ class TupleOrderByComparator implements Comparator<Tuple> {
     public TupleOrderByComparator(List<AttributeRef> attributes) {
         this.attributes = attributes;
     }
-        
+
     public int compare(Tuple t1, Tuple t2) {
         String s1 = buildTupleString(t1);
         String s2 = buildTupleString(t2);
         return s1.compareTo(s2);
     }
-    
+
     private String buildTupleString(Tuple tuple) {
         StringBuilder result = new StringBuilder();
         result.append("[");

@@ -2,7 +2,6 @@ package speedy.utility;
 
 import speedy.SpeedyConstants;
 import speedy.model.algebra.operators.GenerateTupleFromTuplePair;
-import speedy.model.algebra.operators.StringComparator;
 import speedy.persistence.Types;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,6 +14,7 @@ import speedy.model.database.AttributeRef;
 import speedy.model.database.Cell;
 import speedy.model.database.IValue;
 import speedy.model.database.Tuple;
+import speedy.utility.comparator.StringComparator;
 
 @SuppressWarnings("unchecked")
 public class AlgebraUtility {

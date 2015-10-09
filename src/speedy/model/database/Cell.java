@@ -7,7 +7,7 @@ public class Cell implements Serializable, Cloneable {
 
     private TupleOID tupleOid;
     private AttributeRef attributeRef;
-    private IValue value;
+    protected IValue value;
 
     public Cell(TupleOID tupleOid, AttributeRef attributeRef, IValue value) {
         this.tupleOid = tupleOid;

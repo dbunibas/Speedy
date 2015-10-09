@@ -18,7 +18,6 @@ import speedy.model.database.mainmemory.datasource.nodes.SequenceNode;
 import speedy.model.database.mainmemory.datasource.nodes.SetNode;
 import speedy.model.database.mainmemory.datasource.nodes.TupleNode;
 import speedy.SpeedyConstants;
-import speedy.model.algebra.operators.StringComparator;
 import speedy.model.database.Attribute;
 import speedy.model.database.CellRef;
 import speedy.model.database.IDatabase;
@@ -36,6 +35,7 @@ import java.util.Set;
 import org.apache.commons.io.FilenameUtils;
 import speedy.model.algebra.ProjectionAttribute;
 import speedy.model.database.LLUNValue;
+import speedy.utility.comparator.StringComparator;
 
 public class SpeedyUtility {
 
