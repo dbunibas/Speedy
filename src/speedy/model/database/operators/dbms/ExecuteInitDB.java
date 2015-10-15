@@ -54,21 +54,22 @@ public class ExecuteInitDB {
         InitDBConfiguration configuration = db.getInitDBConfiguration();
         if (logger.isDebugEnabled()) logger.debug("Initializating DB with configuration " + configuration);
         AccessConfiguration accessConfiguration = db.getAccessConfiguration();
-        if (configuration.getInitDBScript() == null && configuration.hasFilesToImport() && !DBMSUtility.isSchemaExists(accessConfiguration)) {
+        if (configuration.getInitDBScript() == null && configuration.hasFilesToImport() && !DBMSUtility.isSchemaExists(accessConfiguration)
+                && DBMSUtility.supportsSchema(accessConfiguration)) {
             configuration.setInitDBScript(createSchemaScript(accessConfiguration.getSchemaName()));
         }
         if (configuration.getInitDBScript() != null) {
             QueryManager.executeScript(configuration.getInitDBScript(), accessConfiguration, false, true, false, false);
         }
         if (configuration.hasFilesToImport()) {
-            importXMLFiles(db);
+            importFiles(db);
         }
         if (configuration.getPostDBScript() != null) {
             QueryManager.executeScript(configuration.getPostDBScript(), accessConfiguration, false, true, false, false);
         }
     }
 
-    private void importXMLFiles(DBMSDB db) {
+    private void importFiles(DBMSDB db) {
         InitDBConfiguration configuration = db.getInitDBConfiguration();
         Map<String, List<Attribute>> tablesAdded = new HashMap<String, List<Attribute>>();
         for (String tableName : configuration.getTablesToImport()) {

@@ -92,7 +92,7 @@ public class DBMSVirtualTable implements ITable {
     }
 
     public String toShortString() {
-        return this.accessConfiguration.getSchemaName() + "." + this.tableName + suffix;
+        return DBMSUtility.getSchema(accessConfiguration) + this.tableName + suffix;
     }
 
     public String toString(String indent) {

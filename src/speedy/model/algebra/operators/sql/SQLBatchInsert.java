@@ -21,7 +21,8 @@ public class SQLBatchInsert implements IBatchInsert {
     private static Logger logger = LoggerFactory.getLogger(SQLBatchInsert.class);
     private Map<ITable, List<Tuple>> buffer = new HashMap<ITable, List<Tuple>>();
     private SQLInsertTuple insertTupleOperator = new SQLInsertTuple();
-    private int BUFFER_SIZE = 10000;
+//    private int BUFFER_SIZE = 10000;
+    private int BUFFER_SIZE = 1000;
 
     public void insert(ITable table, Tuple tuple, IDatabase database) {
         List<Tuple> tuplesForTable = getTuplesForTable(table);
@@ -54,7 +55,7 @@ public class SQLBatchInsert implements IBatchInsert {
         AccessConfiguration accessConfiguration = ((DBMSDB) database).getAccessConfiguration();
         StringBuilder sb = new StringBuilder();
         for (Tuple tuple : tuplesForTable) {
-            sb.append(insertTupleOperator.buildInsertScript((DBMSTable) table, tuple, null, database));
+            sb.append(insertTupleOperator.buildInsertScript((DBMSTable) table, tuple, null, database)).append("\n");
         }
         if (logger.isDebugEnabled()) logger.debug(tuplesForTable.size() + " tuple inserted in table " + tableName);
         QueryManager.executeScript(sb.toString(), accessConfiguration, true, true, false, false);

@@ -30,13 +30,14 @@ public class DBMSDB implements IDatabase {
         if (initialized) {
             return;
         }
+        initialized = true;
         if (!DBMSUtility.isDBExists(accessConfiguration)) {
             DBMSUtility.createDB(accessConfiguration);
         }
-        if (!initDBConfiguration.isEmpty() && DBMSUtility.isSchemaEmpty(accessConfiguration)) {
+        if (!initDBConfiguration.isEmpty()
+                && DBMSUtility.isSchemaEmpty(accessConfiguration)) {
             initDBExecutor.execute(this);
         }
-        initialized = true;
         loadTables();
     }
 

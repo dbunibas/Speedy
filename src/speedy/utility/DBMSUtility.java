@@ -42,8 +42,8 @@ public class DBMSUtility {
 
     private static Logger logger = LoggerFactory.getLogger(DBMSUtility.class);
 
-//    public static final String TEMP_DB_NAME = "testdb";
-    public static final String TEMP_DB_NAME = "template1";
+    public static final String TEMP_DB_NAME_POSTGRES = "template1";
+    public static final String TEMP_DB_NAME_MYSQL = "mysql";
     private static SimpleDbConnectionFactory simpleDataSourceDB = new SimpleDbConnectionFactory();
 
     public static List<String> loadTableNames(AccessConfiguration accessConfiguration) {
@@ -208,7 +208,7 @@ public class DBMSUtility {
     }
 
     public static boolean isSchemaEmpty(AccessConfiguration accessConfiguration) {
-        if (!isSchemaExists(accessConfiguration)) {
+        if (supportsSchema(accessConfiguration) && !isSchemaExists(accessConfiguration)) {
             return true;
         }
         List<String> tableNames = loadTableNames(accessConfiguration);
@@ -287,11 +287,15 @@ public class DBMSUtility {
     }
 
     public static ResultSet getTableResultSetForSchema(String tableName, AccessConfiguration accessConfiguration) {
-        String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchema(accessConfiguration) + tableName + " LIMIT 0";
+//        String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchema(accessConfiguration) + tableName + " LIMIT 0";
+        String query = "SELECT " + SpeedyConstants.OID + ", " + tableName + ".* FROM " + getSchema(accessConfiguration) + tableName + " LIMIT 0";
         return QueryManager.executeQuery(query, accessConfiguration);
     }
 
     public static String getSchema(AccessConfiguration accessConfiguration) {
+        if (!supportsSchema(accessConfiguration)) {
+            return "";
+        }
         String schemaName = accessConfiguration.getSchemaName();
         if (schemaName == null || schemaName.isEmpty()) {
             return "";
@@ -382,10 +386,27 @@ public class DBMSUtility {
     public static AccessConfiguration getTempAccessConfiguration(AccessConfiguration accessConfiguration) {
         AccessConfiguration tmpAccess = new AccessConfiguration();
         tmpAccess.setDriver(accessConfiguration.getDriver());
-        tmpAccess.setUri(getTempDBName(accessConfiguration, TEMP_DB_NAME));
+        tmpAccess.setUri(getTempDBName(accessConfiguration, getDefaultDBName(accessConfiguration.getDriver())));
         tmpAccess.setLogin(accessConfiguration.getLogin());
         tmpAccess.setPassword(accessConfiguration.getPassword());
         return tmpAccess;
+    }
+
+    private static String getDefaultDBName(String driver) {
+        if (driver.toLowerCase().contains("postgres")) {
+            return TEMP_DB_NAME_POSTGRES;
+        }
+        if (driver.toLowerCase().contains("mysql")) {
+            return TEMP_DB_NAME_MYSQL;
+        }
+        throw new IllegalArgumentException("Unable to return default database name for dbms " + driver);
+    }
+
+    public static boolean supportsSchema(AccessConfiguration accessConfiguration) {
+        if (accessConfiguration.getDriver().toLowerCase().contains("postgres")) {
+            return true;
+        }
+        return false;
     }
 
 //    public static AccessConfiguration getWorkAccessConfiguration(AccessConfiguration accessConfiguration) {

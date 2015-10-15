@@ -13,6 +13,7 @@ import speedy.persistence.relational.QueryManager;
 import speedy.utility.SpeedyUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import speedy.utility.DBMSUtility;
 
 public class SQLUpdateCell implements IUpdateCell {
     
@@ -24,7 +25,7 @@ public class SQLUpdateCell implements IUpdateCell {
         StringBuilder query = new StringBuilder();
         query.append("UPDATE ");
         AttributeRef attributeRef = cellRef.getAttributeRef();
-        query.append(((DBMSDB) database).getAccessConfiguration().getSchemaName()).append(".");
+        query.append(DBMSUtility.getSchema(((DBMSDB) database).getAccessConfiguration()));
         query.append(cellRef.getAttributeRef().getTableName());
         query.append(" SET ").append(attributeRef.getName()).append("=");
         Attribute attribute = SpeedyUtility.getAttribute(attributeRef, database);

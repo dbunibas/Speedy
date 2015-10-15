@@ -14,6 +14,7 @@ import speedy.model.database.IDatabase;
 import speedy.model.database.ITable;
 import speedy.model.database.TableAlias;
 import speedy.model.database.Tuple;
+import speedy.utility.DBMSUtility;
 
 public class SQLInsertTuple implements IInsertTuple {
 
@@ -30,7 +31,7 @@ public class SQLInsertTuple implements IInsertTuple {
         AccessConfiguration accessConfiguration = dbmsTable.getAccessConfiguration();
         StringBuilder insertQuery = new StringBuilder();
         insertQuery.append("INSERT INTO ");
-        insertQuery.append(accessConfiguration.getSchemaName()).append(".").append(dbmsTable.getName());
+        insertQuery.append(DBMSUtility.getSchema(accessConfiguration)).append(dbmsTable.getName());
         insertQuery.append(" (");
         for (Cell cell : tuple.getCells()) {
             insertQuery.append(cell.getAttribute()).append(", ");
@@ -40,7 +41,7 @@ public class SQLInsertTuple implements IInsertTuple {
         insertQuery.append(" VALUES (");
         for (Cell cell : tuple.getCells()) {
             String cellValue = cell.getValue().toString();
-            cellValue = cellValue.replaceAll("'", "''");
+            cellValue = cleanValue(cellValue);
             String attributeType = getAttributeType(dbmsTable, cell.getAttributeRef().getName());
             if (attributeType.equals(Types.INTEGER) && cellValue.isEmpty()) {
                 cellValue = "null";
@@ -57,6 +58,12 @@ public class SQLInsertTuple implements IInsertTuple {
         SpeedyUtility.removeChars(", ".length(), insertQuery);
         insertQuery.append(");");
         return insertQuery;
+    }
+
+    private String cleanValue(String cellValue) {
+        cellValue = cellValue.replaceAll("'", "''");
+        cellValue = cellValue.replaceAll("\\\\", "\\\\\\\\");
+        return cellValue;
     }
 
     private String getAttributeType(DBMSTable table, String attributeName) {

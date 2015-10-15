@@ -44,8 +44,8 @@ public class TestValucity {
     @Test
     public void runMultiple() {
         TestResults.resetResults();
-        executeQuery(Size.S_100K, Size.S_7K);
-//        executeQuery(Size.S_100K, Size.S_70K);
+//        executeQuery(Size.S_100K, Size.S_7K);
+        executeQuery(Size.S_100K, Size.S_70K);
 //        executeQuery(Size.S_500K, Size.S_7K);
 //        executeQuery(Size.S_500K, Size.S_70K);
 //        executeQuery(Size.S_1M, Size.S_7K);
@@ -55,11 +55,13 @@ public class TestValucity {
 
     private void executeQuery(Size sizeV, Size sizeL) {
         String sizeString = sizeV.toString() + "_" + sizeL.toString();
-        DBMSDB database = getDatabase(sizeV, sizeL);
+//        DBMSDB database = getDatabasePostgres(sizeV, sizeL);
+//        String createViewScript = loadScript("script/viste.sql");
+        DBMSDB database = getDatabaseMySQL(sizeV, sizeL);
+        String createViewScript = loadScript("script/viste_mysql.sql");
         database.initDBMS();
-        String createViewScript = getCreateViewScript();
         long createViewTime = new Date().getTime();
-        QueryManager.executeScript(createViewScript, database.getAccessConfiguration(), true, true, true, false);
+        QueryManager.executeScript(createViewScript, database.getAccessConfiguration(), true, true, false, false);
         long end = new Date().getTime();
         long executionTime = end - createViewTime;
         if (logger.isDebugEnabled()) logger.debug("Create views execution time: " + executionTime);
@@ -84,7 +86,7 @@ public class TestValucity {
         result.close();
     }
 
-    private DBMSDB getDatabase(Size sizeV, Size sizeL) {
+    private DBMSDB getDatabasePostgres(Size sizeV, Size sizeL) {
         DAODBMSDatabase daoDatabase = new DAODBMSDatabase();
         String driver = "org.postgresql.Driver";
         String uri = "jdbc:postgresql:speedy_valucity_" + sizeV.toString() + "v_" + sizeL.toString() + "l";
@@ -99,45 +101,37 @@ public class TestValucity {
         initDBConfiguration.addFileToImportForTable("luogo", new XMLFile(datasetPath + "luogo.xml"));
         initDBConfiguration.addFileToImportForTable("servizio", new XMLFile(datasetPath + "servizio.xml"));
         initDBConfiguration.addFileToImportForTable("valutazione", new XMLFile(datasetPath + "valutazione_" + suffix + ".xml"));
-        initDBConfiguration.setPostDBScript(loadCreateKeyFK());
+        initDBConfiguration.setPostDBScript(loadScript("script/create_key_fk_postgres.sql"));
         if (recreateDB) UtilityForTests.deleteDB(database.getAccessConfiguration());
-//        handleIndex(database);
         return database;
     }
 
-    private String getCreateViewScript() {
+    private DBMSDB getDatabaseMySQL(Size sizeV, Size sizeL) {
+        DAODBMSDatabase daoDatabase = new DAODBMSDatabase();
+        String driver = "com.mysql.jdbc.Driver";
+        String uri = "jdbc:mysql://localhost/speedy_valucity_" + sizeV.toString() + "v_" + sizeL.toString() + "l";
+        String schema = "public";
+        String login = "mysqluser";
+        String password = "mysqluser";
+        DBMSDB database = daoDatabase.loadDatabase(driver, uri, schema, login, password);
+        InitDBConfiguration initDBConfiguration = database.getInitDBConfiguration();
+        initDBConfiguration.setCreateTablesFromFiles(true);
+        String datasetPath = baseFolder + "datasets/";
+        String suffix = sizeV.toString() + "_" + sizeL.toString();
+        initDBConfiguration.addFileToImportForTable("luogo", new XMLFile(datasetPath + "luogo.xml"));
+        initDBConfiguration.addFileToImportForTable("servizio", new XMLFile(datasetPath + "servizio.xml"));
+        initDBConfiguration.addFileToImportForTable("valutazione", new XMLFile(datasetPath + "valutazione_" + suffix + ".xml"));
+        initDBConfiguration.setPostDBScript(loadScript("script/create_key_fk_mysql.sql"));
+        if (recreateDB) UtilityForTests.deleteDB(database.getAccessConfiguration());
+        return database;
+    }
+
+    private String loadScript(String fileName) {
         try {
-            return FileUtils.readFileToString(new File(baseFolder + "script/viste.sql"));
+            return FileUtils.readFileToString(new File(baseFolder + fileName));
         } catch (IOException ex) {
             Assert.fail("Unable to load script file " + ex.getLocalizedMessage());
         }
         return null;
     }
-
-    private String loadCreateKeyFK() {
-        try {
-            return FileUtils.readFileToString(new File(baseFolder + "script/create_key_fk.sql"));
-        } catch (IOException ex) {
-            Assert.fail("Unable to load script file " + ex.getLocalizedMessage());
-        }
-        return null;
-    }
-
-//    private void handleIndex(DBMSDB database) {
-//        StringBuilder createIndexQuery = new StringBuilder();
-//        createIndexQuery.append("DROP INDEX IF EXISTS \"target\".\"p_partkey_index\";");
-//        createIndexQuery.append("DROP INDEX IF EXISTS \"target\".\"ps_partkey_index\";");
-//        if (useIndex) {
-//            createIndexQuery.append("CREATE INDEX  \"p_partkey_index\" ON \"target\".\"part\" USING btree(p_partkey);");
-//            createIndexQuery.append("CREATE INDEX  \"ps_partkey_index\" ON \"target\".\"partsupp\" USING btree(ps_partkey);");
-//        }
-//        createIndexQuery.append("VACUUM ANALYZE \"target\".\"part\";");
-//        createIndexQuery.append("VACUUM ANALYZE  \"target\".\"partsupp\";");
-//        try {
-//            QueryManager.executeScript(createIndexQuery.toString(), database.getAccessConfiguration(), true, true, false, true);
-//        } catch (DBMSException sqle) {
-//            logger.warn("Unable to execute script " + sqle);
-//
-//        }
-//    }
 }
