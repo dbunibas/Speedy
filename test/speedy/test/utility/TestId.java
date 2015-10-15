@@ -5,6 +5,7 @@ import speedy.utility.Size;
 public class TestId implements Comparable<TestId> {
 
     private Size size;
+    private String sizeString;
     private String group;
 
     public TestId(Size size, String group) {
@@ -12,16 +13,25 @@ public class TestId implements Comparable<TestId> {
         this.group = group;
     }
 
+    public TestId(String sizeString, String group) {
+        this.sizeString = sizeString;
+        this.group = group;
+    }
+
     public int compareTo(TestId o) {
         if (this.group.equals(o.group)) {
-            return size.compareTo(o.size);
+            if (size == null) {
+                return sizeString.compareTo(o.sizeString);
+            } else {
+                return size.compareTo(o.size);
+            }
         }
         return group.compareTo(o.group);
     }
 
     @Override
     public String toString() {
-        return size + " [" + group + ']';
+        return (size == null ? sizeString : size) + " [" + group + ']';
     }
 
     @Override

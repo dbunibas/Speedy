@@ -41,6 +41,10 @@ public class TestResults {
         timeResults.put(new TestId(size, group), time);
     }
 
+    public static void addTimeResult(String size, String group, long time) {
+        timeResults.put(new TestId(size, group), time);
+    }
+
     public static void printResults(String testName) {
         String result = getResultString(testName);
         if (logger.isDebugEnabled()) logger.debug("\n" + result);

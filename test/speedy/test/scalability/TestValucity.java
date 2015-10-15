@@ -1,115 +1,143 @@
 package speedy.test.scalability;
 
+import java.io.File;
+import java.io.IOException;
+import java.sql.ResultSet;
 import java.util.Date;
+import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import speedy.OperatorFactory;
-import speedy.exceptions.DBMSException;
-import speedy.model.algebra.IAlgebraOperator;
-import speedy.model.algebra.Join;
-import speedy.model.algebra.Scan;
 import speedy.model.algebra.operators.ITupleIterator;
-import speedy.model.database.AttributeRef;
-import speedy.model.database.IDatabase;
-import speedy.model.database.TableAlias;
 import speedy.model.database.dbms.DBMSDB;
+import speedy.model.database.dbms.DBMSTupleIterator;
 import speedy.model.database.dbms.InitDBConfiguration;
-import speedy.model.database.operators.IRunQuery;
 import speedy.persistence.DAODBMSDatabase;
-import speedy.persistence.file.CSVFile;
+import speedy.persistence.file.XMLFile;
 import speedy.persistence.relational.QueryManager;
 import speedy.test.utility.TestResults;
 import speedy.test.utility.UtilityForTests;
 import speedy.utility.Size;
 import speedy.utility.SpeedyUtility;
 
-public class TestTPCHPart {
+public class TestValucity {
 
-    private static Logger logger = LoggerFactory.getLogger(TestTPCHPart.class);
+    private static Logger logger = LoggerFactory.getLogger(TestValucity.class);
 
-    private IRunQuery queryRunner;
+    private String baseFolder = "/Users/donatello/Dropbox-Informatica/Shared Folders/valucity/scenario/";
     private boolean recreateDB = false;
-    private boolean useIndex = false;
+    private String[] views = new String[]{
+        "vista_servizi",
+        "vista_date_valutazioni_attuali",
+        "vista_valutazioni",
+        "vista_luoghi",
+        "vista_dati_servizi",
+        "vista_dati_servizi_macro",
+        "vista_valutatori_servizio",
+        "vista_valutatori_servizio_macro",
+        "vista_punteggi_servizi",
+        "vista_punteggi_servizi_macro",
+        "vista_punteggi_massimi_servizi_macro"
+    };
 
     @Test
     public void runMultiple() {
         TestResults.resetResults();
-        useIndex = false;
-        executeQuery(Size.S_1K, "NO-INDEX");
-        executeQuery(Size.S_10K, "NO-INDEX");
-        executeQuery(Size.S_50K, "NO-INDEX");
-        executeQuery(Size.S_100K, "NO-INDEX");
-        executeQuery(Size.S_200K, "NO-INDEX");
-        useIndex = true;
-        executeQuery(Size.S_1K, "WITH-INDEX");
-        executeQuery(Size.S_10K, "WITH-INDEX");
-        executeQuery(Size.S_50K, "WITH-INDEX");
-        executeQuery(Size.S_100K, "WITH-INDEX");
-        executeQuery(Size.S_200K, "WITH-INDEX");
-        TestResults.printResults("Test_TPCHPart_Join");
+        executeQuery(Size.S_100K, Size.S_7K);
+//        executeQuery(Size.S_100K, Size.S_70K);
+//        executeQuery(Size.S_500K, Size.S_7K);
+//        executeQuery(Size.S_500K, Size.S_70K);
+//        executeQuery(Size.S_1M, Size.S_7K);
+//        executeQuery(Size.S_1M, Size.S_70K);
+        TestResults.printResults("Test_Valucity");
     }
 
-    private void executeQuery(Size size, String group) {
-        IDatabase database = getDatabase(size);
-        IAlgebraOperator operator = getQuery();
-        long start = new Date().getTime();
-        ITupleIterator result = queryRunner.run(operator, null, database);
+    private void executeQuery(Size sizeV, Size sizeL) {
+        String sizeString = sizeV.toString() + "_" + sizeL.toString();
+        DBMSDB database = getDatabase(sizeV, sizeL);
+        database.initDBMS();
+        String createViewScript = getCreateViewScript();
+        long createViewTime = new Date().getTime();
+        QueryManager.executeScript(createViewScript, database.getAccessConfiguration(), true, true, true, false);
+        long end = new Date().getTime();
+        long executionTime = end - createViewTime;
+        if (logger.isDebugEnabled()) logger.debug("Create views execution time: " + executionTime);
+        TestResults.addTimeResult(sizeString, "CreateView", executionTime);
+        for (String view : views) {
+            runView(view, sizeString, database);
+        }
+        TestResults.printStats("\n****  Size: " + sizeString + "  ****");
+    }
+
+    private void runView(String view, String sizeString, DBMSDB database) {
+        long createViewTime = new Date().getTime();
+        ResultSet resultSet = QueryManager.executeQuery("SELECT * FROM " + view, database.getAccessConfiguration());
+        ITupleIterator result = new DBMSTupleIterator(resultSet, view);
         long resultSize = SpeedyUtility.getTupleIteratorSize(result);
         if (logger.isDebugEnabled()) logger.debug("Result size: " + resultSize);
-        result.close();
         long end = new Date().getTime();
-        long executionTime = end - start;
-        if (logger.isDebugEnabled()) logger.debug("Test execution time: " + executionTime);
-        TestResults.addTimeResult(size, group, executionTime);
-        TestResults.printStats("\n****  Size: " + size.toString() + "  ****");
+        long executionTime = end - createViewTime;
+        if (logger.isDebugEnabled()) logger.debug("View " + view + " execution time: " + executionTime);
+        if (logger.isDebugEnabled()) logger.debug("View " + view + " size: " + resultSize);
+        TestResults.addTimeResult(sizeString, "View " + view, executionTime);
+        result.close();
     }
 
-    private IAlgebraOperator getQuery() {
-        TableAlias tableAliasPart = new TableAlias("part");
-        TableAlias tableAliasPartSupp = new TableAlias("partsupp");
-        Scan scanPart = new Scan(tableAliasPart);
-        Scan scanPartSupp = new Scan(tableAliasPartSupp);
-        Join join = new Join(new AttributeRef(tableAliasPart, "p_partkey"), new AttributeRef(tableAliasPartSupp, "ps_partkey"));
-        join.addChild(scanPart);
-        join.addChild(scanPartSupp);
-        return join;
-    }
-
-    private IDatabase getDatabase(Size size) {
+    private DBMSDB getDatabase(Size sizeV, Size sizeL) {
         DAODBMSDatabase daoDatabase = new DAODBMSDatabase();
         String driver = "org.postgresql.Driver";
-        String uri = "jdbc:postgresql:speedy_tpch_dbgen_" + size.toString();
-        String schema = "target";
+        String uri = "jdbc:postgresql:speedy_valucity_" + sizeV.toString() + "v_" + sizeL.toString() + "l";
+        String schema = "public";
         String login = "pguser";
         String password = "pguser";
         DBMSDB database = daoDatabase.loadDatabase(driver, uri, schema, login, password);
-        String baseFolder = UtilityForTests.getAbsoluteFileName("/resources/tpch-dbgen/");
         InitDBConfiguration initDBConfiguration = database.getInitDBConfiguration();
         initDBConfiguration.setCreateTablesFromFiles(true);
-        initDBConfiguration.addFileToImportForTable("part", new CSVFile(baseFolder + "part.csv", '|', size.getSize()));
-        initDBConfiguration.addFileToImportForTable("partsupp", new CSVFile(baseFolder + "partsupp.csv", '|', size.getSize()));
-        queryRunner = OperatorFactory.getInstance().getQueryRunner(database);
+        String datasetPath = baseFolder + "datasets/";
+        String suffix = sizeV.toString() + "_" + sizeL.toString();
+        initDBConfiguration.addFileToImportForTable("luogo", new XMLFile(datasetPath + "luogo.xml"));
+        initDBConfiguration.addFileToImportForTable("servizio", new XMLFile(datasetPath + "servizio.xml"));
+        initDBConfiguration.addFileToImportForTable("valutazione", new XMLFile(datasetPath + "valutazione_" + suffix + ".xml"));
+        initDBConfiguration.setPostDBScript(loadCreateKeyFK());
         if (recreateDB) UtilityForTests.deleteDB(database.getAccessConfiguration());
-        handleIndex(database);
+//        handleIndex(database);
         return database;
     }
 
-    private void handleIndex(DBMSDB database) {
-        StringBuilder createIndexQuery = new StringBuilder();
-        createIndexQuery.append("DROP INDEX IF EXISTS \"target\".\"p_partkey_index\";");
-        createIndexQuery.append("DROP INDEX IF EXISTS \"target\".\"ps_partkey_index\";");
-        if (useIndex) {
-            createIndexQuery.append("CREATE INDEX  \"p_partkey_index\" ON \"target\".\"part\" USING btree(p_partkey);");
-            createIndexQuery.append("CREATE INDEX  \"ps_partkey_index\" ON \"target\".\"partsupp\" USING btree(ps_partkey);");
-        }
-        createIndexQuery.append("VACUUM ANALYZE \"target\".\"part\";");
-        createIndexQuery.append("VACUUM ANALYZE  \"target\".\"partsupp\";");
+    private String getCreateViewScript() {
         try {
-            QueryManager.executeScript(createIndexQuery.toString(), database.getAccessConfiguration(), true, true, false, true);
-        } catch (DBMSException sqle) {
-            logger.warn("Unable to execute script " + sqle);
-
+            return FileUtils.readFileToString(new File(baseFolder + "script/viste.sql"));
+        } catch (IOException ex) {
+            Assert.fail("Unable to load script file " + ex.getLocalizedMessage());
         }
+        return null;
     }
+
+    private String loadCreateKeyFK() {
+        try {
+            return FileUtils.readFileToString(new File(baseFolder + "script/create_key_fk.sql"));
+        } catch (IOException ex) {
+            Assert.fail("Unable to load script file " + ex.getLocalizedMessage());
+        }
+        return null;
+    }
+
+//    private void handleIndex(DBMSDB database) {
+//        StringBuilder createIndexQuery = new StringBuilder();
+//        createIndexQuery.append("DROP INDEX IF EXISTS \"target\".\"p_partkey_index\";");
+//        createIndexQuery.append("DROP INDEX IF EXISTS \"target\".\"ps_partkey_index\";");
+//        if (useIndex) {
+//            createIndexQuery.append("CREATE INDEX  \"p_partkey_index\" ON \"target\".\"part\" USING btree(p_partkey);");
+//            createIndexQuery.append("CREATE INDEX  \"ps_partkey_index\" ON \"target\".\"partsupp\" USING btree(ps_partkey);");
+//        }
+//        createIndexQuery.append("VACUUM ANALYZE \"target\".\"part\";");
+//        createIndexQuery.append("VACUUM ANALYZE  \"target\".\"partsupp\";");
+//        try {
+//            QueryManager.executeScript(createIndexQuery.toString(), database.getAccessConfiguration(), true, true, false, true);
+//        } catch (DBMSException sqle) {
+//            logger.warn("Unable to execute script " + sqle);
+//
+//        }
+//    }
 }
