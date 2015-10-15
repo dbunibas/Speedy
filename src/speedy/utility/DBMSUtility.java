@@ -207,6 +207,14 @@ public class DBMSUtility {
         return false;
     }
 
+    public static boolean isSchemaEmpty(AccessConfiguration accessConfiguration) {
+        if (!isSchemaExists(accessConfiguration)) {
+            return true;
+        }
+        List<String> tableNames = loadTableNames(accessConfiguration);
+        return tableNames.isEmpty();
+    }
+
     public static void createDB(AccessConfiguration accessConfiguration) {
         AccessConfiguration tempAccessConfiguration = getTempAccessConfiguration(accessConfiguration);
         Connection connection = null;

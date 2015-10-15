@@ -10,6 +10,7 @@ import speedy.persistence.file.IImportFile;
 public class InitDBConfiguration {
 
     private String initDBScript;
+    private String postDBScript;
     private Map<String, List<IImportFile>> filesToImport = new HashMap<String, List<IImportFile>>();
     private boolean createTablesFromFiles = true;
 
@@ -19,6 +20,14 @@ public class InitDBConfiguration {
 
     public void setInitDBScript(String initDBScript) {
         this.initDBScript = initDBScript;
+    }
+
+    public String getPostDBScript() {
+        return postDBScript;
+    }
+
+    public void setPostDBScript(String postDBScript) {
+        this.postDBScript = postDBScript;
     }
 
     public void addFileToImportForTable(String tableName, IImportFile fileToImport) {

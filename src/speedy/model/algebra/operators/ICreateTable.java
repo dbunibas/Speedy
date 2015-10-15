@@ -7,4 +7,5 @@ import speedy.model.database.IDatabase;
 public interface ICreateTable {
 
     public void createTable(String tableName, List<Attribute> attributes, IDatabase target);
+
 }

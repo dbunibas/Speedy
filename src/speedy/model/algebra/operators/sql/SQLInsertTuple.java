@@ -42,11 +42,14 @@ public class SQLInsertTuple implements IInsertTuple {
             String cellValue = cell.getValue().toString();
             cellValue = cellValue.replaceAll("'", "''");
             String attributeType = getAttributeType(dbmsTable, cell.getAttributeRef().getName());
-            if (attributeType.equals(Types.STRING)) {
+            if (attributeType.equals(Types.INTEGER) && cellValue.isEmpty()) {
+                cellValue = "null";
+            }
+            if (attributeType.equals(Types.STRING) || attributeType.equals(Types.DATE) || attributeType.equals(Types.DATETIME)) {
                 insertQuery.append("'");
             }
             insertQuery.append(cellValue);
-            if (attributeType.equals(Types.STRING)) {
+            if (attributeType.equals(Types.STRING) || attributeType.equals(Types.DATE) || attributeType.equals(Types.DATETIME)) {
                 insertQuery.append("'");
             }
             insertQuery.append(", ");

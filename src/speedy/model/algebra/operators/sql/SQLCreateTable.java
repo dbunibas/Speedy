@@ -18,7 +18,9 @@ public class SQLCreateTable implements ICreateTable {
         AccessConfiguration accessConfiguration = ((DBMSDB) target).getAccessConfiguration();
         StringBuilder sb = new StringBuilder();
         sb.append("create table ").append(DBMSUtility.getSchema(accessConfiguration)).append(tableName).append("(\n");
-        sb.append(SpeedyConstants.INDENT).append("oid serial,\n");
+        if (!containsOID(attributes)) {
+            sb.append(SpeedyConstants.INDENT).append(SpeedyConstants.OID).append(" serial,\n");
+        }
         for (Attribute attribute : attributes) {
             String attributeName = attribute.getName();
             String attributeType = attribute.getType();
@@ -30,5 +32,14 @@ public class SQLCreateTable implements ICreateTable {
         QueryManager.executeScript(sb.toString(), accessConfiguration, true, true, false, false);
         DBMSTable table = new DBMSTable(tableName, accessConfiguration);
         ((DBMSDB) target).addTable(table);
+    }
+
+    private boolean containsOID(List<Attribute> attributes) {
+        for (Attribute attribute : attributes) {
+            if (attribute.getName().equalsIgnoreCase(SpeedyConstants.OID)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

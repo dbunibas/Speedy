@@ -26,14 +26,14 @@ public class DBMSDB implements IDatabase {
         this.accessConfiguration = accessConfiguration;
     }
 
-    private void initDBMS() {
+    public void initDBMS() {
         if (initialized) {
             return;
         }
         if (!DBMSUtility.isDBExists(accessConfiguration)) {
             DBMSUtility.createDB(accessConfiguration);
         }
-        if (!initDBConfiguration.isEmpty() && !DBMSUtility.isSchemaExists(accessConfiguration)) {
+        if (!initDBConfiguration.isEmpty() && DBMSUtility.isSchemaEmpty(accessConfiguration)) {
             initDBExecutor.execute(this);
         }
         initialized = true;

@@ -40,6 +40,7 @@ import speedy.model.database.mainmemory.datasource.IntegerOIDGenerator;
 import speedy.persistence.file.CSVFile;
 import speedy.persistence.file.IImportFile;
 import speedy.persistence.file.XMLFile;
+import speedy.utility.DBMSUtility;
 
 public class ExecuteInitDB {
 
@@ -53,7 +54,7 @@ public class ExecuteInitDB {
         InitDBConfiguration configuration = db.getInitDBConfiguration();
         if (logger.isDebugEnabled()) logger.debug("Initializating DB with configuration " + configuration);
         AccessConfiguration accessConfiguration = db.getAccessConfiguration();
-        if (configuration.getInitDBScript() == null && configuration.hasFilesToImport()) {
+        if (configuration.getInitDBScript() == null && configuration.hasFilesToImport() && !DBMSUtility.isSchemaExists(accessConfiguration)) {
             configuration.setInitDBScript(createSchemaScript(accessConfiguration.getSchemaName()));
         }
         if (configuration.getInitDBScript() != null) {
@@ -61,6 +62,9 @@ public class ExecuteInitDB {
         }
         if (configuration.hasFilesToImport()) {
             importXMLFiles(db);
+        }
+        if (configuration.getPostDBScript() != null) {
+            QueryManager.executeScript(configuration.getPostDBScript(), accessConfiguration, false, true, false, false);
         }
     }
 
