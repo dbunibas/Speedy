@@ -626,4 +626,8 @@ public class DBMSUtility {
         QueryManager.executeScript(result.toString(), accessConfiguration, true, true, false, true);
     }
 
+    public static boolean isMySQL(String driver) {
+        return driver.toLowerCase().contains("mysql");
+    }
+
 }

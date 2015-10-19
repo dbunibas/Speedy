@@ -14,6 +14,7 @@ import speedy.model.database.dbms.DBMSDB;
 import speedy.model.database.dbms.DBMSTable;
 import speedy.persistence.relational.AccessConfiguration;
 import speedy.persistence.relational.QueryManager;
+import speedy.utility.DBMSUtility;
 
 // Thread unsafe
 public class SQLBatchInsert implements IBatchInsert {
@@ -21,13 +22,13 @@ public class SQLBatchInsert implements IBatchInsert {
     private static Logger logger = LoggerFactory.getLogger(SQLBatchInsert.class);
     private Map<ITable, List<Tuple>> buffer = new HashMap<ITable, List<Tuple>>();
     private SQLInsertTuple insertTupleOperator = new SQLInsertTuple();
-//    private int BUFFER_SIZE = 10000;
-    private int BUFFER_SIZE = 1000;
+    private int BUFFER_SIZE_POSTGRES = 10000;
+    private int BUFFER_SIZE_MYSQL = 1000;
 
     public void insert(ITable table, Tuple tuple, IDatabase database) {
         List<Tuple> tuplesForTable = getTuplesForTable(table);
         tuplesForTable.add(tuple);
-        if (tuplesForTable.size() > BUFFER_SIZE) {
+        if (tuplesForTable.size() > getBufferSize(((DBMSDB) database).getAccessConfiguration())) {
             insertTuples(table, tuplesForTable, database);
             buffer.remove(table);
         }
@@ -55,10 +56,24 @@ public class SQLBatchInsert implements IBatchInsert {
         AccessConfiguration accessConfiguration = ((DBMSDB) database).getAccessConfiguration();
         StringBuilder sb = new StringBuilder();
         for (Tuple tuple : tuplesForTable) {
-            sb.append(insertTupleOperator.buildInsertScript((DBMSTable) table, tuple, null, database)).append("\n");
+            sb.append(insertTupleOperator.buildInsertScript((DBMSTable) table, tuple, null, database)).append(getStatementTermination(accessConfiguration));
         }
         if (logger.isDebugEnabled()) logger.debug(tuplesForTable.size() + " tuple inserted in table " + tableName);
         QueryManager.executeScript(sb.toString(), accessConfiguration, true, true, false, false);
+    }
+
+    private int getBufferSize(AccessConfiguration accessConfiguration) {
+        if (DBMSUtility.isMySQL(accessConfiguration.getDriver())) {
+            return BUFFER_SIZE_MYSQL;
+        }
+        return BUFFER_SIZE_POSTGRES;
+    }
+
+    private String getStatementTermination(AccessConfiguration accessConfiguration) {
+        if (DBMSUtility.isMySQL(accessConfiguration.getDriver())) {
+            return "\n";
+        }
+        return "";
     }
 
 }
