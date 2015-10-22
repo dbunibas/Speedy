@@ -13,7 +13,6 @@ import speedy.model.database.Attribute;
 import speedy.model.database.Cell;
 import speedy.model.database.IDatabase;
 import speedy.model.database.ITable;
-import speedy.model.database.TableAlias;
 import speedy.model.database.Tuple;
 import speedy.utility.DBMSUtility;
 
