@@ -263,32 +263,32 @@ public class DBMSUtility {
     }
 
     public static ResultSet getTableResultSetSortByOID(String tableName, AccessConfiguration accessConfiguration) {
-        String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchema(accessConfiguration) + tableName + " ORDER BY " + SpeedyConstants.OID;
+        String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchema(accessConfiguration) + "\"" + tableName + "\"" + " ORDER BY " + SpeedyConstants.OID;
         return QueryManager.executeQuery(query, accessConfiguration);
     }
 
     public static ResultSet getTableResultSetUnsorted(String tableName, AccessConfiguration accessConfiguration) {
-        String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchema(accessConfiguration) + tableName;
+        String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchema(accessConfiguration) + "\"" + tableName + "\"";
         return QueryManager.executeQuery(query, accessConfiguration);
     }
 
     public static String createTablePaginationQuery(String tableName, AccessConfiguration accessConfiguration, int offset, int limit) {
-        return "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchema(accessConfiguration) + tableName + " LIMIT " + limit + " OFFSET " + offset;
+        return "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchema(accessConfiguration) + "\"" + tableName + "\"" + " LIMIT " + limit + " OFFSET " + offset;
     }
 
     public static ResultSet getTableOidsResultSet(String tableName, AccessConfiguration accessConfiguration) {
-        String query = "SELECT " + SpeedyConstants.OID + " FROM " + getSchema(accessConfiguration) + tableName;
+        String query = "SELECT " + SpeedyConstants.OID + " FROM " + getSchema(accessConfiguration) + "\"" + tableName + "\"";
         return QueryManager.executeQuery(query, accessConfiguration);
     }
 
     public static ResultSet getTupleResultSet(String tableName, TupleOID oid, AccessConfiguration accessConfiguration, Connection c) {
-        String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchema(accessConfiguration) + tableName + " WHERE " + SpeedyConstants.OID + "=" + oid.toString();
+        String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchema(accessConfiguration) + "\"" + tableName + "\"" + " WHERE " + SpeedyConstants.OID + "=" + oid.toString();
         return QueryManager.executeQuery(query, c, accessConfiguration);
     }
 
     public static ResultSet getTableResultSetForSchema(String tableName, AccessConfiguration accessConfiguration) {
 //        String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchema(accessConfiguration) + tableName + " LIMIT 0";
-        String query = "SELECT " + SpeedyConstants.OID + ", " + tableName + ".* FROM " + getSchema(accessConfiguration) + tableName + " LIMIT 0";
+        String query = "SELECT " + SpeedyConstants.OID + ", " + "\"" + tableName + "\"" + ".* FROM " + getSchema(accessConfiguration) + tableName + " LIMIT 0";
         return QueryManager.executeQuery(query, accessConfiguration);
     }
 

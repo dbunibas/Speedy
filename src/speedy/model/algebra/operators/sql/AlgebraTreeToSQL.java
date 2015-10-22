@@ -216,7 +216,14 @@ public class AlgebraTreeToSQL {
         }
 
         public void visitUnion(Union operator) {
-            throw new UnsupportedOperationException("Not supported yet");
+            IAlgebraOperator leftChild = operator.getChildren().get(0);
+            leftChild.accept(this);
+            result.append("\n").append(this.indentString());
+            result.append(" UNION \n");
+            IAlgebraOperator rightChild = operator.getChildren().get(1);
+            this.indentLevel++;
+            rightChild.accept(this);
+            this.indentLevel--;
         }
 
         public void visitOrderBy(OrderBy operator) {
@@ -473,8 +480,9 @@ public class AlgebraTreeToSQL {
             if (operator instanceof CreateTableAs) {
                 useAlias = true;
             }
-            if (operator instanceof Join && (operator.getChildren().get(0) instanceof CreateTableAs)
-                    && (operator.getChildren().get(1) instanceof CreateTableAs)) {
+//            if (operator instanceof Join && (operator.getChildren().get(0) instanceof CreateTableAs)
+//                    && (operator.getChildren().get(1) instanceof CreateTableAs)) {
+            if (isJoinBetweenCreateTables(operator)) {
                 useAlias = true;
             }
             IAlgebraOperator nestedOperator = findNestedOperator(nestedSelects, operator, attribute.getTableAlias());
@@ -487,11 +495,32 @@ public class AlgebraTreeToSQL {
             } else {
                 attributeResult = DBMSUtility.attributeRefToSQLDot(attribute);
             }
-            if (logger.isDebugEnabled()) logger.debug(" Attribute: " + attribute);
-            if (logger.isDebugEnabled()) logger.debug(" Operator: " + operator);
-            if (logger.isDebugEnabled()) logger.debug(" NestedOperator: " + nestedOperator);
-            if (logger.isDebugEnabled()) logger.debug(" Result: " + attributeResult);
+//            if (attributeResult.equals("")) {
+//                logger.error(" Attribute: " + attribute);
+//                logger.error(" Operator: " + operator);
+//                logger.error(" NestedOperator: " + nestedOperator);
+//                logger.error(" Result: " + attributeResult);
+//            }
             return attributeResult;
+        }
+
+        private boolean isJoinBetweenCreateTables(IAlgebraOperator operator) {
+            if (!(operator instanceof Join)) {
+                return false;
+            }
+            IAlgebraOperator firstChild = operator.getChildren().get(0);
+            IAlgebraOperator secondChild = operator.getChildren().get(1);
+            if ((firstChild instanceof CreateTableAs) && (secondChild instanceof CreateTableAs)) {
+                return true;
+            }
+            boolean isFirstChildJoinBtwCreateTables = isJoinBetweenCreateTables(firstChild);
+            boolean isSecondChildJoinBtwCreateTables = isJoinBetweenCreateTables(secondChild);
+            if (isFirstChildJoinBtwCreateTables && (secondChild instanceof CreateTableAs)
+                    || ((firstChild instanceof CreateTableAs) && isSecondChildJoinBtwCreateTables)
+                    || (isFirstChildJoinBtwCreateTables && isSecondChildJoinBtwCreateTables)) {
+                return true;
+            }
+            return false;
         }
 
         private void createWhereClause(Select operator, boolean append) {
