@@ -1,5 +1,6 @@
 package speedy.model.algebra.operators.sql;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import speedy.utility.SpeedyUtility;
 import speedy.model.algebra.operators.IInsertTuple;
 import speedy.model.database.dbms.DBMSTable;
@@ -49,6 +50,7 @@ public class SQLInsertTuple implements IInsertTuple {
             if (attributeType.equals(Types.STRING) || attributeType.equals(Types.DATE) || attributeType.equals(Types.DATETIME)) {
                 insertQuery.append("'");
             }
+            if(attributeType.equals(Types.STRING)) cellValue = StringEscapeUtils.escapeSql(cellValue);
             insertQuery.append(cellValue);
             if (attributeType.equals(Types.STRING) || attributeType.equals(Types.DATE) || attributeType.equals(Types.DATETIME)) {
                 insertQuery.append("'");
