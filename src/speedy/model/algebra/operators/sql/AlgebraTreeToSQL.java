@@ -31,6 +31,7 @@ import speedy.model.algebra.aggregatefunctions.MaxAggregateFunction;
 import speedy.model.algebra.aggregatefunctions.MinAggregateFunction;
 import speedy.model.algebra.Offset;
 import speedy.model.algebra.OrderBy;
+import speedy.model.algebra.OrderByRandom;
 import speedy.model.algebra.Partition;
 import speedy.model.algebra.Project;
 import speedy.model.algebra.RestoreOIDs;
@@ -41,6 +42,8 @@ import speedy.model.algebra.Union;
 import speedy.model.algebra.aggregatefunctions.StdDevAggregateFunction;
 import speedy.model.algebra.aggregatefunctions.SumAggregateFunction;
 import speedy.model.algebra.aggregatefunctions.ValueAggregateFunction;
+import speedy.model.database.dbms.DBMSDB;
+import speedy.persistence.relational.AccessConfiguration;
 
 public class AlgebraTreeToSQL {
 
@@ -237,6 +240,14 @@ public class AlgebraTreeToSQL {
                 result.append(DBMSUtility.attributeRefToSQL(matchingAttribute)).append(", ");
             }
             SpeedyUtility.removeChars(", ".length(), result.getStringBuilder());
+            result.append("\n");
+        }
+
+        public void visitOrderByRandom(OrderByRandom operator) {
+            IAlgebraOperator child = operator.getChildren().get(0);
+            child.accept(this);
+            result.append("\n").append(this.indentString());
+            result.append("ORDER BY ").append(getRandomFunction(((DBMSDB) target).getAccessConfiguration()));
             result.append("\n");
         }
 
@@ -897,6 +908,16 @@ public class AlgebraTreeToSQL {
 
         public void visitPartition(Partition operator) {
             throw new UnsupportedOperationException("Not supported yet."); //TODO Implement method
+        }
+
+        private String getRandomFunction(AccessConfiguration accessConfiguration) {
+            if (accessConfiguration.getDriver().contains("postgres")) {
+                return "RANDOM()";
+            }
+            if (accessConfiguration.getDriver().contains("mysql")) {
+                return "RAND()";
+            }
+            throw new IllegalArgumentException("Unsupported DBMS " + accessConfiguration.getDriver());
         }
 
     }

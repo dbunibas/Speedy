@@ -12,6 +12,7 @@ import speedy.model.algebra.Join;
 import speedy.model.algebra.Limit;
 import speedy.model.algebra.Offset;
 import speedy.model.algebra.OrderBy;
+import speedy.model.algebra.OrderByRandom;
 import speedy.model.algebra.Partition;
 import speedy.model.algebra.Project;
 import speedy.model.algebra.RestoreOIDs;
@@ -111,6 +112,11 @@ class AlgebraTreeToStringVisitor implements IAlgebraTreeVisitor {
     }
 
     public void visitOrderBy(OrderBy operator) {
+        result.append(this.indentString()).append(operator.getName()).append("\n");
+        visitChildren(operator);
+    }
+
+    public void visitOrderByRandom(OrderByRandom operator) {
         result.append(this.indentString()).append(operator.getName()).append("\n");
         visitChildren(operator);
     }

@@ -10,6 +10,7 @@ import speedy.model.algebra.Join;
 import speedy.model.algebra.Limit;
 import speedy.model.algebra.Offset;
 import speedy.model.algebra.OrderBy;
+import speedy.model.algebra.OrderByRandom;
 import speedy.model.algebra.Partition;
 import speedy.model.algebra.Project;
 import speedy.model.algebra.RestoreOIDs;
@@ -32,6 +33,7 @@ public interface IAlgebraTreeVisitor {
     void visitGroupBy(GroupBy operator);
     void visitPartition(Partition operator);
     void visitOrderBy(OrderBy operator);
+    void visitOrderByRandom(OrderByRandom operator);
     void visitLimit(Limit operator);
     void visitOffset(Offset operator);
     void visitRestoreOIDs(RestoreOIDs operator);

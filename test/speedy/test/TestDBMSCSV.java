@@ -7,6 +7,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.OperatorFactory;
+import speedy.model.algebra.Limit;
+import speedy.model.algebra.OrderByRandom;
 import speedy.model.algebra.Scan;
 import speedy.model.algebra.Select;
 import speedy.model.algebra.operators.ITupleIterator;
@@ -50,32 +52,48 @@ public class TestDBMSCSV {
         UtilityForTests.deleteDB(database.getAccessConfiguration());
     }
 
-    @Test
-    public void testScan() {
-        TableAlias tableAlias = new TableAlias("emp");
-        Scan scan = new Scan(tableAlias);
-        if (logger.isDebugEnabled()) logger.debug(scan.toString());
-        ITupleIterator result = queryRunner.run(scan, null, database);
-        String stringResult = SpeedyUtility.printTupleIterator(result);
-        if (logger.isDebugEnabled()) logger.debug(stringResult);
-        result.close();
-        Assert.assertTrue(stringResult.startsWith("Number of tuples: 50\n"));
-    }
+//    @Test
+//    public void testScan() {
+//        TableAlias tableAlias = new TableAlias("emp");
+//        Scan scan = new Scan(tableAlias);
+//        if (logger.isDebugEnabled()) logger.debug(scan.toString());
+//        ITupleIterator result = queryRunner.run(scan, null, database);
+//        String stringResult = SpeedyUtility.printTupleIterator(result);
+//        if (logger.isDebugEnabled()) logger.debug(stringResult);
+//        result.close();
+//        Assert.assertTrue(stringResult.startsWith("Number of tuples: 50\n"));
+//    }
+//
+//    @Test
+//    public void testSelect() {
+//        TableAlias tableAlias = new TableAlias("emp");
+//        Scan scan = new Scan(tableAlias);
+//        Expression expression = new Expression("salary > 3000");
+//        expression.changeVariableDescription("salary", new AttributeRef(tableAlias, "salary"));
+//        Select select = new Select(expression);
+//        select.addChild(scan);
+//        if (logger.isDebugEnabled()) logger.debug(select.toString());
+//        ITupleIterator result = queryRunner.run(select, null, database);
+//        String stringResult = SpeedyUtility.printTupleIterator(result);
+//        if (logger.isDebugEnabled()) logger.debug(stringResult);
+//        result.close();
+//        Assert.assertTrue(stringResult.startsWith("Number of tuples: 24\n"));
+//        QueryStatManager.getInstance().printStatistics();
+//    }
 
     @Test
-    public void testSelect() {
+    public void testRandom() {
         TableAlias tableAlias = new TableAlias("emp");
         Scan scan = new Scan(tableAlias);
-        Expression expression = new Expression("salary > 3000");
-        expression.changeVariableDescription("salary", new AttributeRef(tableAlias, "salary"));
-        Select select = new Select(expression);
-        select.addChild(scan);
-        if (logger.isDebugEnabled()) logger.debug(select.toString());
-        ITupleIterator result = queryRunner.run(select, null, database);
+        OrderByRandom random = new OrderByRandom();
+        random.addChild(scan);
+        Limit limit = new Limit(10);
+        limit.addChild(random);
+        if (logger.isDebugEnabled()) logger.debug(limit.toString());
+        ITupleIterator result = queryRunner.run(limit, null, database);
         String stringResult = SpeedyUtility.printTupleIterator(result);
         if (logger.isDebugEnabled()) logger.debug(stringResult);
         result.close();
-        Assert.assertTrue(stringResult.startsWith("Number of tuples: 24\n"));
-        QueryStatManager.getInstance().printStatistics();
+        Assert.assertTrue(stringResult.startsWith("Number of tuples: 10\n"));
     }
 }
