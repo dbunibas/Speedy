@@ -34,7 +34,7 @@ public class TestResults {
     }
 
     private static String getResultDir() {
-        return System.getProperty("user.home") + "/Dropbox/DBuggingExp/";
+        return System.getProperty("user.home") + "/Dropbox/Temp/SpeedyExp/";
     }
 
     public static void addTimeResult(Size size, String group, long time) {

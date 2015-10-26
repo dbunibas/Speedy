@@ -26,51 +26,82 @@ public class TestValucity {
     private static Logger logger = LoggerFactory.getLogger(TestValucity.class);
 
     private String baseFolder = "/Users/donatello/Dropbox-Informatica/Shared Folders/valucity/scenario/";
-    private boolean recreateDB = false;
-    private String[] views = new String[]{
-        "vista_servizi",
-        "vista_date_valutazioni_attuali",
-        "vista_valutazioni",
-        "vista_luoghi",
-        "vista_dati_servizi",
-        "vista_dati_servizi_macro",
-        "vista_valutatori_servizio",
-        "vista_valutatori_servizio_macro",
-        "vista_punteggi_servizi",
-        "vista_punteggi_servizi_macro",
-        "vista_punteggi_massimi_servizi_macro"
-    };
+    private boolean recreateDB = true;
 
     @Test
     public void runMultiple() {
+        /* VIEW */
         TestResults.resetResults();
-//        executeQuery(Size.S_100K, Size.S_7K);
-        executeQuery(Size.S_100K, Size.S_70K);
-//        executeQuery(Size.S_500K, Size.S_7K);
-//        executeQuery(Size.S_500K, Size.S_70K);
-//        executeQuery(Size.S_1M, Size.S_7K);
-//        executeQuery(Size.S_1M, Size.S_70K);
-        TestResults.printResults("Test_Valucity");
+        executeQuery(Size.S_100K, Size.S_7K, "mysql_script1_view.sql");
+//        executeQuery(Size.S_100K, Size.S_70K, "mysql_script1_view.sql");
+//        executeQuery(Size.S_500K, Size.S_7K, "mysql_script1_view.sql");
+//        executeQuery(Size.S_500K, Size.S_70K, "mysql_script1_view.sql");
+//        executeQuery(Size.S_1M, Size.S_7K, "mysql_script1_view.sql");
+//        executeQuery(Size.S_1M, Size.S_70K, "mysql_script1_view.sql");
+        TestResults.printResults("Test_Valucity *VIEW*");
+//        /* TABLE */
+//        TestResults.resetResults();
+//        executeQuery(Size.S_100K, Size.S_7K, "mysql_script1_table.sql");
+//        executeQuery(Size.S_100K, Size.S_70K, "mysql_script1_table.sql");
+//        executeQuery(Size.S_500K, Size.S_7K, "mysql_script1_table.sql");
+//        executeQuery(Size.S_500K, Size.S_70K, "mysql_script1_table.sql");
+//        executeQuery(Size.S_1M, Size.S_7K, "mysql_script1_table.sql");
+//        executeQuery(Size.S_1M, Size.S_70K, "mysql_script1_table.sql");
+//        TestResults.printResults("Test_Valucity *TABLE*");
     }
 
-    private void executeQuery(Size sizeV, Size sizeL) {
+    private void executeQuery(Size sizeV, Size sizeL, String scriptName) {
         String sizeString = sizeV.toString() + "_" + sizeL.toString();
 //        DBMSDB database = getDatabasePostgres(sizeV, sizeL);
-//        String createViewScript = loadScript("script/viste.sql");
         DBMSDB database = getDatabaseMySQL(sizeV, sizeL);
-        String createViewScript = loadScript("script/viste_mysql.sql");
         database.initDBMS();
+        String dropScript = loadScript("script/mysql_script_drop.sql");
+        QueryManager.executeScript(dropScript, database.getAccessConfiguration(), true, true, false, false);
+        String createViewScript = loadScript("script/" + scriptName);
         long createViewTime = new Date().getTime();
         QueryManager.executeScript(createViewScript, database.getAccessConfiguration(), true, true, false, false);
         long end = new Date().getTime();
         long executionTime = end - createViewTime;
         if (logger.isDebugEnabled()) logger.debug("Create views execution time: " + executionTime);
         TestResults.addTimeResult(sizeString, "CreateView", executionTime);
-        for (String view : views) {
-            runView(view, sizeString, database);
+        for (String query : queries) {
+            runQuery(query, sizeString, database);
         }
+//        for (String view : views) {
+//            runView(view, sizeString, database);
+//        }
         TestResults.printStats("\n****  Size: " + sizeString + "  ****");
     }
+    private String[] queries = new String[]{
+        "query0.sql",
+        "query1.sql",
+        "query2.sql",
+        "query3.sql",
+        "query4.sql",
+    };
+
+    private void runQuery(String query, String sizeString, DBMSDB database) {
+        String script = loadScript("script/" + query);
+        long scriptTime = new Date().getTime();
+        QueryManager.executeScript(script, database.getAccessConfiguration(), true, true, false, false);
+        long end = new Date().getTime();
+        long executionTime = end - scriptTime;
+        if (logger.isDebugEnabled()) logger.debug("Query " + query + " execution time: " + executionTime);
+        TestResults.addTimeResult(sizeString, "Query " + query, executionTime);
+    }
+
+    private String[] views = new String[]{ //        "vista_servizi",
+    //        "vista_date_valutazioni_attuali",
+    //        "vista_valutazioni",
+    //        "vista_luoghi",
+    //        "vista_dati_servizi",
+    //        "vista_dati_servizi_macro",
+    //        "vista_valutatori_servizio",
+    //        "vista_valutatori_servizio_macro",
+    //        "vista_punteggi_servizi",
+    //        "vista_punteggi_servizi_macro",
+    //        "vista_punteggi_massimi_servizi_macro"
+    };
 
     private void runView(String view, String sizeString, DBMSDB database) {
         long createViewTime = new Date().getTime();
@@ -100,6 +131,7 @@ public class TestValucity {
         String suffix = sizeV.toString() + "_" + sizeL.toString();
         initDBConfiguration.addFileToImportForTable("luogo", new XMLFile(datasetPath + "luogo.xml"));
         initDBConfiguration.addFileToImportForTable("servizio", new XMLFile(datasetPath + "servizio.xml"));
+        initDBConfiguration.addFileToImportForTable("utente", new XMLFile(datasetPath + "utente_1k_50.xml"));
         initDBConfiguration.addFileToImportForTable("valutazione", new XMLFile(datasetPath + "valutazione_" + suffix + ".xml"));
         initDBConfiguration.setPostDBScript(loadScript("script/create_key_fk_postgres.sql"));
         if (recreateDB) UtilityForTests.deleteDB(database.getAccessConfiguration());
@@ -120,6 +152,7 @@ public class TestValucity {
         String suffix = sizeV.toString() + "_" + sizeL.toString();
         initDBConfiguration.addFileToImportForTable("luogo", new XMLFile(datasetPath + "luogo.xml"));
         initDBConfiguration.addFileToImportForTable("servizio", new XMLFile(datasetPath + "servizio.xml"));
+        initDBConfiguration.addFileToImportForTable("utente", new XMLFile(datasetPath + "utente_1k_50.xml"));
         initDBConfiguration.addFileToImportForTable("valutazione", new XMLFile(datasetPath + "valutazione_" + suffix + ".xml"));
         initDBConfiguration.setPostDBScript(loadScript("script/create_key_fk_mysql.sql"));
         if (recreateDB) UtilityForTests.deleteDB(database.getAccessConfiguration());
@@ -134,4 +167,5 @@ public class TestValucity {
         }
         return null;
     }
+
 }
