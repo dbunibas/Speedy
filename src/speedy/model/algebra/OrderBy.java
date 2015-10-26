@@ -14,6 +14,7 @@ import speedy.model.database.AttributeRef;
 import speedy.model.database.Cell;
 import speedy.model.database.IDatabase;
 import speedy.model.database.Tuple;
+import speedy.utility.comparator.TupleComparatorOIDs;
 
 public class OrderBy extends AbstractOperator {
 
@@ -61,6 +62,7 @@ public class OrderBy extends AbstractOperator {
 
 class TupleOrderByComparator implements Comparator<Tuple> {
 
+    private TupleComparatorOIDs tupleOIDComparator = new TupleComparatorOIDs();
     private List<AttributeRef> attributes;
 
     public TupleOrderByComparator(List<AttributeRef> attributes) {
@@ -70,6 +72,9 @@ class TupleOrderByComparator implements Comparator<Tuple> {
     public int compare(Tuple t1, Tuple t2) {
         String s1 = buildTupleString(t1);
         String s2 = buildTupleString(t2);
+        if(s1.equals(s2)){
+            return tupleOIDComparator.compare(t1, t2);
+        }
         return s1.compareTo(s2);
     }
 

@@ -5,6 +5,7 @@ import speedy.utility.SpeedyUtility;
 import speedy.model.database.mainmemory.datasource.IntegerOIDGenerator;
 import speedy.model.database.NullValue;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import speedy.model.database.IDatabase;
 import speedy.model.database.IValue;
 import speedy.model.database.Tuple;
 import speedy.model.database.TupleOID;
+import speedy.utility.comparator.TupleComparatorOIDs;
 
 public class Join extends AbstractOperator {
 
@@ -71,6 +73,7 @@ public class Join extends AbstractOperator {
         ITupleIterator leftTuples = children.get(0).execute(source, target);
         ITupleIterator rightTuples = children.get(1).execute(source, target);
         materializeResult(leftTuples, rightTuples, result);
+        Collections.sort(result, new TupleComparatorOIDs());
         if (logger.isDebugEnabled()) logger.debug(getName() + " - Result: \n" + SpeedyUtility.printCollection(result));
         leftTuples.close();
         rightTuples.close();

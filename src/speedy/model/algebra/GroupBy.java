@@ -13,11 +13,13 @@ import speedy.model.database.Tuple;
 import speedy.model.database.TupleOID;
 import speedy.model.database.mainmemory.datasource.IntegerOIDGenerator;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import speedy.utility.comparator.TupleComparatorOIDs;
 
 public class GroupBy extends AbstractOperator {
 
@@ -44,6 +46,7 @@ public class GroupBy extends AbstractOperator {
         List<Tuple> result = new ArrayList<Tuple>();
         ITupleIterator originalTuples = children.get(0).execute(source, target);
         materializeResult(originalTuples, result);
+        Collections.sort(result, new TupleComparatorOIDs());
         originalTuples.close();
         if (logger.isDebugEnabled()) logger.debug("Result:\n" + SpeedyUtility.printCollection(result));
         return new ListTupleIterator(result);
