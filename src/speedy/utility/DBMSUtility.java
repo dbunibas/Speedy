@@ -288,8 +288,15 @@ public class DBMSUtility {
 
     public static ResultSet getTableResultSetForSchema(String tableName, AccessConfiguration accessConfiguration) {
 //        String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchema(accessConfiguration) + tableName + " LIMIT 0";
-        String query = "SELECT " + SpeedyConstants.OID + ", " + "\"" + tableName + "\"" + ".* FROM " + getSchema(accessConfiguration) + tableName + " LIMIT 0";
+        String query = "SELECT " + SpeedyConstants.OID + ", " + getTableName(tableName, accessConfiguration) + ".* FROM " + getSchema(accessConfiguration) + tableName + " LIMIT 0";
         return QueryManager.executeQuery(query, accessConfiguration);
+    }
+
+    private static String getTableName(String tableName, AccessConfiguration accessConfiguration) {
+        if (isMySQL(accessConfiguration.getDriver())) {
+            return tableName;
+        }
+        return "\"" + tableName + "\"";
     }
 
     public static String getSchema(AccessConfiguration accessConfiguration) {
