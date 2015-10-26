@@ -14,6 +14,7 @@ import speedy.model.database.dbms.DBMSDB;
 import speedy.model.database.dbms.DBMSTupleIterator;
 import speedy.model.database.dbms.InitDBConfiguration;
 import speedy.persistence.DAODBMSDatabase;
+import speedy.persistence.file.CSVFile;
 import speedy.persistence.file.XMLFile;
 import speedy.persistence.relational.QueryManager;
 import speedy.test.utility.TestResults;
@@ -26,31 +27,29 @@ public class TestValucity {
     private static Logger logger = LoggerFactory.getLogger(TestValucity.class);
 
     private String baseFolder = "/Users/donatello/Dropbox-Informatica/Shared Folders/valucity/scenario/";
-    private boolean recreateDB = true;
+    private boolean recreateDB = false;
 
     @Test
     public void runMultiple() {
         /* VIEW */
-        TestResults.resetResults();
-        executeQuery(Size.S_100K, Size.S_7K, "mysql_script1_view.sql");
+//        executeQuery(Size.S_100K, Size.S_7K, "mysql_script1_view.sql");
 //        executeQuery(Size.S_100K, Size.S_70K, "mysql_script1_view.sql");
 //        executeQuery(Size.S_500K, Size.S_7K, "mysql_script1_view.sql");
 //        executeQuery(Size.S_500K, Size.S_70K, "mysql_script1_view.sql");
 //        executeQuery(Size.S_1M, Size.S_7K, "mysql_script1_view.sql");
 //        executeQuery(Size.S_1M, Size.S_70K, "mysql_script1_view.sql");
-        TestResults.printResults("Test_Valucity *VIEW*");
 //        /* TABLE */
-//        TestResults.resetResults();
-//        executeQuery(Size.S_100K, Size.S_7K, "mysql_script1_table.sql");
+        TestResults.resetResults();
+        executeQuery(Size.S_100K, Size.S_7K, "mysql_script1_table.sql");
 //        executeQuery(Size.S_100K, Size.S_70K, "mysql_script1_table.sql");
 //        executeQuery(Size.S_500K, Size.S_7K, "mysql_script1_table.sql");
 //        executeQuery(Size.S_500K, Size.S_70K, "mysql_script1_table.sql");
 //        executeQuery(Size.S_1M, Size.S_7K, "mysql_script1_table.sql");
 //        executeQuery(Size.S_1M, Size.S_70K, "mysql_script1_table.sql");
-//        TestResults.printResults("Test_Valucity *TABLE*");
     }
 
     private void executeQuery(Size sizeV, Size sizeL, String scriptName) {
+        TestResults.resetResults();
         String sizeString = sizeV.toString() + "_" + sizeL.toString();
 //        DBMSDB database = getDatabasePostgres(sizeV, sizeL);
         DBMSDB database = getDatabaseMySQL(sizeV, sizeL);
@@ -70,6 +69,7 @@ public class TestValucity {
 //        for (String view : views) {
 //            runView(view, sizeString, database);
 //        }
+        TestResults.printResults("Test_Valucity " + scriptName);
         TestResults.printStats("\n****  Size: " + sizeString + "  ****");
     }
     private String[] queries = new String[]{
@@ -77,8 +77,7 @@ public class TestValucity {
         "query1.sql",
         "query2.sql",
         "query3.sql",
-        "query4.sql",
-    };
+        "query4.sql",};
 
     private void runQuery(String query, String sizeString, DBMSDB database) {
         String script = loadScript("script/" + query);
@@ -150,10 +149,10 @@ public class TestValucity {
         initDBConfiguration.setCreateTablesFromFiles(true);
         String datasetPath = baseFolder + "datasets/";
         String suffix = sizeV.toString() + "_" + sizeL.toString();
-        initDBConfiguration.addFileToImportForTable("luogo", new XMLFile(datasetPath + "luogo.xml"));
-        initDBConfiguration.addFileToImportForTable("servizio", new XMLFile(datasetPath + "servizio.xml"));
-        initDBConfiguration.addFileToImportForTable("utente", new XMLFile(datasetPath + "utente_1k_50.xml"));
-        initDBConfiguration.addFileToImportForTable("valutazione", new XMLFile(datasetPath + "valutazione_" + suffix + ".xml"));
+        initDBConfiguration.addFileToImportForTable("luogo", new CSVFile(datasetPath + suffix + "/luogo.csv",',', '"'));
+        initDBConfiguration.addFileToImportForTable("servizio", new CSVFile(datasetPath + suffix + "/servizio.csv",',', '"'));
+        initDBConfiguration.addFileToImportForTable("utente", new CSVFile(datasetPath + suffix + "/utente.csv",',', '"'));
+        initDBConfiguration.addFileToImportForTable("valutazione", new CSVFile(datasetPath + suffix + "/valutazione.csv",',', '"'));
         initDBConfiguration.setPostDBScript(loadScript("script/create_key_fk_mysql.sql"));
         if (recreateDB) UtilityForTests.deleteDB(database.getAccessConfiguration());
         return database;

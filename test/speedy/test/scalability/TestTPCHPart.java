@@ -87,8 +87,8 @@ public class TestTPCHPart {
         String baseFolder = UtilityForTests.getAbsoluteFileName("/resources/tpch-dbgen/");
         InitDBConfiguration initDBConfiguration = database.getInitDBConfiguration();
         initDBConfiguration.setCreateTablesFromFiles(true);
-        initDBConfiguration.addFileToImportForTable("part", new CSVFile(baseFolder + "part.csv", '|', size.getSize()));
-        initDBConfiguration.addFileToImportForTable("partsupp", new CSVFile(baseFolder + "partsupp.csv", '|', size.getSize()));
+        initDBConfiguration.addFileToImportForTable("part", new CSVFile(baseFolder + "part.csv", '|', '"', size.getSize()));
+        initDBConfiguration.addFileToImportForTable("partsupp", new CSVFile(baseFolder + "partsupp.csv", '|', '"', size.getSize()));
         queryRunner = OperatorFactory.getInstance().getQueryRunner(database);
         if (recreateDB) UtilityForTests.deleteDB(database.getAccessConfiguration());
         handleIndex(database);

@@ -19,10 +19,17 @@ public class CSVFile implements IImportFile {
         this.separator = separator;
     }
 
-    public CSVFile(String fileName, char separator, int recordsToImport) {
+    public CSVFile(String fileName, char separator, Character quoteCharacter) {
+        this.fileName = fileName;
+        this.separator = separator;
+        this.quoteCharacter = quoteCharacter;
+    }
+
+    public CSVFile(String fileName, char separator, Character quoteCharacter, int recordsToImport) {
         this.fileName = fileName;
         this.separator = separator;
         this.recordsToImport = recordsToImport;
+        this.quoteCharacter = quoteCharacter;
     }
 
     public String getFileName() {
