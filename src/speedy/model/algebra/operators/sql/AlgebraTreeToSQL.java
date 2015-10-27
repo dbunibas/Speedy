@@ -187,7 +187,7 @@ public class AlgebraTreeToSQL {
                 //Ignore Project of Project
                 child = child.getChildren().get(0);
             }
-            if (child instanceof Limit) {
+            if (child instanceof Limit || child instanceof Distinct) {
                 List<NestedOperator> innerOperators = new ArrayList<NestedOperator>();
                 for (AttributeRef nestedAttribute : getNestedAttributes(child)) {
                     if (containsAlias(innerOperators, nestedAttribute.getTableAlias())) {
@@ -201,7 +201,9 @@ public class AlgebraTreeToSQL {
                 generateNestedSelect(child);
                 return;
             }
-            if (!(child instanceof Scan) && !(child instanceof Join) && !(child instanceof Select) && !(child instanceof CreateTableAs) && !(child instanceof RestoreOIDs) && !(child instanceof Difference) && !(child instanceof OrderBy)) {
+            if (!(child instanceof Scan) && !(child instanceof Join) && !(child instanceof Select) && 
+                    !(child instanceof CreateTableAs) && !(child instanceof RestoreOIDs) && !(child instanceof Distinct) &&
+                    !(child instanceof Difference) && !(child instanceof OrderBy)) {
                 throw new IllegalArgumentException("Project of a " + child.getName() + " is not supported");
             }
             child.accept(this);
