@@ -1,4 +1,4 @@
-package speedy.test.utility;
+package speedy.utility.test;
 
 import java.io.File;
 import java.net.URL;

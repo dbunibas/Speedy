@@ -1,4 +1,4 @@
-package speedy.test.utility;
+package speedy.utility.test;
 
 import speedy.utility.Size;
 

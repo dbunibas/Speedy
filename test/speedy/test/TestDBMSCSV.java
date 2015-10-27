@@ -20,7 +20,7 @@ import speedy.model.expressions.Expression;
 import speedy.persistence.DAODBMSDatabase;
 import speedy.persistence.file.CSVFile;
 import speedy.persistence.relational.QueryStatManager;
-import speedy.test.utility.UtilityForTests;
+import speedy.utility.test.UtilityForTests;
 import speedy.utility.SpeedyUtility;
 
 public class TestDBMSCSV {

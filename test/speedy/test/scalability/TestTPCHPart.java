@@ -19,8 +19,8 @@ import speedy.model.database.operators.IRunQuery;
 import speedy.persistence.DAODBMSDatabase;
 import speedy.persistence.file.CSVFile;
 import speedy.persistence.relational.QueryManager;
-import speedy.test.utility.TestResults;
-import speedy.test.utility.UtilityForTests;
+import speedy.utility.test.TestResults;
+import speedy.utility.test.UtilityForTests;
 import speedy.utility.Size;
 import speedy.utility.SpeedyUtility;
 
