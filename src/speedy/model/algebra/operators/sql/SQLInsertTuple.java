@@ -9,10 +9,12 @@ import speedy.persistence.relational.AccessConfiguration;
 import speedy.persistence.relational.QueryManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import speedy.SpeedyConstants;
 import speedy.model.database.Attribute;
 import speedy.model.database.Cell;
 import speedy.model.database.IDatabase;
 import speedy.model.database.ITable;
+import speedy.model.database.NullValue;
 import speedy.model.database.Tuple;
 import speedy.utility.DBMSUtility;
 
@@ -42,6 +44,10 @@ public class SQLInsertTuple implements IInsertTuple {
         for (Cell cell : tuple.getCells()) {
             String cellValue = cell.getValue().toString();
             cellValue = cleanValue(cellValue);
+            if (cellValue.equals(SpeedyConstants.NULL_VALUE)) {
+                insertQuery.append("null, ");
+                continue;
+            }
             String attributeType = getAttributeType(dbmsTable, cell.getAttributeRef().getName());
             if (attributeType.equals(Types.INTEGER) && cellValue.isEmpty()) {
                 cellValue = "null";
@@ -49,7 +55,7 @@ public class SQLInsertTuple implements IInsertTuple {
             if (attributeType.equals(Types.STRING) || attributeType.equals(Types.DATE) || attributeType.equals(Types.DATETIME)) {
                 insertQuery.append("'");
             }
-            if(attributeType.equals(Types.STRING)) cellValue = StringEscapeUtils.escapeSql(cellValue);
+            if (attributeType.equals(Types.STRING)) cellValue = StringEscapeUtils.escapeSql(cellValue);
             insertQuery.append(cellValue);
             if (attributeType.equals(Types.STRING) || attributeType.equals(Types.DATE) || attributeType.equals(Types.DATETIME)) {
                 insertQuery.append("'");
