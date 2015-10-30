@@ -210,7 +210,7 @@ public class SpeedyUtility {
             IValue value;
             if (attributeValue instanceof IDataSourceNullValue) {
                 value = new NullValue(attributeValue);
-            } else if (attributeValue instanceof NullValue) {
+            } else if (attributeValue == null || attributeValue instanceof NullValue) {
                 value = (NullValue) attributeValue;
             } else if (attributeValue instanceof LLUNValue) {
                 value = (LLUNValue) attributeValue;

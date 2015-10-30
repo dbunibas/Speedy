@@ -42,12 +42,12 @@ public class SQLInsertTuple implements IInsertTuple {
         insertQuery.append(")");
         insertQuery.append(" VALUES (");
         for (Cell cell : tuple.getCells()) {
-            String cellValue = cell.getValue().toString();
-            cellValue = cleanValue(cellValue);
-            if (cellValue.equals(SpeedyConstants.NULL_VALUE)) {
+            if (cell.getValue() == null || cleanValue(cell.getValue().toString()).equals(SpeedyConstants.NULL_VALUE)) {
                 insertQuery.append("null, ");
                 continue;
             }
+            String cellValue = cell.getValue().toString();
+            cellValue = cleanValue(cellValue);
             String attributeType = getAttributeType(dbmsTable, cell.getAttributeRef().getName());
             if (attributeType.equals(Types.INTEGER) && cellValue.isEmpty()) {
                 cellValue = "null";
