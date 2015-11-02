@@ -39,16 +39,20 @@ public class DBMSVirtualTable implements ITable {
         return this.tableName;
     }
 
+    public String getSuffix() {
+        return suffix;
+    }
+
     public List<Attribute> getAttributes() {
         if (attributes == null) {
             initConnection();
         }
         return attributes;
     }
-    
-    public Attribute getAttribute(String name){
+
+    public Attribute getAttribute(String name) {
         for (Attribute attribute : getAttributes()) {
-            if(attribute.getName().equals(name)){
+            if (attribute.getName().equals(name)) {
                 return attribute;
             }
         }
@@ -92,7 +96,7 @@ public class DBMSVirtualTable implements ITable {
     }
 
     public String toShortString() {
-        return DBMSUtility.getSchema(accessConfiguration) + this.tableName + suffix;
+        return DBMSUtility.getSchemaNameAndDot(accessConfiguration) + this.tableName + suffix;
     }
 
     public String toString(String indent) {
@@ -137,7 +141,7 @@ public class DBMSVirtualTable implements ITable {
     }
 
     public long getSize() {
-        String query = "SELECT count(*) as count FROM " + accessConfiguration.getSchemaName() + "." + tableName + suffix;
+        String query = "SELECT count(*) as count FROM " + accessConfiguration.getSchemaAndSuffix() + "." + tableName + suffix;
         ResultSet resultSet = null;
         try {
             resultSet = QueryManager.executeQuery(query, accessConfiguration);

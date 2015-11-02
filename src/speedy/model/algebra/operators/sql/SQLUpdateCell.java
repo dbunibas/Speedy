@@ -25,7 +25,7 @@ public class SQLUpdateCell implements IUpdateCell {
         StringBuilder query = new StringBuilder();
         query.append("UPDATE ");
         AttributeRef attributeRef = cellRef.getAttributeRef();
-        query.append(DBMSUtility.getSchema(((DBMSDB) database).getAccessConfiguration()));
+        query.append(DBMSUtility.getSchemaNameAndDot(((DBMSDB) database).getAccessConfiguration()));
         query.append(cellRef.getAttributeRef().getTableName());
         query.append(" SET ").append(attributeRef.getName()).append("=");
         Attribute attribute = SpeedyUtility.getAttribute(attributeRef, database);

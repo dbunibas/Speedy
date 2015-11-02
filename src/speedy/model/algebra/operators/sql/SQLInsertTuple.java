@@ -33,7 +33,7 @@ public class SQLInsertTuple implements IInsertTuple {
         AccessConfiguration accessConfiguration = dbmsTable.getAccessConfiguration();
         StringBuilder insertQuery = new StringBuilder();
         insertQuery.append("INSERT INTO ");
-        insertQuery.append(DBMSUtility.getSchema(accessConfiguration)).append(dbmsTable.getName());
+        insertQuery.append(DBMSUtility.getSchemaNameAndDot(accessConfiguration)).append(dbmsTable.getName());
         insertQuery.append(" (");
         for (Cell cell : tuple.getCells()) {
             insertQuery.append(cell.getAttribute()).append(", ");

@@ -1,5 +1,8 @@
 package speedy.persistence.relational;
 
+import speedy.SpeedyConstants;
+import speedy.utility.SpeedyUtility;
+
 public class AccessConfiguration implements Cloneable {
 
     private String driver;
@@ -7,6 +10,7 @@ public class AccessConfiguration implements Cloneable {
     private String login;
     private String password;
     private String schemaName = "public";
+    private String schemaSuffix = "";
 
     public String getDriver() {
         return driver;
@@ -48,6 +52,26 @@ public class AccessConfiguration implements Cloneable {
         this.schemaName = schemaName;
     }
 
+    public String getSchemaSuffix() {
+        return schemaSuffix;
+    }
+
+    public void setSchemaSuffix(String schemaSuffix) {
+        this.schemaSuffix = schemaSuffix;
+    }
+
+    public boolean hasSuffix() {
+        return schemaSuffix != null && !schemaSuffix.trim().isEmpty();
+    }
+
+    public String getSchemaAndSuffix() {
+        String result = this.schemaName;
+        if (hasSuffix()) {
+            result += SpeedyConstants.SUFFIX_SEPARATOR + this.schemaSuffix;
+        }
+        return result;
+    }
+
     public String getDatabaseName() {
         if (uri.lastIndexOf("/") != -1) {
             return uri.substring(uri.lastIndexOf("/") + 1);
@@ -78,6 +102,7 @@ public class AccessConfiguration implements Cloneable {
                 + "Driver: " + this.driver + "\n"
                 + "URI: " + this.uri + "\n"
                 + "Schema: " + this.schemaName + "\n"
+                + "Schema Suffix: " + this.schemaSuffix + "\n"
                 + "Login: " + this.login + "\n"
                 + "Password: " + this.password + "\n";
     }

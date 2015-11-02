@@ -17,7 +17,7 @@ public class SQLCreateTable implements ICreateTable {
     public void createTable(String tableName, List<Attribute> attributes, IDatabase target) {
         AccessConfiguration accessConfiguration = ((DBMSDB) target).getAccessConfiguration();
         StringBuilder sb = new StringBuilder();
-        sb.append("create table ").append(DBMSUtility.getSchema(accessConfiguration)).append(tableName).append("(\n");
+        sb.append("create table ").append(DBMSUtility.getSchemaNameAndDot(accessConfiguration)).append(tableName).append("(\n");
         if (!containsOID(attributes)) {
             sb.append(SpeedyConstants.INDENT).append(SpeedyConstants.OID).append(" serial,\n");
         }

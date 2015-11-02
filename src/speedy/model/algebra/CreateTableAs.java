@@ -52,10 +52,6 @@ public class CreateTableAs extends AbstractOperator {
         return schemaName;
     }
 
-    public void setSchemaName(String schemaName) {
-        this.schemaName = schemaName;
-    }
-
     public boolean isWithOIDs() {
         return withOIDs;
     }

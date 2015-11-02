@@ -55,7 +55,7 @@ public class DBMSDB implements IDatabase {
     }
 
     public String getName() {
-        return this.accessConfiguration.getSchemaName();
+        return this.accessConfiguration.getSchemaAndSuffix();
     }
 
     public List<String> getTableNames() {

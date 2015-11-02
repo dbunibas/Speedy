@@ -69,7 +69,7 @@ public class DBMSTable implements ITable {
 
     public long getSize() {
         if (size == null) {
-            String query = "SELECT count(*) as count FROM " + DBMSUtility.getSchema(accessConfiguration) + tableName;
+            String query = "SELECT count(*) as count FROM " + DBMSUtility.getSchemaNameAndDot(accessConfiguration) + tableName;
             ResultSet resultSet = null;
             try {
                 resultSet = QueryManager.executeQuery(query, accessConfiguration);
@@ -115,7 +115,7 @@ public class DBMSTable implements ITable {
     }
 
     public String toShortString() {
-        return DBMSUtility.getSchema(accessConfiguration) + this.tableName;
+        return DBMSUtility.getSchemaNameAndDot(accessConfiguration) + this.tableName;
     }
 
     public String toString(String indent) {

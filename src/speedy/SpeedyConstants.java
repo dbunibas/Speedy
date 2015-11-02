@@ -24,6 +24,8 @@ public class SpeedyConstants {
     
     public static final String LLUN_PREFIX = "_L";
     public static final String LLUN_SEPARATOR = "|";
+    
+    public static final String SUFFIX_SEPARATOR = "_";
 
     public static String STANDARD_QUERY_TYPE = "Standard Query";
     public static String SYMMETRIC_QUERY_TYPE = "Symmetric Query";
@@ -53,7 +55,6 @@ public class SpeedyConstants {
     public static final String OUTLIER_CHANGE = "Outlier change";
     public static final String RANDOM_CHANGE = "Random change";
 
-//    public static String WORK_SCHEMA = "work";
     public static String CHASE_FORWARD = "f";
     public static String CHASE_BACKWARD = "b";
     public static String CHASE_USER = "u";

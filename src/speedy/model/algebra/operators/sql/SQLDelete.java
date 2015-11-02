@@ -67,20 +67,19 @@ public class SQLDelete implements IDelete {
     private String tableAliasToSQL(TableAlias tableAlias, IDatabase source, IDatabase target, AccessConfiguration configuration) {
         StringBuilder sb = new StringBuilder();
         if (DBMSUtility.supportsSchema(configuration)) {
-            String sourceSchemaName = "source";
-            if (source != null && source instanceof DBMSDB) {
-                sourceSchemaName = ((DBMSDB) source).getAccessConfiguration().getSchemaName();
-            }
-            String targetSchemaName = "target";
-            if (target != null && target instanceof DBMSDB) {
-                targetSchemaName = ((DBMSDB) target).getAccessConfiguration().getSchemaName();
-            }
             if (tableAlias.isSource()) {
+                String sourceSchemaName = "source";
+                if (source != null && source instanceof DBMSDB) {
+                    sourceSchemaName = DBMSUtility.getSchemaNameAndDot(((DBMSDB) source).getAccessConfiguration());
+                }
                 sb.append(sourceSchemaName);
             } else {
+                String targetSchemaName = "target";
+                if (target != null && target instanceof DBMSDB) {
+                    targetSchemaName = DBMSUtility.getSchemaNameAndDot(((DBMSDB) target).getAccessConfiguration());
+                }
                 sb.append(targetSchemaName);
             }
-            sb.append(".");
         }
         sb.append(tableAlias.getTableName());
         if (tableAlias.isAliased()) {

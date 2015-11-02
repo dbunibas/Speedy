@@ -48,7 +48,7 @@ public class DBMSUtility {
 
     public static List<String> loadTableNames(AccessConfiguration accessConfiguration) {
         List<String> tableNames = new ArrayList<String>();
-        String schemaName = accessConfiguration.getSchemaName();
+        String schemaName = accessConfiguration.getSchemaAndSuffix();
         ResultSet tableResultSet = null;
         Connection connection = null;
         try {
@@ -78,7 +78,7 @@ public class DBMSUtility {
 
     public static List<Key> loadKeys(AccessConfiguration accessConfiguration) {
         List<Key> result = new ArrayList<Key>();
-        String schemaName = accessConfiguration.getSchemaName();
+        String schemaName = accessConfiguration.getSchemaAndSuffix();
         Connection connection = null;
         ResultSet tableResultSet = null;
         try {
@@ -116,7 +116,7 @@ public class DBMSUtility {
 
     public static List<ForeignKey> loadForeignKeys(AccessConfiguration accessConfiguration) {
         Map<String, ForeignKey> foreignKeyMap = new HashMap<String, ForeignKey>();
-        String schemaName = accessConfiguration.getSchemaName();
+        String schemaName = accessConfiguration.getSchemaAndSuffix();
         Connection connection = null;
         ResultSet tableResultSet = null;
         try {
@@ -195,7 +195,7 @@ public class DBMSUtility {
             schemaResultSet = databaseMetaData.getSchemas();
             while (schemaResultSet.next()) {
                 String schemaName = schemaResultSet.getString("TABLE_SCHEM");
-                if (schemaName.equals(accessConfiguration.getSchemaName())) {
+                if (schemaName.equals(accessConfiguration.getSchemaAndSuffix())) {
                     return true;
                 }
             }
@@ -263,32 +263,32 @@ public class DBMSUtility {
     }
 
     public static ResultSet getTableResultSetSortByOID(String tableName, AccessConfiguration accessConfiguration) {
-        String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchema(accessConfiguration) + "\"" + tableName + "\"" + " ORDER BY " + SpeedyConstants.OID;
+        String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchemaNameAndDot(accessConfiguration) + "\"" + tableName + "\"" + " ORDER BY " + SpeedyConstants.OID;
         return QueryManager.executeQuery(query, accessConfiguration);
     }
 
     public static ResultSet getTableResultSetUnsorted(String tableName, AccessConfiguration accessConfiguration) {
-        String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchema(accessConfiguration) + "\"" + tableName + "\"";
+        String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchemaNameAndDot(accessConfiguration) + "\"" + tableName + "\"";
         return QueryManager.executeQuery(query, accessConfiguration);
     }
 
     public static String createTablePaginationQuery(String tableName, AccessConfiguration accessConfiguration, int offset, int limit) {
-        return "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchema(accessConfiguration) + "\"" + tableName + "\"" + " LIMIT " + limit + " OFFSET " + offset;
+        return "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchemaNameAndDot(accessConfiguration) + "\"" + tableName + "\"" + " LIMIT " + limit + " OFFSET " + offset;
     }
 
     public static ResultSet getTableOidsResultSet(String tableName, AccessConfiguration accessConfiguration) {
-        String query = "SELECT " + SpeedyConstants.OID + " FROM " + getSchema(accessConfiguration) + "\"" + tableName + "\"";
+        String query = "SELECT " + SpeedyConstants.OID + " FROM " + getSchemaNameAndDot(accessConfiguration) + "\"" + tableName + "\"";
         return QueryManager.executeQuery(query, accessConfiguration);
     }
 
     public static ResultSet getTupleResultSet(String tableName, TupleOID oid, AccessConfiguration accessConfiguration, Connection c) {
-        String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchema(accessConfiguration) + "\"" + tableName + "\"" + " WHERE " + SpeedyConstants.OID + "=" + oid.toString();
+        String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchemaNameAndDot(accessConfiguration) + "\"" + tableName + "\"" + " WHERE " + SpeedyConstants.OID + "=" + oid.toString();
         return QueryManager.executeQuery(query, c, accessConfiguration);
     }
 
     public static ResultSet getTableResultSetForSchema(String tableName, AccessConfiguration accessConfiguration) {
-//        String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchema(accessConfiguration) + tableName + " LIMIT 0";
-        String query = "SELECT " + SpeedyConstants.OID + ", " + getTableName(tableName, accessConfiguration) + ".* FROM " + getSchema(accessConfiguration) + tableName + " LIMIT 0";
+//        String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchemaNameAndDot(accessConfiguration) + tableName + " LIMIT 0";
+        String query = "SELECT " + SpeedyConstants.OID + ", " + getTableName(tableName, accessConfiguration) + ".* FROM " + getSchemaNameAndDot(accessConfiguration) + tableName + " LIMIT 0";
         return QueryManager.executeQuery(query, accessConfiguration);
     }
 
@@ -299,15 +299,15 @@ public class DBMSUtility {
         return "\"" + tableName + "\"";
     }
 
-    public static String getSchema(AccessConfiguration accessConfiguration) {
+    public static String getSchemaNameAndDot(AccessConfiguration accessConfiguration) {
         if (!supportsSchema(accessConfiguration)) {
             return "";
         }
-        String schemaName = accessConfiguration.getSchemaName();
+        String schemaName = accessConfiguration.getSchemaAndSuffix();
         if (schemaName == null || schemaName.isEmpty()) {
             return "";
         }
-        return accessConfiguration.getSchemaName() + ".";
+        return accessConfiguration.getSchemaAndSuffix() + ".";
     }
 
     public static Tuple createTupleFromQuery(ResultSet resultSet) {
@@ -628,8 +628,8 @@ public class DBMSUtility {
 
     public static void createSchema(AccessConfiguration accessConfiguration) {
         StringBuilder result = new StringBuilder();
-        result.append("DROP SCHEMA IF EXISTS ").append(accessConfiguration.getSchemaName()).append(" CASCADE;\n");
-        result.append("CREATE SCHEMA ").append(accessConfiguration.getSchemaName()).append(";\n\n");
+        result.append("DROP SCHEMA IF EXISTS ").append(accessConfiguration.getSchemaAndSuffix()).append(" CASCADE;\n");
+        result.append("CREATE SCHEMA ").append(accessConfiguration.getSchemaAndSuffix()).append(";\n\n");
         QueryManager.executeScript(result.toString(), accessConfiguration, true, true, false, true);
     }
 

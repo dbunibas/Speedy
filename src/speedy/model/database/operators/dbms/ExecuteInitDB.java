@@ -56,7 +56,7 @@ public class ExecuteInitDB {
         AccessConfiguration accessConfiguration = db.getAccessConfiguration();
         if (configuration.getInitDBScript() == null && configuration.hasFilesToImport() && !DBMSUtility.isSchemaExists(accessConfiguration)
                 && DBMSUtility.supportsSchema(accessConfiguration)) {
-            configuration.setInitDBScript(createSchemaScript(accessConfiguration.getSchemaName()));
+            configuration.setInitDBScript(createSchemaScript(accessConfiguration.getSchemaAndSuffix()));
         }
         if (configuration.getInitDBScript() != null) {
             QueryManager.executeScript(configuration.getInitDBScript(), accessConfiguration, false, true, false, false);

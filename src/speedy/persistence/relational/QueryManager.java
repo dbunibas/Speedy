@@ -75,8 +75,13 @@ public class QueryManager {
     public static ResultSet executeQuery(String query, AccessConfiguration accessConfiguration) {
         Connection connection = null;
         try {
+            if (logger.isTraceEnabled()) logger.trace("Executing query " + intoSingleLine(query));
             connection = getConnection(accessConfiguration);
-            return executeQuery(query, connection, accessConfiguration);
+            long start = new Date().getTime();
+            ResultSet resultSet = executeQuery(query, connection, accessConfiguration);
+            long finish = new Date().getTime();
+            if (logger.isTraceEnabled()) logger.trace((finish - start) + " ~ " + intoSingleLine(query));
+            return resultSet;
         } catch (Exception daoe) {
             throw new DBMSException("Unable to execute query \n" + query + " on database " + accessConfiguration.getDatabaseName() + ".\n" + accessConfiguration + "\n" + daoe.getLocalizedMessage());
         }

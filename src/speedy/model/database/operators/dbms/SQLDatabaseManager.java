@@ -12,10 +12,8 @@ public class SQLDatabaseManager implements IDatabaseManager {
 
     public IDatabase createDatabase(IDatabase target, String suffix) {
         AccessConfiguration targetConfiguration = ((DBMSDB) target).getAccessConfiguration();
-        String originalTargetSchemaName = targetConfiguration.getSchemaName();
-        String newTargetSchemaName = originalTargetSchemaName + suffix;
         AccessConfiguration newAccessConfiguration = targetConfiguration.clone();
-        newAccessConfiguration.setSchemaName(newTargetSchemaName);
+        newAccessConfiguration.setSchemaSuffix(suffix);
         DBMSUtility.createSchema(newAccessConfiguration);
         DBMSDB database = new DBMSDB(newAccessConfiguration);
         return database;
@@ -23,27 +21,25 @@ public class SQLDatabaseManager implements IDatabaseManager {
 
     public IDatabase cloneTarget(IDatabase target, String suffix) {
         AccessConfiguration targetConfiguration = ((DBMSDB) target).getAccessConfiguration();
-        String originalTargetSchemaName = targetConfiguration.getSchemaName();
-        String cloneTargetSchemaName = originalTargetSchemaName + suffix;
-        cloneSchema(originalTargetSchemaName, cloneTargetSchemaName, targetConfiguration);
-        AccessConfiguration cloneAccessConfiguration = targetConfiguration.clone();
-        cloneAccessConfiguration.setSchemaName(cloneTargetSchemaName);
+        AccessConfiguration cloneConfiguration = targetConfiguration.clone();
+        cloneConfiguration.setSchemaSuffix(suffix);
+        cloneSchema(targetConfiguration.getSchemaAndSuffix(), cloneConfiguration.getSchemaAndSuffix(), targetConfiguration);
 //        DBMSDB clone = new DBMSDB(target, cloneAccessConfiguration); //shallow copy
-        DBMSDB clone = new DBMSDB(cloneAccessConfiguration);
+        DBMSDB clone = new DBMSDB(cloneConfiguration);
         return clone;
     }
 
     public void removeClone(IDatabase target, String suffix) {
         AccessConfiguration targetConfiguration = ((DBMSDB) target).getAccessConfiguration();
-        String originalTargetSchemaName = targetConfiguration.getSchemaName();
-        String cloneTargetSchemaName = originalTargetSchemaName + suffix;
-        removeSchema(cloneTargetSchemaName, targetConfiguration);
+        AccessConfiguration cloneConfiguration = targetConfiguration.clone();
+        cloneConfiguration.setSchemaSuffix(suffix);
+        removeSchema(cloneConfiguration.getSchemaAndSuffix(), targetConfiguration);
     }
 
     public void removeTable(String tableName, IDatabase db) {
         AccessConfiguration ac = ((DBMSDB) db).getAccessConfiguration();
         StringBuilder script = new StringBuilder();
-        script.append("DROP TABLE ").append(ac.getSchemaName()).append(".").append(tableName).append("\n");
+        script.append("DROP TABLE ").append(ac.getSchemaAndSuffix()).append(".").append(tableName).append("\n");
         QueryManager.executeScript(script.toString(), ac, true, true, true, false);
     }
 
@@ -89,7 +85,7 @@ public class SQLDatabaseManager implements IDatabaseManager {
         AccessConfiguration ac = ((DBMSDB) db).getAccessConfiguration();
         StringBuilder sb = new StringBuilder();
         for (String tableName : db.getTableNames()) {
-            sb.append("VACUUM ANALYZE ").append(DBMSUtility.getSchema(ac)).append(tableName).append(";");
+            sb.append("VACUUM ANALYZE ").append(DBMSUtility.getSchemaNameAndDot(ac)).append(tableName).append(";");
         }
         QueryManager.executeScript(sb.toString(), ac, true, true, false, false);
     }
