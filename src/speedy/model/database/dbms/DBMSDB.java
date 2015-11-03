@@ -142,6 +142,7 @@ public class DBMSDB implements IDatabase {
 
     public String printSchema() {
         StringBuilder result = new StringBuilder();
+        result.append(accessConfiguration).append("\n");
         result.append("Schema: ").append(getName()).append(" {\n");
         for (String tableName : getTableNames()) {
             DBMSTable table = (DBMSTable) getTable(tableName);
@@ -170,6 +171,7 @@ public class DBMSDB implements IDatabase {
 
     public String printInstances(boolean sort) {
         StringBuilder result = new StringBuilder();
+        result.append(accessConfiguration).append("\n");
         for (String tableName : getTableNames()) {
             DBMSTable table = (DBMSTable) getTable(tableName);
             if (sort) {
@@ -184,7 +186,7 @@ public class DBMSDB implements IDatabase {
 
     public String toString() {
         StringBuilder result = new StringBuilder();
-//        result.append(printSchema());
+        result.append(accessConfiguration).append("\n");
         result.append(printInstances());
         return result.toString();
     }
