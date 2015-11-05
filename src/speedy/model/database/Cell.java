@@ -70,12 +70,12 @@ public class Cell implements Serializable, Cloneable {
         if (obj == null) {
             return false;
         }
-        return this.toString().equals(obj.toString());
+        return this.toHashString().equals(((Cell) obj).toHashString());
     }
 
     @Override
     public int hashCode() {
-        return this.toString().hashCode();
+        return this.toHashString().hashCode();
     }
 
     @Override
@@ -90,6 +90,10 @@ public class Cell implements Serializable, Cloneable {
     @Override
     public String toString() {
         return tupleOid + ":" + attributeRef + "-" + value + (isAuthoritative() ? " (Auth)" : "");
+    }
+
+    public String toHashString() {
+        return tupleOid + ":" + attributeRef;
     }
 
     public String toShortString() {
