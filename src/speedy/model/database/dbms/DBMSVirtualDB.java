@@ -1,6 +1,5 @@
 package speedy.model.database.dbms;
 
-
 import speedy.model.database.ForeignKey;
 import speedy.model.database.IDatabase;
 import speedy.model.database.ITable;
@@ -41,6 +40,10 @@ public class DBMSVirtualDB implements IDatabase {
 
     public String getName() {
         return "Virtual" + originalDB.getName();
+    }
+
+    public String getSuffix() {
+        return suffix;
     }
 
     public List<String> getTableNames() {
