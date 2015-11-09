@@ -67,10 +67,10 @@ public class Cell implements Serializable, Cloneable {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        return this.toHashString().equals(((Cell) obj).toHashString());
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        final Cell other = (Cell) obj;
+        return this.toHashString().equals(other.toHashString());
     }
 
     @Override

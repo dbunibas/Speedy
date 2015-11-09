@@ -633,6 +633,11 @@ public class DBMSUtility {
         QueryManager.executeScript(result.toString(), accessConfiguration, true, true, false, true);
     }
 
+    public static void removeSchema(String schema, AccessConfiguration accessConfiguration) {
+        String function = "DROP SCHEMA IF EXISTS " + schema + " CASCADE;";
+        QueryManager.executeScript(function, accessConfiguration, true, true, false, false);
+    }
+
     public static boolean isMySQL(String driver) {
         return driver.toLowerCase().contains("mysql");
     }

@@ -158,4 +158,9 @@ public class DBMSTable implements ITable {
             QueryManager.closeResultSet(resultSet);
         }
     }
+    
+    public void reset(){
+        this.size = null;
+        this.attributes = null;
+    }
 }

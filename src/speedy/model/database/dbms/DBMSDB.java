@@ -40,6 +40,13 @@ public class DBMSDB implements IDatabase {
         }
         loadTables();
     }
+    
+    public void reset(){
+        this.initialized = false;
+        for (DBMSTable table : tables) {
+            table.reset();
+        }
+    }
 
     private void loadTables() {
         for (String tableName : getTableNames()) {

@@ -33,7 +33,7 @@ public class SQLDatabaseManager implements IDatabaseManager {
         AccessConfiguration targetConfiguration = ((DBMSDB) target).getAccessConfiguration();
         AccessConfiguration cloneConfiguration = targetConfiguration.clone();
         cloneConfiguration.setSchemaSuffix(suffix);
-        removeSchema(cloneConfiguration.getSchemaAndSuffix(), targetConfiguration);
+        DBMSUtility.removeSchema(cloneConfiguration.getSchemaAndSuffix(), targetConfiguration);
     }
 
     public void removeTable(String tableName, IDatabase db) {
@@ -48,11 +48,6 @@ public class SQLDatabaseManager implements IDatabaseManager {
         script.append(getCloneFunction()).append("\n");
         script.append("SELECT clone_schema('").append(src).append("','").append(dest).append("');");
         QueryManager.executeScript(script.toString(), ac, true, true, true, false);
-    }
-
-    private void removeSchema(String schema, AccessConfiguration ac) {
-        String function = "drop schema " + schema + " cascade;";
-        QueryManager.executeScript(function, ac, true, true, false, false);
     }
 
     private String getCloneFunction() {
