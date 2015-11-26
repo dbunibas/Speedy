@@ -569,6 +569,7 @@ public class DBMSUtility {
 //            return variable;
         }
         Object objectVariable = variableExpression.getDescription();
+        if (logger.isDebugEnabled()) logger.debug("Object variable class: " + objectVariable.getClass());
         if (objectVariable instanceof IVariableDescription) {
             IVariableDescription variableDescription = (IVariableDescription) variableExpression.getDescription();
             AttributeRef attributeRef = variableDescription.getAttributeRefs().get(0);
@@ -578,7 +579,7 @@ public class DBMSUtility {
             } else {
                 result = DBMSUtility.attributeRefToSQL(attributeRef);
             }
-            if (logger.isDebugEnabled()) logger.debug("Return " + result);
+            if (logger.isDebugEnabled()) logger.debug("Return IVariableDescription: " + result);
             return result;
         }
         if (objectVariable instanceof AttributeRef) {
@@ -589,10 +590,10 @@ public class DBMSUtility {
             } else {
                 result = DBMSUtility.attributeRefToSQL(attributeRef);
             }
-            if (logger.isDebugEnabled()) logger.debug("Return " + result);
+            if (logger.isDebugEnabled()) logger.debug("Return AttributeRef: " + result);
             return result;
         }
-        if (logger.isDebugEnabled()) logger.debug("Return " + variable);
+        if (logger.isDebugEnabled()) logger.debug("Return: " + variable);
         return variable;
     }
 

@@ -73,6 +73,10 @@ public class Cell implements Serializable, Cloneable {
         return this.toHashString().equals(other.toHashString());
     }
 
+    public boolean equalsModuloAlias(Cell other) {
+        return this.getTupleOID().equals(other.getTupleOID()) && this.getAttributeRef().toStringNoAlias().equals(other.getAttributeRef().toStringNoAlias());
+    }
+
     @Override
     public int hashCode() {
         return this.toHashString().hashCode();

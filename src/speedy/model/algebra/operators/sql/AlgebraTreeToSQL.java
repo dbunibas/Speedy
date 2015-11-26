@@ -201,9 +201,9 @@ public class AlgebraTreeToSQL {
                 generateNestedSelect(child);
                 return;
             }
-            if (!(child instanceof Scan) && !(child instanceof Join) && !(child instanceof Select) && 
-                    !(child instanceof CreateTableAs) && !(child instanceof RestoreOIDs) && !(child instanceof Distinct) &&
-                    !(child instanceof Difference) && !(child instanceof OrderBy)) {
+            if (!(child instanceof Scan) && !(child instanceof Join) && !(child instanceof Select)
+                    && !(child instanceof CreateTableAs) && !(child instanceof RestoreOIDs) && !(child instanceof Distinct)
+                    && !(child instanceof Difference) && !(child instanceof OrderBy)) {
                 throw new IllegalArgumentException("Project of a " + child.getName() + " is not supported");
             }
             child.accept(this);
@@ -364,6 +364,9 @@ public class AlgebraTreeToSQL {
             result.append(");").append("\n");
             String createTableQuery = result.toString();
             this.createTableQueries.add(createTableQuery);
+            if (tableName.startsWith(SpeedyConstants.DELTA_TMP_TABLES)) {
+                this.dropTempTableQueries.add("DROP TABLE IF EXISTS " + operator.getSchemaName() + "." + tableName + ";\n");
+            }
             result = new SQLQuery(currentResult);
             if (operator.getFather() != null) {
                 if (operator.getFather() instanceof Join) {
