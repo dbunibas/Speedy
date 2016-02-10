@@ -20,13 +20,25 @@ public class OrderBy extends AbstractOperator {
 
     private static Logger logger = LoggerFactory.getLogger(OrderBy.class);
 
+    public static final String ORDER_ASC = "ASC";
+    public static final String ORDER_DESC = "DESC";
+
     private List<AttributeRef> attributes;
+    private String order = ORDER_ASC;
 
     public OrderBy(List<AttributeRef> attributes) {
         if (attributes.isEmpty()) {
             throw new IllegalArgumentException("Unable to create an OrderBy without attributes");
         }
         this.attributes = attributes;
+    }
+
+    public String getOrder() {
+        return order;
+    }
+
+    public void setOrder(String order) {
+        this.order = order;
     }
 
     public String getName() {
@@ -53,6 +65,9 @@ public class OrderBy extends AbstractOperator {
             result.add(originalTuple);
         }
         Collections.sort(result, new TupleOrderByComparator(attributes));
+        if (ORDER_DESC.equals(order)) {
+            Collections.reverse(result);
+        }
     }
 
     public List<AttributeRef> getAttributes(IDatabase source, IDatabase target) {
@@ -72,7 +87,7 @@ class TupleOrderByComparator implements Comparator<Tuple> {
     public int compare(Tuple t1, Tuple t2) {
         String s1 = buildTupleString(t1);
         String s2 = buildTupleString(t2);
-        if(s1.equals(s2)){
+        if (s1.equals(s2)) {
             return tupleOIDComparator.compare(t1, t2);
         }
         return s1.compareTo(s2);

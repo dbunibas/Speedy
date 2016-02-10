@@ -31,6 +31,7 @@ import speedy.model.algebra.aggregatefunctions.MaxAggregateFunction;
 import speedy.model.algebra.aggregatefunctions.MinAggregateFunction;
 import speedy.model.algebra.Offset;
 import speedy.model.algebra.OrderBy;
+import static speedy.model.algebra.OrderBy.ORDER_DESC;
 import speedy.model.algebra.OrderByRandom;
 import speedy.model.algebra.Partition;
 import speedy.model.algebra.Project;
@@ -242,6 +243,9 @@ public class AlgebraTreeToSQL {
                 result.append(DBMSUtility.attributeRefToSQL(matchingAttribute)).append(", ");
             }
             SpeedyUtility.removeChars(", ".length(), result.getStringBuilder());
+            if (OrderBy.ORDER_DESC.equals(operator.getOrder())) {
+                result.append(" ").append(OrderBy.ORDER_DESC);
+            }
             result.append("\n");
         }
 
@@ -272,7 +276,7 @@ public class AlgebraTreeToSQL {
                 currentProjectionAttribute.add(aggregateFunction.getAttributeRef());
                 result.append(aggregateFunctionToString(aggregateFunction, aggregateFunction.getAttributeRef(), nestedTables)).append(", ");
             }
-            
+
             SpeedyUtility.removeChars(", ".length(), result.getStringBuilder());
             result.append("\n").append(this.indentString());
             result.append(" FROM ");
