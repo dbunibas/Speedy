@@ -263,13 +263,16 @@ public class AlgebraTreeToSQL {
             List<NestedOperator> nestedTables = findNestedTablesForGroupBy(operator);
             List<IAggregateFunction> aggregateFunctions = operator.getAggregateFunctions();
             List<String> havingFunctions = extractHavingFunctions(operator);
+            this.currentProjectionAttribute = new ArrayList<AttributeRef>();
             for (IAggregateFunction aggregateFunction : aggregateFunctions) {
                 AttributeRef attributeRef = aggregateFunction.getAttributeRef();
                 if (attributeRef.toString().contains(SpeedyConstants.AGGR + "." + SpeedyConstants.COUNT)) {
                     continue;
                 }
+                currentProjectionAttribute.add(aggregateFunction.getAttributeRef());
                 result.append(aggregateFunctionToString(aggregateFunction, aggregateFunction.getAttributeRef(), nestedTables)).append(", ");
             }
+            
             SpeedyUtility.removeChars(", ".length(), result.getStringBuilder());
             result.append("\n").append(this.indentString());
             result.append(" FROM ");
