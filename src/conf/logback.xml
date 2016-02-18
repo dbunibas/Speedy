@@ -19,6 +19,7 @@
         <appender-ref ref="stdout"/>
         <!--<appender-ref ref="file"/>-->
     </root>
+    <!--<logger name="speedy.model.algebra.operators.sql.AlgebraTreeToSQL" level="DEBUG"/>-->
     <!--     TEST     -->
     <logger name="speedy.test" level="DEBUG"/>
     <!--     STATS     -->

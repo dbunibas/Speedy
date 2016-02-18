@@ -14,7 +14,6 @@ import speedy.model.database.Attribute;
 import speedy.model.database.Cell;
 import speedy.model.database.IDatabase;
 import speedy.model.database.ITable;
-import speedy.model.database.NullValue;
 import speedy.model.database.Tuple;
 import speedy.utility.DBMSUtility;
 
@@ -42,7 +41,7 @@ public class SQLInsertTuple implements IInsertTuple {
         insertQuery.append(")");
         insertQuery.append(" VALUES (");
         for (Cell cell : tuple.getCells()) {
-            if (cell.getValue() == null || cleanValue(cell.getValue().toString()).equals(SpeedyConstants.NULL_VALUE)) {
+            if (cell.getValue() == null || cleanValue(cell.getValue().toString()).equalsIgnoreCase(SpeedyConstants.NULL_VALUE)) {
                 insertQuery.append("null, ");
                 continue;
             }
