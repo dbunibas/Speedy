@@ -31,7 +31,6 @@ import speedy.model.algebra.aggregatefunctions.MaxAggregateFunction;
 import speedy.model.algebra.aggregatefunctions.MinAggregateFunction;
 import speedy.model.algebra.Offset;
 import speedy.model.algebra.OrderBy;
-import static speedy.model.algebra.OrderBy.ORDER_DESC;
 import speedy.model.algebra.OrderByRandom;
 import speedy.model.algebra.Partition;
 import speedy.model.algebra.Project;
@@ -267,7 +266,7 @@ public class AlgebraTreeToSQL {
             List<NestedOperator> nestedTables = findNestedTablesForGroupBy(operator);
             List<IAggregateFunction> aggregateFunctions = operator.getAggregateFunctions();
             List<String> havingFunctions = extractHavingFunctions(operator);
-            this.currentProjectionAttribute = new ArrayList<AttributeRef>();
+//            this.currentProjectionAttribute = new ArrayList<AttributeRef>();
             for (IAggregateFunction aggregateFunction : aggregateFunctions) {
                 AttributeRef attributeRef = aggregateFunction.getAttributeRef();
                 if (attributeRef.toString().contains(SpeedyConstants.AGGR + "." + SpeedyConstants.COUNT)) {
@@ -276,7 +275,6 @@ public class AlgebraTreeToSQL {
                 currentProjectionAttribute.add(aggregateFunction.getAttributeRef());
                 result.append(aggregateFunctionToString(aggregateFunction, aggregateFunction.getAttributeRef(), nestedTables)).append(", ");
             }
-
             SpeedyUtility.removeChars(", ".length(), result.getStringBuilder());
             result.append("\n").append(this.indentString());
             result.append(" FROM ");
