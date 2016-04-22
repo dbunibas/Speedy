@@ -32,4 +32,24 @@ public class PrintUtility {
 //        System.out.println(ANSI_BLACK + message + ANSI_RESET);
         System.out.println(message);
     }
+
+    public static void printPercentage(int percentage) {
+        System.out.print("[");
+        for (int i = 0; i < 10; i++) {
+            if (percentage < 33) {
+                System.out.print(ANSI_RED);
+            } else if (percentage < 66) {
+                System.out.print(ANSI_YELLOW);
+            } else {
+                System.out.print(ANSI_GREEN);
+            }
+            if (i * 10 < percentage) {
+                System.out.print("#");
+            } else {
+                System.out.print(" ");
+            }
+        }
+        System.out.print(ANSI_RESET);
+        System.out.print("] " + percentage + "%\r");
+    }
 }

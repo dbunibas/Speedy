@@ -84,6 +84,31 @@ public class DBMSTable implements ITable {
         return size;
     }
 
+    public long getNumberOfDistinctTuples() {
+        StringBuilder query = new StringBuilder();
+        query.append("SELECT count(*) as count FROM (");
+        query.append(" SELECT DISTINCT ");
+        for (Attribute attribute : attributes) {
+            if (attribute.getName().equalsIgnoreCase(SpeedyConstants.OID)) {
+                continue;
+            }
+            query.append(attribute.getName()).append(", ");
+        }
+        SpeedyUtility.removeChars(", ".length(), query);
+        query.append(" FROM ").append(DBMSUtility.getSchemaNameAndDot(accessConfiguration)).append(tableName);
+        query.append(") AS tmp");
+        ResultSet resultSet = null;
+        try {
+            resultSet = QueryManager.executeQuery(query.toString(), accessConfiguration);
+            resultSet.next();
+            return resultSet.getLong("count");
+        } catch (SQLException ex) {
+            throw new DBMSException("Unable to execute query " + query + " on database \n" + accessConfiguration + "\n" + ex);
+        } finally {
+            QueryManager.closeResultSet(resultSet);
+        }
+    }
+
     public Iterator<ITupleLoader> getTupleLoaderIterator() {
         ResultSet resultSet = DBMSUtility.getTableOidsResultSet(tableName, accessConfiguration);
         return new DBMSTupleLoaderIterator(resultSet, tableName, accessConfiguration);
@@ -158,8 +183,8 @@ public class DBMSTable implements ITable {
             QueryManager.closeResultSet(resultSet);
         }
     }
-    
-    public void reset(){
+
+    public void reset() {
         this.size = null;
         this.attributes = null;
     }

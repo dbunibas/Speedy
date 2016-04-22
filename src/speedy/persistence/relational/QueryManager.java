@@ -41,7 +41,7 @@ public class QueryManager {
             QueryStatManager.getInstance().addQuery(script, (finish - start));
         } catch (Exception daoe) {
             try {
-                if (connection != null) {
+                if (connection != null && !autoCommit) {
                     connection.rollback();
                 }
             } catch (SQLException ex) {

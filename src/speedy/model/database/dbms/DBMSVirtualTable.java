@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import speedy.model.database.operators.lazyloading.DBMSTupleLoaderIterator;
 import speedy.model.database.operators.lazyloading.ITupleLoader;
+import speedy.utility.SpeedyUtility;
 
 public class DBMSVirtualTable implements ITable {
 
@@ -145,6 +146,31 @@ public class DBMSVirtualTable implements ITable {
         ResultSet resultSet = null;
         try {
             resultSet = QueryManager.executeQuery(query, accessConfiguration);
+            resultSet.next();
+            return resultSet.getLong("count");
+        } catch (SQLException ex) {
+            throw new DBMSException("Unable to execute query " + query + " on database \n" + accessConfiguration + "\n" + ex);
+        } finally {
+            QueryManager.closeResultSet(resultSet);
+        }
+    }
+
+    public long getNumberOfDistinctTuples() {
+        StringBuilder query = new StringBuilder();
+        query.append("SELECT count(*) as count FROM (");
+        query.append(" SELECT DISTINCT ");
+        for (Attribute attribute : getAttributes()) {
+            if (attribute.getName().equalsIgnoreCase(SpeedyConstants.OID)) {
+                continue;
+            }
+            query.append(attribute.getName()).append(", ");
+        }
+        SpeedyUtility.removeChars(", ".length(), query);
+        query.append(" FROM ").append(accessConfiguration.getSchemaAndSuffix()).append(".").append(tableName).append(suffix);
+        query.append(") AS tmp");
+        ResultSet resultSet = null;
+        try {
+            resultSet = QueryManager.executeQuery(query.toString(), accessConfiguration);
             resultSet.next();
             return resultSet.getLong("count");
         } catch (SQLException ex) {

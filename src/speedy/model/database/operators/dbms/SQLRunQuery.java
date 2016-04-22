@@ -41,7 +41,7 @@ public class SQLRunQuery implements IRunQuery {
     }
 
     private ITupleIterator runStandard(IAlgebraOperator operator, IDatabase source, IDatabase target) {
-        AccessConfiguration accessConfiguration = getAccessConfiguration(target);
+        AccessConfiguration accessConfiguration = DBMSUtility.getAccessConfiguration(target);
         if (logger.isDebugEnabled()) logger.debug("Executing query \n" + operator);
         String sqlCode = translator.treeToSQL(operator, source, target, "");
         if (logger.isDebugEnabled()) logger.debug("Executing sql \n" + sqlCode);
@@ -50,7 +50,7 @@ public class SQLRunQuery implements IRunQuery {
     }
 
     public ResultInfo getSize(IAlgebraOperator operator, IDatabase source, IDatabase target) {
-        AccessConfiguration accessConfiguration = getAccessConfiguration(target);
+        AccessConfiguration accessConfiguration = DBMSUtility.getAccessConfiguration(target);
         StringBuilder query = new StringBuilder();
         query.append("SELECT ");
         query.append("count(*) as count");
@@ -80,18 +80,6 @@ public class SQLRunQuery implements IRunQuery {
         } finally {
             QueryManager.closeResultSet(resultSet);
         }
-    }
-
-    private AccessConfiguration getAccessConfiguration(IDatabase target) throws IllegalArgumentException {
-        AccessConfiguration accessConfiguration;
-        if (target instanceof DBMSDB) {
-            accessConfiguration = ((DBMSDB) target).getAccessConfiguration();
-        } else if (target instanceof DBMSVirtualDB) {
-            accessConfiguration = ((DBMSVirtualDB) target).getAccessConfiguration();
-        } else {
-            throw new IllegalArgumentException("Unable to execute SQL on main memory db. " + target);
-        }
-        return accessConfiguration;
     }
 
     ///////////////////////////

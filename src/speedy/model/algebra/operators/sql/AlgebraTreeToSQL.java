@@ -62,7 +62,7 @@ public class AlgebraTreeToSQL {
         private int counter = 0;
         private int indentLevel = 0;
         private boolean addOIDColumn = false;
-        private SQLQuery result = new SQLQuery();
+        private SQLQueryBuilder result = new SQLQueryBuilder();
         private IDatabase source;
         private IDatabase target;
         private String initialIndent;
@@ -347,7 +347,7 @@ public class AlgebraTreeToSQL {
 
         public void visitCreateTable(CreateTableAs operator) {
             String currentResult = result.toString();
-            result = new SQLQuery();
+            result = new SQLQueryBuilder();
             String tableName = operator.getTableName();
             if (operator.getFather() != null) {
                 tableName += "_" + counter++;
@@ -372,7 +372,7 @@ public class AlgebraTreeToSQL {
             if (tableName.startsWith(SpeedyConstants.DELTA_TMP_TABLES)) {
                 this.dropTempTableQueries.add("DROP TABLE IF EXISTS " + operator.getSchemaName() + "." + tableName + ";\n");
             }
-            result = new SQLQuery(currentResult);
+            result = new SQLQueryBuilder(currentResult);
             if (operator.getFather() != null) {
                 if (operator.getFather() instanceof Join) {
                     result.append(operator.getSchemaName()).append(".").append(tableName).append(" AS ").append(operator.getTableAlias());
@@ -948,4 +948,39 @@ public class AlgebraTreeToSQL {
         }
 
     }
+
+    static class SQLQueryBuilder {
+
+        private StringBuilder sb = new StringBuilder();
+        private boolean distinct;
+
+        public SQLQueryBuilder() {
+        }
+
+        public SQLQueryBuilder(Object initialString) {
+            sb.append(initialString);
+        }
+
+        public StringBuilder append(Object s) {
+            return sb.append(s);
+        }
+
+        public StringBuilder getStringBuilder() {
+            return sb;
+        }
+
+        public boolean isDistinct() {
+            return distinct;
+        }
+
+        public void setDistinct(boolean distinct) {
+            this.distinct = distinct;
+        }
+
+        @Override
+        public String toString() {
+            return sb.toString();
+        }
+    }
+
 }

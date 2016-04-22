@@ -13,8 +13,11 @@ import speedy.model.database.mainmemory.datasource.INode;
 import speedy.model.database.mainmemory.datasource.operators.CalculateSize;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import speedy.model.database.Cell;
 import speedy.model.database.operators.lazyloading.ITupleLoader;
 import speedy.model.database.operators.lazyloading.MainMemoryTupleLoaderIterator;
 
@@ -41,10 +44,10 @@ public class MainMemoryTable implements ITable {
         }
         return result;
     }
-    
-    public Attribute getAttribute(String name){
+
+    public Attribute getAttribute(String name) {
         for (Attribute attribute : getAttributes()) {
-            if(attribute.getName().equals(name)){
+            if (attribute.getName().equals(name)) {
                 return attribute;
             }
         }
@@ -54,6 +57,23 @@ public class MainMemoryTable implements ITable {
     public long getSize() {
         CalculateSize calculator = new CalculateSize();
         return calculator.getNumberOfTuples(this.dataSource.getInstances().get(0));
+    }
+
+    public long getNumberOfDistinctTuples() {
+        Set<String> distinct = new HashSet<String>();
+        List<Attribute> attributes = getAttributes();
+        ITupleIterator it = getTupleIterator();
+        while (it.hasNext()) {
+            Tuple tuple = it.next();
+            StringBuilder sb = new StringBuilder();
+            for (Attribute attribute : attributes) {
+                Cell cell = tuple.getCell(new AttributeRef(getName(), attribute.getName()));
+                sb.append(cell.toString()).append("|");
+            }
+            distinct.add(sb.toString());
+        }
+        it.close();
+        return distinct.size();
     }
 
     public DataSource getDataSource() {

@@ -144,6 +144,9 @@ public class SpeedyUtility {
 
     @SuppressWarnings("unchecked")
     public static String printMap(Map m) {
+        if (m == null) {
+            return "(null)";
+        }
         String indent = "    ";
         StringBuilder result = new StringBuilder("----------------------------- MAP (size =").append(m.size()).append(") ------------\n");
         List<Object> keys = new ArrayList<Object>(m.keySet());

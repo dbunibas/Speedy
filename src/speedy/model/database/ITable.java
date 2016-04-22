@@ -24,6 +24,8 @@ public interface ITable {
     public String toShortString();
 
     public long getSize();
+    
+    public long getNumberOfDistinctTuples();
 
     public ITupleIterator getTupleIterator(int offset, int limit);
 

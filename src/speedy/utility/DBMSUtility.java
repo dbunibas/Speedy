@@ -28,6 +28,7 @@ import speedy.model.database.AttributeRef;
 import speedy.model.database.Cell;
 import speedy.model.database.ConstantValue;
 import speedy.model.database.ForeignKey;
+import speedy.model.database.IDatabase;
 import speedy.model.database.IValue;
 import speedy.model.database.IVariableDescription;
 import speedy.model.database.Key;
@@ -36,6 +37,8 @@ import speedy.model.database.NullValue;
 import speedy.model.database.TableAlias;
 import speedy.model.database.Tuple;
 import speedy.model.database.TupleOID;
+import speedy.model.database.dbms.DBMSDB;
+import speedy.model.database.dbms.DBMSVirtualDB;
 import speedy.model.database.operators.lazyloading.DBMSTupleLoader;
 
 public class DBMSUtility {
@@ -635,12 +638,38 @@ public class DBMSUtility {
     }
 
     public static void removeSchema(String schema, AccessConfiguration accessConfiguration) {
-        String function = "DROP SCHEMA IF EXISTS " + schema + " CASCADE;";
-        QueryManager.executeScript(function, accessConfiguration, true, true, false, false);
+        String script = "DROP SCHEMA IF EXISTS " + schema + " CASCADE;";
+        Connection connection = null;
+        try {
+            if (logger.isDebugEnabled()) logger.debug("Dropping schema: " + schema);
+//            connection = new SimpleDbConnectionFactory().getConnection(tempAccessConfiguration);
+            connection = simpleDataSourceDB.getConnection(accessConfiguration);
+//            connection = QueryManager.getConnection(tempAccessConfiguration);
+            ScriptRunner scriptRunner = getScriptRunner(connection);
+            scriptRunner.setAutoCommit(true);
+            scriptRunner.setStopOnError(true);
+            scriptRunner.runScript(new StringReader(script));
+        } catch (Exception daoe) {
+            throw new DBMSException("Unable to drop schema " + accessConfiguration.getDatabaseName() + ".\n" + daoe.getLocalizedMessage());
+        } finally {
+            QueryManager.closeConnection(connection);
+        }
     }
 
     public static boolean isMySQL(String driver) {
         return driver.toLowerCase().contains("mysql");
+    }
+
+    public static AccessConfiguration getAccessConfiguration(IDatabase target) throws IllegalArgumentException {
+        AccessConfiguration accessConfiguration;
+        if (target instanceof DBMSDB) {
+            accessConfiguration = ((DBMSDB) target).getAccessConfiguration();
+        } else if (target instanceof DBMSVirtualDB) {
+            accessConfiguration = ((DBMSVirtualDB) target).getAccessConfiguration();
+        } else {
+            throw new IllegalArgumentException("Unable to execute SQL on main memory db. " + target);
+        }
+        return accessConfiguration;
     }
 
 }
