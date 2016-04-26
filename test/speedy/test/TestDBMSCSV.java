@@ -13,7 +13,6 @@ import speedy.SpeedyConstants;
 import speedy.model.algebra.GroupBy;
 import speedy.model.algebra.Limit;
 import speedy.model.algebra.OrderBy;
-import speedy.model.algebra.OrderByRandom;
 import speedy.model.algebra.Scan;
 import speedy.model.algebra.aggregatefunctions.CountAggregateFunction;
 import speedy.model.algebra.aggregatefunctions.IAggregateFunction;

@@ -483,7 +483,7 @@ public class DBMSUtility {
         IValue value;
         if (attributeValue == null || attributeValue.toString().equalsIgnoreCase(SpeedyConstants.NULL)) {
             value = new NullValue(SpeedyConstants.NULL_VALUE);
-        } else if (attributeValue.toString().startsWith(SpeedyConstants.SKOLEM_PREFIX)) {
+        } else if (SpeedyUtility.isNullValue(attributeValue)) {
             value = new NullValue(attributeValue);
         } else if (attributeValue.toString().startsWith(SpeedyConstants.LLUN_PREFIX)) {
             value = new LLUNValue(attributeValue);

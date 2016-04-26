@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import org.apache.commons.io.FilenameUtils;
+import speedy.comparison.TupleWithTable;
 import speedy.model.algebra.ProjectionAttribute;
 import speedy.model.database.LLUNValue;
 import speedy.utility.comparator.StringComparator;
@@ -343,6 +344,28 @@ public class SpeedyUtility {
             projectionAttributes.add(new ProjectionAttribute(attribute));
         }
         return projectionAttributes;
+    }
+
+    public static List<TupleWithTable> extractAllTuplesFromDatabase(IDatabase db) {
+        List<TupleWithTable> result = new ArrayList<TupleWithTable>();
+        for (String tableName : db.getTableNames()) {
+            ITable table = db.getTable(tableName);
+            ITupleIterator iterator = table.getTupleIterator();
+            while(iterator.hasNext()) {
+                result.add(new TupleWithTable(tableName, iterator.next()));
+            }
+            iterator.close();
+        }
+        return result;
+    }
+    
+    public static boolean isNullValue(Object attributeValue) {
+        for (String nullPrefix : SpeedyConstants.NULL_PREFIXES) {
+            if (attributeValue.toString().startsWith(nullPrefix)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // NUMERICAL METHOD

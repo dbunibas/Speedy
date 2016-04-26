@@ -1,35 +1,45 @@
 package speedy.comparison;
 
 import java.text.DecimalFormat;
-import speedy.model.database.Tuple;
 
 public class TupleMatch {
 
     private final static DecimalFormat df = new DecimalFormat("#0.00");
-    private Tuple expected;
-    private Tuple generated;
-    private double similarity;
+    private TupleWithTable leftTuple;
+    private TupleWithTable rightTuple;
+    private ValueMapping valueMapping;
+    private Double similarity;
 
-    public TupleMatch(Tuple expected, Tuple generated, double similarity) {
-        this.expected = expected;
-        this.generated = generated;
+    public TupleMatch(TupleWithTable leftTuple, TupleWithTable rightTuple, Double similarity) {
+        this.leftTuple = leftTuple;
+        this.rightTuple = rightTuple;
         this.similarity = similarity;
     }
 
-    public Tuple getExpected() {
-        return expected;
+    public TupleMatch(TupleWithTable leftTuple, TupleWithTable rightTuple, ValueMapping valueMapping, double similarity) {
+        this(leftTuple, rightTuple, similarity);
+        this.valueMapping = valueMapping;
     }
 
-    public Tuple getGenerated() {
-        return generated;
+    public TupleWithTable getLeftTuple() {
+        return leftTuple;
     }
 
-    public double getSimilarity() {
+    public TupleWithTable getRightTuple() {
+        return rightTuple;
+    }
+
+    public Double getSimilarity() {
         return similarity;
+    }
+
+    public ValueMapping getValueMapping() {
+        return valueMapping;
     }
 
     @Override
     public String toString() {
-        return "Match: (" + df.format(similarity) + ") " + expected.toString() + " <-> " + generated.toString();
+        return "Match: (" + df.format(similarity) + ") " + leftTuple.toString() + " <-> " + rightTuple.toString() +
+                (this.valueMapping != null ? "\n" + valueMapping : "");
     }
 }
