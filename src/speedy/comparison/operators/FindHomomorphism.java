@@ -17,14 +17,12 @@ import speedy.model.database.IDatabase;
 import speedy.model.database.IValue;
 import speedy.model.database.NullValue;
 import speedy.utility.SpeedyUtility;
-import speedy.utility.combinatorics.GenericListGenerator;
+import speedy.utility.combinatorics.GenericListGeneratorIterator;
 import speedy.utility.comparator.TupleMatchComparatorScore;
 
 public class FindHomomorphism {
 
     private final static Logger logger = LoggerFactory.getLogger(FindHomomorphism.class);
-
-    private GenericListGenerator<TupleMatch> generator = new GenericListGenerator<TupleMatch>();
 
     public enum ValueMatchResult {
         EQUAL_CONSTANTS, BOTH_NULLS, NULL_TO_CONSTANT, NOT_MATCHING
@@ -40,14 +38,26 @@ public class FindHomomorphism {
             return result;
         }
         sortTupleMatches(tupleMatches);
-        List<List<TupleMatch>> allCandidateHomomorphisms = combineMatches(sourceTuples, tupleMatches);
-        for (List<TupleMatch> candidateHomomorphism : allCandidateHomomorphisms) {
+        // new version: lazy combinations
+        List<List<TupleMatch>> allTupleMatches = combineMatches(sourceTuples, tupleMatches);
+        GenericListGeneratorIterator<TupleMatch> iterator = new GenericListGeneratorIterator<TupleMatch>(allTupleMatches);
+        while (iterator.hasNext()) {
+            List<TupleMatch> candidateHomomorphism = iterator.next();
             Homomorphism homomorphism = checkIfIsHomomorphism(candidateHomomorphism);
             if (homomorphism != null) {
                 result.setHomomorphism(homomorphism);
                 return result;
             }
         }
+        // old version: greedy combinations
+//        List<List<TupleMatch>> allCandidateHomomorphisms = combineMatches(sourceTuples, tupleMatches);
+//        for (List<TupleMatch> candidateHomomorphism : allCandidateHomomorphisms) {
+//            Homomorphism homomorphism = checkIfIsHomomorphism(candidateHomomorphism);
+//            if (homomorphism != null) {
+//                result.setHomomorphism(homomorphism);
+//                return result;
+//            }
+//        }
         return result;
     }
 
@@ -146,12 +156,21 @@ public class FindHomomorphism {
         }
     }
 
+//    private List<List<TupleMatch>> combineMatches(List<TupleWithTable> sourceTuples, TupleMatches tupleMatches) {
+//        GenericListGenerator<TupleMatch> generator = new GenericListGenerator<TupleMatch>();
+//        List<List<TupleMatch>> allTupleMatches = new ArrayList<List<TupleMatch>>();
+//        for (TupleWithTable sourceTuple : sourceTuples) {
+//            allTupleMatches.add(tupleMatches.getMatchesForTuple(sourceTuple));
+//        }
+//        return generator.generateListsOfElements(allTupleMatches);
+//    }
+    
     private List<List<TupleMatch>> combineMatches(List<TupleWithTable> sourceTuples, TupleMatches tupleMatches) {
         List<List<TupleMatch>> allTupleMatches = new ArrayList<List<TupleMatch>>();
         for (TupleWithTable sourceTuple : sourceTuples) {
             allTupleMatches.add(tupleMatches.getMatchesForTuple(sourceTuple));
         }
-        return generator.generateListsOfElements(allTupleMatches);
+        return allTupleMatches;
     }
 
     private Homomorphism checkIfIsHomomorphism(List<TupleMatch> candidateHomomorphism) {

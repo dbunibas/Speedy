@@ -24,6 +24,7 @@ public class TestHomomorphisms extends TestCase {
         IDatabase destinationDb = loadDatabase("01", "destination");
         HomomorphismCheckResult result = homomorphismFinder.findHomomorphism(sourceDb, destinationDb);
         logger.info(result.toString());
+        assert(result.getNonMatchingTuples() == null);
     }
     
     public void test2() {
@@ -31,6 +32,7 @@ public class TestHomomorphisms extends TestCase {
         IDatabase destinationDb = loadDatabase("02", "destination");
         HomomorphismCheckResult result = homomorphismFinder.findHomomorphism(sourceDb, destinationDb);
         logger.info(result.toString());
+        assert(result.getNonMatchingTuples() == null);
     }
 
     private IDatabase loadDatabase(String expName, String schemaName) {
