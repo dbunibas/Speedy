@@ -19,7 +19,7 @@ public class SpeedyConstants {
     public static String LLUN = "llun";
     public static String NULL_VALUE = "NULL";
 
-    private static final String SKOLEM_PREFIX = "_SK";
+    public static final String SKOLEM_PREFIX = "_SK";
     public static final String SKOLEM_SEPARATOR = "-";
     
     public static String[] NULL_PREFIXES = {SKOLEM_PREFIX, "_N"};
