@@ -354,7 +354,7 @@ public class AlgebraTreeToSQL {
             }
             IAlgebraOperator child = operator.getChildren().get(0);
             result.append("DROP TABLE IF EXISTS ").append(operator.getSchemaName()).append(".").append(tableName).append(";\n");
-            result.append("CREATE TABLE ").append(operator.getSchemaName()).append(".").append(tableName);
+            result.append("CREATE " + (operator.isUnlogged() ? " UNLOGGED " : "") + "TABLE ").append(operator.getSchemaName()).append(".").append(tableName);
             if (operator.isWithOIDs()) {
                 if (child instanceof Distinct) {
                     result.append(" WITH oids ");
