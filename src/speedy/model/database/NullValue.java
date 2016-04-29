@@ -28,8 +28,6 @@ public class NullValue implements IValue {
         if (getClass() != obj.getClass()) return false;
         final NullValue other = (NullValue) obj;
         return this.value.toString().equals(other.value.toString());
-//        if (this.value != other.value && (this.value == null || !this.value.equals(other.value))) return false;
-//        return true;
     }
 
     @Override

@@ -14,6 +14,7 @@ import speedy.SpeedyConstants;
 
 public class QueryManager {
 
+    private final static int MAX_LENGTH = 1000;
     private static Logger logger = LoggerFactory.getLogger(QueryManager.class);
 //    private static IConnectionFactory dataSourceDB = new SimpleDbConnectionFactory();
     private static IConnectionFactory dataSourceDB = new PooledDbConnectionFactory();
@@ -41,7 +42,7 @@ public class QueryManager {
             QueryStatManager.getInstance().addQuery(script, (finish - start));
         } catch (Exception daoe) {
             try {
-                if (connection != null) {
+                if (connection != null && !autoCommit) {
                     connection.rollback();
                 }
             } catch (SQLException ex) {
@@ -160,6 +161,9 @@ public class QueryManager {
     }
 
     private static String intoSingleLine(String query) {
+        if (query.length() > MAX_LENGTH) {
+            query = query.substring(0, MAX_LENGTH) + "...";
+        }
         return query.replaceAll("\n", " ");
     }
 

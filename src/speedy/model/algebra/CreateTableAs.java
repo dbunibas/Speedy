@@ -16,12 +16,14 @@ public class CreateTableAs extends AbstractOperator {
     private String tableAlias;
     private String schemaName;
     private boolean withOIDs;
+    private boolean unlogged;
 
-    public CreateTableAs(String tableName, String tableAlias, String schemaName, boolean withOIDs) {
+    public CreateTableAs(String tableName, String tableAlias, String schemaName, boolean withOIDs, boolean unlogged) {
         this.tableName = tableName;
         this.tableAlias = tableAlias;
         this.schemaName = schemaName;
         this.withOIDs = withOIDs;
+        this.unlogged = unlogged;
     }
 
     public void accept(IAlgebraTreeVisitor visitor) {
@@ -29,7 +31,7 @@ public class CreateTableAs extends AbstractOperator {
     }
 
     public String getName() {
-        return "CREATE TABLE " + tableName + " AS ";
+        return "CREATE " + (unlogged ? " UNLOGGED " : "") + "TABLE " + tableName + " AS ";
     }
 
     public ITupleIterator execute(IDatabase source, IDatabase target) {
@@ -56,7 +58,7 @@ public class CreateTableAs extends AbstractOperator {
         return withOIDs;
     }
 
-    public void setWithOIDs(boolean withOIDs) {
-        this.withOIDs = withOIDs;
+    public boolean isUnlogged() {
+        return unlogged;
     }
 }

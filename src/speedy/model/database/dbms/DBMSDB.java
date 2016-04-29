@@ -178,7 +178,6 @@ public class DBMSDB implements IDatabase {
 
     public String printInstances(boolean sort) {
         StringBuilder result = new StringBuilder();
-        result.append(accessConfiguration).append("\n");
         for (String tableName : getTableNames()) {
             DBMSTable table = (DBMSTable) getTable(tableName);
             if (sort) {
@@ -191,6 +190,7 @@ public class DBMSDB implements IDatabase {
         return result.toString();
     }
 
+    @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
         result.append(accessConfiguration).append("\n");

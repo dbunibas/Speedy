@@ -14,7 +14,6 @@ import speedy.model.algebra.GroupBy;
 import speedy.model.algebra.Join;
 import speedy.model.algebra.Limit;
 import speedy.model.algebra.OrderBy;
-import speedy.model.algebra.Project;
 import speedy.model.algebra.Scan;
 import speedy.model.algebra.Select;
 import speedy.model.algebra.aggregatefunctions.CountAggregateFunction;
