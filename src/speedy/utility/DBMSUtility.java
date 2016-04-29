@@ -82,25 +82,41 @@ public class DBMSUtility {
         Connection connection = null;
         ResultSet tableResultSet = null;
         try {
-            if (logger.isDebugEnabled()) logger.debug("Loading keys: " + accessConfiguration);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Loading keys: " + accessConfiguration);
+            }
             connection = QueryManager.getConnection(accessConfiguration);
             String catalog = connection.getCatalog();
             if (catalog == null) {
                 catalog = accessConfiguration.getUri();
-                if (logger.isDebugEnabled()) logger.debug("Catalog is null. Catalog name will be: " + catalog);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Catalog is null. Catalog name will be: " + catalog);
+                }
             }
             DatabaseMetaData databaseMetaData = connection.getMetaData();
             tableResultSet = databaseMetaData.getTables(catalog, schemaName, null, new String[]{"TABLE"});
             while (tableResultSet.next()) {
+                List<AttributeRef> attributes = new ArrayList<AttributeRef>();
                 String tableName = tableResultSet.getString("TABLE_NAME");
-                if (logger.isDebugEnabled()) logger.debug("Searching primary keys. ANALYZING TABLE  = " + tableName);
-                ResultSet resultSet = databaseMetaData.getPrimaryKeys(catalog, null, tableName);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Searching unique. ANALYZING TABLE  = " + tableName);
+                }
+                boolean unique = true;
+                ResultSet resultSet = databaseMetaData.getIndexInfo(catalog, null, tableName, unique, true);
                 while (resultSet.next()) {
                     String columnName = resultSet.getString("COLUMN_NAME");
-                    if (logger.isDebugEnabled()) logger.debug("Analyzing primary key: " + columnName);
-                    if (logger.isDebugEnabled()) logger.debug("Found a Primary Key: " + columnName);
-                    Key key = new Key(new AttributeRef(tableName, columnName), true);
-                    result.add(key);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Analyzing unique: " + columnName);
+                    }
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Found a unique: " + columnName);
+                    }
+                    AttributeRef attributeRef = new AttributeRef(tableName, columnName);
+                    if (!attributes.contains(attributeRef)) {
+                        Key key = new Key(attributeRef);
+                        result.add(key);
+                        attributes.add(attributeRef);
+                    }
                 }
             }
         } catch (DAOException daoe) {
