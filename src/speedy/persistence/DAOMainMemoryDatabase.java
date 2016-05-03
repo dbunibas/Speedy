@@ -3,7 +3,6 @@ package speedy.persistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.exceptions.DAOException;
-import speedy.model.database.IDatabase;
 import speedy.model.database.mainmemory.MainMemoryDB;
 import speedy.model.database.mainmemory.datasource.DataSource;
 import speedy.persistence.xml.DAOXsd;
