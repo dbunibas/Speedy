@@ -6,6 +6,7 @@ public class PersistenceConstants {
     public static final String TYPE_META_INSTANCE = "meta instance";
     public static final String TYPE_ALGEBRA_RESULT = "algebra result";
     public static final String TYPE_XML = "XML";
+    public static final String TYPE_CSV = "CSV";
 
     public static final String DATASOURCE_ROOT_LABEL = "dataSource";
     public static final String MERGE_ROOT_LABEL = "merge";

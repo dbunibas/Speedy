@@ -1,5 +1,6 @@
 package speedy.utility;
 
+import java.io.File;
 import speedy.model.algebra.operators.ITupleIterator;
 import speedy.model.database.AttributeRef;
 import speedy.model.database.Cell;
@@ -132,6 +133,25 @@ public class SpeedyUtility {
         }
         result.deleteCharAt(result.length() - 1);
         return result.toString();
+    }
+
+    public static String printArray(Object[] array, String indent, String separator) {
+        if (array == null) {
+            return indent + "(null)";
+        }
+        if (array.length == 0) {
+            return indent + "(empty collection)";
+        }
+        StringBuilder result = new StringBuilder();
+        for (Object o : array) {
+            result.append(indent).append(o).append(separator);
+        }
+        result.deleteCharAt(result.length() - 1);
+        return result.toString();
+    }
+
+    public static String printArray(Object[] array) {
+        return printArray(array, "", "\n");
     }
 
     public static AttributeRef unAlias(AttributeRef attribute) {
@@ -352,14 +372,14 @@ public class SpeedyUtility {
         for (String tableName : db.getTableNames()) {
             ITable table = db.getTable(tableName);
             ITupleIterator iterator = table.getTupleIterator();
-            while(iterator.hasNext()) {
+            while (iterator.hasNext()) {
                 result.add(new TupleWithTable(tableName, iterator.next()));
             }
             iterator.close();
         }
         return result;
     }
-    
+
     public static boolean isNullValue(Object attributeValue) {
         for (String nullPrefix : ComparisonConfiguration.getNullPrefixes()) {
             if (attributeValue.toString().startsWith(nullPrefix)) {
@@ -377,6 +397,19 @@ public class SpeedyUtility {
     public static boolean pickRandom(double probability) {
         double random = new Random().nextDouble();
         return random < probability;
+    }
+
+    // FILE METHODS
+    public static List<File> getFileInFolder(String folderPath, String extension) {
+        File folder = new File(folderPath);
+        List<File> files = new ArrayList<File>();
+        File[] listFiles = folder.listFiles();
+        for (File file : listFiles) {
+            if (file.isFile() && (extension == null || file.getName().endsWith(extension))) {
+                files.add(file);
+            }
+        }
+        return files;
     }
 
 }
