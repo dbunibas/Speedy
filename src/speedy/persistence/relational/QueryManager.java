@@ -161,7 +161,7 @@ public class QueryManager {
     }
 
     private static String intoSingleLine(String query) {
-        if (query.length() > MAX_LENGTH) {
+        if (query.startsWith("INSERT INTO") && query.length() > MAX_LENGTH) {
             query = query.substring(0, MAX_LENGTH) + "...";
         }
         return query.replaceAll("\n", " ");

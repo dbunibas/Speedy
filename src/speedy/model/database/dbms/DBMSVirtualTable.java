@@ -61,7 +61,7 @@ public class DBMSVirtualTable implements ITable {
     }
 
     public ITupleIterator getTupleIterator() {
-        ResultSet resultSet = DBMSUtility.getTableResultSetSortByOID(tableName + suffix, accessConfiguration);
+        ResultSet resultSet = DBMSUtility.getTableResultSetSortByOID(getVirtualName(), accessConfiguration);
         return new DBMSTupleIterator(resultSet, tableName);
     }
 
@@ -72,12 +72,12 @@ public class DBMSVirtualTable implements ITable {
     }
 
     public String getPaginationQuery(int offset, int limit) {
-        return DBMSUtility.createTablePaginationQuery(tableName + suffix, accessConfiguration, offset, limit);
+        return DBMSUtility.createTablePaginationQuery(getVirtualName(), accessConfiguration, offset, limit);
     }
 
     public Iterator<ITupleLoader> getTupleLoaderIterator() {
-        ResultSet resultSet = DBMSUtility.getTableOidsResultSet(tableName + suffix, accessConfiguration);
-        return new DBMSTupleLoaderIterator(resultSet, tableName, tableName + suffix, accessConfiguration);
+        ResultSet resultSet = DBMSUtility.getTableOidsResultSet(getVirtualName(), accessConfiguration);
+        return new DBMSTupleLoaderIterator(resultSet, tableName, getVirtualName(), accessConfiguration);
     }
 
     public String printSchema(String indent) {
@@ -97,7 +97,11 @@ public class DBMSVirtualTable implements ITable {
     }
 
     public String toShortString() {
-        return DBMSUtility.getSchemaNameAndDot(accessConfiguration) + this.tableName + suffix;
+        return DBMSUtility.getSchemaNameAndDot(accessConfiguration) + this.getVirtualName();
+    }
+
+    public String getVirtualName() {
+        return tableName + suffix;
     }
 
     public String toString(String indent) {
@@ -132,7 +136,7 @@ public class DBMSVirtualTable implements ITable {
     private void initConnection() {
         ResultSet resultSet = null;
         try {
-            resultSet = DBMSUtility.getTableResultSetForSchema(tableName + suffix, accessConfiguration);
+            resultSet = DBMSUtility.getTableResultSetForSchema(getVirtualName(), accessConfiguration);
             this.attributes = DBMSUtility.getTableAttributes(resultSet, tableName);
         } catch (SQLException ex) {
             throw new DBMSException("Unable to load table " + tableName + ".\n" + ex);
@@ -142,7 +146,7 @@ public class DBMSVirtualTable implements ITable {
     }
 
     public long getSize() {
-        String query = "SELECT count(*) as count FROM " + accessConfiguration.getSchemaAndSuffix() + "." + tableName + suffix;
+        String query = "SELECT count(*) as count FROM " + accessConfiguration.getSchemaAndSuffix() + "." + getVirtualName();
         ResultSet resultSet = null;
         try {
             resultSet = QueryManager.executeQuery(query, accessConfiguration);
@@ -166,7 +170,7 @@ public class DBMSVirtualTable implements ITable {
             query.append(attribute.getName()).append(", ");
         }
         SpeedyUtility.removeChars(", ".length(), query);
-        query.append(" FROM ").append(accessConfiguration.getSchemaAndSuffix()).append(".").append(tableName).append(suffix);
+        query.append(" FROM ").append(accessConfiguration.getSchemaAndSuffix()).append(".").append(getVirtualName());
         query.append(") AS tmp");
         ResultSet resultSet = null;
         try {

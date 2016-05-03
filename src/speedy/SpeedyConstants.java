@@ -66,8 +66,7 @@ public class SpeedyConstants {
     public static String DELTA_TABLE_SEPARATOR = "__";
     public static String NA_TABLE_SUFFIX = DELTA_TABLE_SEPARATOR + "NA";
 
-    public static String OCCURRENCE_TABLE = "OccurrenceTable";
-    public static String PROVENANCE_TABLE = "ProvenanceTable";
+    public static final String WORK_SCHEMA = "work";
 
     public static String VALUE_LABEL = "_@=";
 
