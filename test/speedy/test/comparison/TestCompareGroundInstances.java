@@ -3,7 +3,6 @@ package speedy.test.comparison;
 import junit.framework.TestCase;
 import speedy.comparison.InstanceMatch;
 import speedy.comparison.operators.CompareInstancesHashing;
-import speedy.comparison.TupleMapping;
 import speedy.model.database.IDatabase;
 import speedy.model.database.dbms.DBMSDB;
 import speedy.model.database.dbms.InitDBConfiguration;

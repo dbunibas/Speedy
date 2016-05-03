@@ -6,6 +6,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.SpeedyConstants;
+import speedy.comparison.ComparisonConfiguration;
 import speedy.comparison.TupleMapping;
 import speedy.comparison.InstanceMatch;
 import speedy.comparison.TupleMatch;
@@ -24,12 +25,8 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
 
     private final static Logger logger = LoggerFactory.getLogger(ComputeInstanceSimilarityBruteForce.class);
 
-    private double computeScore(TupleMapping nextTupleMapping) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     public enum ValueMatchResult {
-        EQUAL_CONSTANTS, BOTH_NULLS, NULL_TO_CONSTANT, NOT_MATCHING
+        EQUAL_CONSTANTS, BOTH_NULLS, NULL_TO_CONSTANT, CONSTANT_TO_NULL, NOT_MATCHING
     }
 
     public InstanceMatch compare(IDatabase leftDb, IDatabase rightDb) {
@@ -117,6 +114,9 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
         if (sourceValue instanceof NullValue && destinationValue instanceof NullValue) {
             return ValueMatchResult.BOTH_NULLS;
         }
+        if (ComparisonConfiguration.isTwoWayValueMapping() && sourceValue instanceof ConstantValue && destinationValue instanceof NullValue) {
+            return ValueMatchResult.CONSTANT_TO_NULL;
+        }
         return ValueMatchResult.NOT_MATCHING;
     }
 
@@ -190,6 +190,10 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
             homomorphism.addMappingForValue(sourceValue, destinationValue);
         }
         return homomorphism;
+    }
+
+    private double computeScore(TupleMapping nextTupleMapping) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

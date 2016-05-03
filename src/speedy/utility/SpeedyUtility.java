@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import org.apache.commons.io.FilenameUtils;
+import speedy.comparison.ComparisonConfiguration;
 import speedy.comparison.TupleWithTable;
 import speedy.model.algebra.ProjectionAttribute;
 import speedy.model.database.LLUNValue;
@@ -360,7 +361,7 @@ public class SpeedyUtility {
     }
     
     public static boolean isNullValue(Object attributeValue) {
-        for (String nullPrefix : SpeedyConstants.NULL_PREFIXES) {
+        for (String nullPrefix : ComparisonConfiguration.getNullPrefixes()) {
             if (attributeValue.toString().startsWith(nullPrefix)) {
                 return true;
             }
