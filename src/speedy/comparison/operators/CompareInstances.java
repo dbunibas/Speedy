@@ -13,11 +13,11 @@ import speedy.model.database.IDatabase;
 import speedy.model.database.ITable;
 import speedy.model.database.TupleOID;
 
-public class CompareInstances {
+public class CompareInstances implements ICompareInstances {
 
     private final static Logger logger = LoggerFactory.getLogger(CompareInstances.class);
 
-    public SimilarityResult compare(IDatabase expected, IDatabase generated) {
+    public SimilarityResult compare(IDatabase expected, IDatabase generated){
         SimilarityResult result = new SimilarityResult();
         for (String tableName : expected.getTableNames()) {
             ITable expectedTable = expected.getTable(tableName);
