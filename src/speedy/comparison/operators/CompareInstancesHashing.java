@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import speedy.comparison.InstanceMatch;
 import speedy.comparison.SimilarityResult;
 import speedy.comparison.TableSimilarity;
 import speedy.comparison.TupleMatch;
@@ -13,17 +14,17 @@ import speedy.model.database.IDatabase;
 import speedy.model.database.ITable;
 import speedy.model.database.TupleOID;
 
-public class CompareInstances {
+public class CompareInstancesHashing implements IComputeInstanceSimilarity {
 
-    private final static Logger logger = LoggerFactory.getLogger(CompareInstances.class);
+    private final static Logger logger = LoggerFactory.getLogger(CompareInstancesHashing.class);
 
-    public SimilarityResult compare(IDatabase leftInstance, IDatabase rightInstance) {
-        SimilarityResult result = new SimilarityResult();
-        for (String tableName : leftInstance.getTableNames()) {
-            ITable leftTable = leftInstance.getTable(tableName);
-            ITable rightTable = rightInstance.getTable(tableName);
-            compareTable(leftTable, rightTable, result);
-        }
+    public InstanceMatch compare(IDatabase leftInstance, IDatabase rightInstance) {
+        InstanceMatch result = new InstanceMatch(leftInstance, rightInstance);
+//        for (String tableName : leftInstance.getTableNames()) {
+//            ITable leftTable = leftInstance.getTable(tableName);
+//            ITable rightTable = rightInstance.getTable(tableName);
+//            compareTable(leftTable, rightTable, result);
+//        }
         return result;
     }
 
@@ -37,8 +38,7 @@ public class CompareInstances {
         result.setTableSimilarity(leftTable.getName(), similarity);
     }
 
-    private void findExactMatches(ITable leftTable, ITable rightTable
-            , List<TupleMatch> tupleMatches, Set<TupleOID> matchedExpected, Set<TupleOID> matchedGenerated) {
+    private void findExactMatches(ITable leftTable, ITable rightTable, List<TupleMatch> tupleMatches, Set<TupleOID> matchedExpected, Set<TupleOID> matchedGenerated) {
     }
 
     private TableSimilarity computeSimilarity(List<TupleMatch> tupleMatches, ITable expectedTable, ITable generatedTable) {

@@ -3,7 +3,7 @@ package speedy.test.homomorphism;
 import junit.framework.TestCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import speedy.comparison.HomomorphismCheckResult;
+import speedy.comparison.InstanceMatch;
 import speedy.comparison.operators.FindHomomorphism;
 import speedy.model.database.IDatabase;
 import speedy.model.database.dbms.DBMSDB;
@@ -22,7 +22,7 @@ public class TestHomomorphisms extends TestCase {
     public void test1() {
         IDatabase sourceDb = loadDatabase("01", "source");
         IDatabase destinationDb = loadDatabase("01", "destination");
-        HomomorphismCheckResult result = homomorphismFinder.findHomomorphism(sourceDb, destinationDb);
+        InstanceMatch result = homomorphismFinder.findHomomorphism(sourceDb, destinationDb);
         logger.info(result.toString());
         assert(result.getNonMatchingTuples() == null);
     }
@@ -30,7 +30,7 @@ public class TestHomomorphisms extends TestCase {
     public void test2() {
         IDatabase sourceDb = loadDatabase("02", "source");
         IDatabase destinationDb = loadDatabase("02", "destination");
-        HomomorphismCheckResult result = homomorphismFinder.findHomomorphism(sourceDb, destinationDb);
+        InstanceMatch result = homomorphismFinder.findHomomorphism(sourceDb, destinationDb);
         logger.info(result.toString());
         assert(result.getNonMatchingTuples() == null);
     }

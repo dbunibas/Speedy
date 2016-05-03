@@ -5,7 +5,7 @@ import java.util.Map;
 import speedy.model.database.IValue;
 import speedy.utility.SpeedyUtility;
 
-public class Homomorphism {
+public class TupleMapping {
     
     private final ValueMapping valueMapping = new ValueMapping();
     private final Map<TupleWithTable, TupleWithTable> tupleMapping = new HashMap<TupleWithTable, TupleWithTable>();

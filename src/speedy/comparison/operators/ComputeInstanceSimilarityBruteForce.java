@@ -6,8 +6,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.SpeedyConstants;
-import speedy.comparison.Homomorphism;
-import speedy.comparison.HomomorphismCheckResult;
+import speedy.comparison.TupleMapping;
+import speedy.comparison.InstanceMatch;
 import speedy.comparison.TupleMatch;
 import speedy.comparison.TupleMatches;
 import speedy.comparison.TupleWithTable;
@@ -20,45 +20,40 @@ import speedy.utility.SpeedyUtility;
 import speedy.utility.combinatorics.GenericListGeneratorIterator;
 import speedy.utility.comparator.TupleMatchComparatorScore;
 
-public class CompareInstancesBruteForce {
+public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimilarity {
 
-    private final static Logger logger = LoggerFactory.getLogger(CompareInstancesBruteForce.class);
+    private final static Logger logger = LoggerFactory.getLogger(ComputeInstanceSimilarityBruteForce.class);
+
+    private double computeScore(TupleMapping nextTupleMapping) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
     public enum ValueMatchResult {
         EQUAL_CONSTANTS, BOTH_NULLS, NULL_TO_CONSTANT, NOT_MATCHING
     }
 
-    public HomomorphismCheckResult findHomomorphism(IDatabase sourceDb, IDatabase destinationDb) {
-        HomomorphismCheckResult result = new HomomorphismCheckResult(sourceDb, destinationDb);
-        List<TupleWithTable> sourceTuples = SpeedyUtility.extractAllTuplesFromDatabase(sourceDb);
-        List<TupleWithTable> destinationTuples = SpeedyUtility.extractAllTuplesFromDatabase(destinationDb);
+    public InstanceMatch compare(IDatabase leftDb, IDatabase rightDb) {
+        InstanceMatch instanceMatch = new InstanceMatch(leftDb, rightDb);
+        List<TupleWithTable> sourceTuples = SpeedyUtility.extractAllTuplesFromDatabase(leftDb);
+        List<TupleWithTable> destinationTuples = SpeedyUtility.extractAllTuplesFromDatabase(rightDb);
         TupleMatches tupleMatches = findTupleMatches(sourceTuples, destinationTuples);
-        if (tupleMatches.hasNonMatchingTuples()) {
-            result.setNonMatchingTuples(tupleMatches.getNonMatchingTuples());
-            return result;
-        }
         sortTupleMatches(tupleMatches);
-        // new version: lazy combinations
         List<List<TupleMatch>> allTupleMatches = combineMatches(sourceTuples, tupleMatches);
         GenericListGeneratorIterator<TupleMatch> iterator = new GenericListGeneratorIterator<TupleMatch>(allTupleMatches);
+        TupleMapping bestTupleMapping = null;
+        double bestScore = 0;
         while (iterator.hasNext()) {
-            List<TupleMatch> candidateHomomorphism = iterator.next();
-            Homomorphism homomorphism = checkIfIsHomomorphism(candidateHomomorphism);
-            if (homomorphism != null) {
-                result.setHomomorphism(homomorphism);
-                return result;
+            TupleMapping nextTupleMapping = extractTupleMapping(iterator.next());
+            if (nextTupleMapping == null) {
+                continue;
+            }
+            double score = computeScore(nextTupleMapping);
+            if (score > bestScore) {
+                bestTupleMapping = nextTupleMapping;
             }
         }
-        // old version: greedy combinations
-//        List<List<TupleMatch>> allCandidateHomomorphisms = combineMatches(sourceTuples, tupleMatches);
-//        for (List<TupleMatch> candidateHomomorphism : allCandidateHomomorphisms) {
-//            Homomorphism homomorphism = checkIfIsHomomorphism(candidateHomomorphism);
-//            if (homomorphism != null) {
-//                result.setHomomorphism(homomorphism);
-//                return result;
-//            }
-//        }
-        return result;
+        instanceMatch.setTupleMatch(bestTupleMapping);
+        return instanceMatch;
     }
 
     private TupleMatches findTupleMatches(List<TupleWithTable> sourceTuples, List<TupleWithTable> destinationTuples) {
@@ -173,9 +168,9 @@ public class CompareInstancesBruteForce {
         return allTupleMatches;
     }
 
-    private Homomorphism checkIfIsHomomorphism(List<TupleMatch> candidateHomomorphism) {
-        Homomorphism homomorphism = new Homomorphism();
-        for (TupleMatch tupleMatch : candidateHomomorphism) {
+    private TupleMapping extractTupleMapping(List<TupleMatch> tupleMatches) {
+        TupleMapping homomorphism = new TupleMapping();
+        for (TupleMatch tupleMatch : tupleMatches) {
             homomorphism = addTupleMatch(homomorphism, tupleMatch);
             if (homomorphism == null) {
                 return null;
@@ -185,7 +180,7 @@ public class CompareInstancesBruteForce {
         return homomorphism;
     }
 
-    private Homomorphism addTupleMatch(Homomorphism homomorphism, TupleMatch tupleMatch) {
+    private TupleMapping addTupleMatch(TupleMapping homomorphism, TupleMatch tupleMatch) {
         for (IValue sourceValue : tupleMatch.getValueMapping().getSourceValues()) {
             IValue destinationValue = tupleMatch.getValueMapping().getValueMapping(sourceValue);
             IValue valueForSourceValueInHomomorphism = homomorphism.getMappingForValue(sourceValue);

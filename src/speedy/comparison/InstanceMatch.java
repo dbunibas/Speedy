@@ -4,14 +4,14 @@ import java.util.List;
 import speedy.model.database.IDatabase;
 import speedy.utility.SpeedyUtility;
 
-public class HomomorphismCheckResult {
+public class InstanceMatch {
     
     private final IDatabase sourceDb;
     private final IDatabase targetDb;
-    private Homomorphism homomorphism;
+    private TupleMapping tupleMatch;
     private List<TupleWithTable> nonMatchingTuples;
 
-    public HomomorphismCheckResult(IDatabase sourceDb, IDatabase targetDb) {
+    public InstanceMatch(IDatabase sourceDb, IDatabase targetDb) {
         this.sourceDb = sourceDb;
         this.targetDb = targetDb;
     }
@@ -25,15 +25,15 @@ public class HomomorphismCheckResult {
     }
     
     public boolean hasHomomorphism() {
-        return this.homomorphism != null;
+        return this.tupleMatch != null;
     }
 
-    public Homomorphism getHomomorphism() {
-        return homomorphism;
+    public TupleMapping getTupleMatch() {
+        return tupleMatch;
     }
 
-    public void setHomomorphism(Homomorphism homomorphism) {
-        this.homomorphism = homomorphism;
+    public void setTupleMatch(TupleMapping tupleMatch) {
+        this.tupleMatch = tupleMatch;
     }
 
     public List<TupleWithTable> getNonMatchingTuples() {
@@ -46,9 +46,9 @@ public class HomomorphismCheckResult {
 
     @Override
     public String toString() {
-        return "HomomorphismCheckResult[\n" 
-                + "Homomorphism:" + homomorphism 
-                + "\nNonMatchingTuples=" + SpeedyUtility.printCollection(nonMatchingTuples)
+        return "InstanceMatch[\n" 
+                + "Tuple match:" + tupleMatch 
+                + "\nNon matching tuples=" + SpeedyUtility.printCollection(nonMatchingTuples)
                 + "\n]";
     }    
 

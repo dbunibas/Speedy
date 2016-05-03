@@ -6,8 +6,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.SpeedyConstants;
-import speedy.comparison.Homomorphism;
-import speedy.comparison.HomomorphismCheckResult;
+import speedy.comparison.TupleMapping;
+import speedy.comparison.InstanceMatch;
 import speedy.comparison.TupleMatch;
 import speedy.comparison.TupleMatches;
 import speedy.comparison.TupleWithTable;
@@ -28,8 +28,8 @@ public class FindHomomorphism {
         EQUAL_CONSTANTS, BOTH_NULLS, NULL_TO_CONSTANT, NOT_MATCHING
     }
 
-    public HomomorphismCheckResult findHomomorphism(IDatabase sourceDb, IDatabase destinationDb) {
-        HomomorphismCheckResult result = new HomomorphismCheckResult(sourceDb, destinationDb);
+    public InstanceMatch findHomomorphism(IDatabase sourceDb, IDatabase destinationDb) {
+        InstanceMatch result = new InstanceMatch(sourceDb, destinationDb);
         List<TupleWithTable> sourceTuples = SpeedyUtility.extractAllTuplesFromDatabase(sourceDb);
         List<TupleWithTable> destinationTuples = SpeedyUtility.extractAllTuplesFromDatabase(destinationDb);
         TupleMatches tupleMatches = findTupleMatches(sourceTuples, destinationTuples);
@@ -43,9 +43,9 @@ public class FindHomomorphism {
         GenericListGeneratorIterator<TupleMatch> iterator = new GenericListGeneratorIterator<TupleMatch>(allTupleMatches);
         while (iterator.hasNext()) {
             List<TupleMatch> candidateHomomorphism = iterator.next();
-            Homomorphism homomorphism = checkIfIsHomomorphism(candidateHomomorphism);
+            TupleMapping homomorphism = checkIfIsHomomorphism(candidateHomomorphism);
             if (homomorphism != null) {
-                result.setHomomorphism(homomorphism);
+                result.setTupleMatch(homomorphism);
                 return result;
             }
         }
@@ -173,8 +173,8 @@ public class FindHomomorphism {
         return allTupleMatches;
     }
 
-    private Homomorphism checkIfIsHomomorphism(List<TupleMatch> candidateHomomorphism) {
-        Homomorphism homomorphism = new Homomorphism();
+    private TupleMapping checkIfIsHomomorphism(List<TupleMatch> candidateHomomorphism) {
+        TupleMapping homomorphism = new TupleMapping();
         for (TupleMatch tupleMatch : candidateHomomorphism) {
             homomorphism = addTupleMatch(homomorphism, tupleMatch);
             if (homomorphism == null) {
@@ -185,7 +185,7 @@ public class FindHomomorphism {
         return homomorphism;
     }
 
-    private Homomorphism addTupleMatch(Homomorphism homomorphism, TupleMatch tupleMatch) {
+    private TupleMapping addTupleMatch(TupleMapping homomorphism, TupleMatch tupleMatch) {
         for (IValue sourceValue : tupleMatch.getValueMapping().getSourceValues()) {
             IValue destinationValue = tupleMatch.getValueMapping().getValueMapping(sourceValue);
             IValue valueForSourceValueInHomomorphism = homomorphism.getMappingForValue(sourceValue);
