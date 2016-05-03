@@ -6,7 +6,7 @@ public class ComparisonConfiguration {
     
     private static String[] nullPrefixes = {SKOLEM_PREFIX, "_N"};
     private static boolean twoWayValueMapping = true;
-    private static boolean injective = true;
+    private static boolean injective = false;
     private static double K = 0.5;
 
     public static boolean isTwoWayValueMapping() {

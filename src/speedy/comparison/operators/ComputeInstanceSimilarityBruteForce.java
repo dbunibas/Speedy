@@ -35,6 +35,7 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
         List<TupleWithTable> destinationTuples = SpeedyUtility.extractAllTuplesFromDatabase(rightDb);
         TupleMatches tupleMatches = findTupleMatches(sourceTuples, destinationTuples);
         sortTupleMatches(tupleMatches);
+        if (logger.isTraceEnabled()) logger.trace(tupleMatches.toString());
         List<List<TupleMatch>> allTupleMatches = combineMatches(sourceTuples, tupleMatches);
         GenericListGeneratorIterator<TupleMatch> iterator = new GenericListGeneratorIterator<TupleMatch>(allTupleMatches);
         TupleMapping bestTupleMapping = null;
@@ -43,12 +44,16 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
             List<TupleMatch> candidateTupleMatches = iterator.next();
             TupleMapping nextTupleMapping = extractTupleMapping(candidateTupleMatches);
             if (nextTupleMapping == null) {
+                if (logger.isDebugEnabled()) logger.debug("Candidate match discarded...");
                 continue;
             }
+            if (logger.isDebugEnabled()) logger.debug("Analizing tuple mapping: " + nextTupleMapping);
             double similarityScore = computeSimilarityScore(candidateTupleMatches);
             nextTupleMapping.setScore(similarityScore);
             if (similarityScore > bestScore) {
+                bestScore = similarityScore;
                 bestTupleMapping = nextTupleMapping;
+                if (logger.isDebugEnabled()) logger.debug("Found new best score: " + similarityScore);
             }
         }
         instanceMatch.setTupleMatch(bestTupleMapping);
@@ -94,9 +99,8 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
                 if (logger.isTraceEnabled()) logger.trace("Values not match...");
                 return null;
             }
-            leftToRightValueMapping = updateValueMapping(leftToRightValueMapping, leftValue, rightValue, matchResult);
-            rightToLeftValueMapping = updateValueMapping(rightToLeftValueMapping, leftValue, rightValue, matchResult);
-            if (leftToRightValueMapping == null || rightToLeftValueMapping == null) {
+            boolean consistent = updateValueMappings(leftToRightValueMapping, rightToLeftValueMapping, leftValue, rightValue, matchResult);
+            if (!consistent) {
                 if (logger.isTraceEnabled()) logger.trace("Conflicting mapping for values...");
                 return null;
             }
@@ -143,22 +147,22 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
         return 0;
     }
 
-    private ValueMapping updateValueMapping(ValueMapping valueMapping, IValue leftValue, IValue rightValue, ValueMatchResult matchResult) {
+    private boolean updateValueMappings(ValueMapping leftToRightValueMapping, ValueMapping rightToLeftValueMapping, IValue leftValue, IValue rightValue, ValueMatchResult matchResult) {
         if (matchResult == ValueMatchResult.BOTH_NULLS || matchResult == ValueMatchResult.NULL_TO_CONSTANT) {
-            IValue valueForSourceValue = valueMapping.getValueMapping(leftValue);
+            IValue valueForSourceValue = leftToRightValueMapping.getValueMapping(leftValue);
             if (valueForSourceValue != null && !valueForSourceValue.equals(rightValue)) {
-                return null;
+                return false;
             }
-            valueMapping.putValueMapping(leftValue, rightValue);
+            leftToRightValueMapping.putValueMapping(leftValue, rightValue);
         }
         if (matchResult == ValueMatchResult.CONSTANT_TO_NULL) {
-            IValue valueForDestinationValue = valueMapping.getValueMapping(rightValue);
+            IValue valueForDestinationValue = rightToLeftValueMapping.getValueMapping(rightValue);
             if (valueForDestinationValue != null && !valueForDestinationValue.equals(leftValue)) {
-                return null;
+                return false;
             }
-            valueMapping.putValueMapping(rightValue, leftValue);
+            rightToLeftValueMapping.putValueMapping(rightValue, leftValue);
         }
-        return valueMapping;
+        return true;
     }
 
     private void sortTupleMatches(TupleMatches tupleMatches) {

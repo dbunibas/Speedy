@@ -31,6 +31,6 @@ public class ValueMapping {
     }
     
     public String toString() {
-        return "----------- Value Mapping -------------\n" + SpeedyUtility.printMap(map);
+        return SpeedyUtility.printMap(map);
     }
 }
