@@ -79,28 +79,33 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
             return null;
         }
         if (logger.isDebugEnabled()) logger.debug("Comparing tuple: " + sourceTuple + " to tuple " + destinationTuple);
-        ValueMapping valueMapping = new ValueMapping();
+        ValueMapping leftToRightValueMapping = new ValueMapping();
+        ValueMapping rightToLeftValueMapping = new ValueMapping();
         int score = 0;
         for (int i = 0; i < sourceTuple.getTuple().getCells().size(); i++) {
             if (sourceTuple.getTuple().getCells().get(i).getAttribute().equals(SpeedyConstants.OID)) {
                 continue;
             }
-            IValue sourceValue = sourceTuple.getTuple().getCells().get(i).getValue();
-            IValue destinationValue = destinationTuple.getTuple().getCells().get(i).getValue();
-            if (logger.isTraceEnabled()) logger.trace("Comparing values: " + sourceValue + ", " + destinationValue);
-            ValueMatchResult matchResult = match(sourceValue, destinationValue);
+            IValue leftValue = sourceTuple.getTuple().getCells().get(i).getValue();
+            IValue rightValue = destinationTuple.getTuple().getCells().get(i).getValue();
+            if (logger.isTraceEnabled()) logger.trace("Comparing values: " + leftValue + ", " + rightValue);
+            ValueMatchResult matchResult = match(leftValue, rightValue);
             if (matchResult == ValueMatchResult.NOT_MATCHING) {
                 if (logger.isTraceEnabled()) logger.trace("Values not match...");
                 return null;
             }
-            valueMapping = updateValueMapping(valueMapping, sourceValue, destinationValue, matchResult);
-            if (valueMapping == null) {
+            leftToRightValueMapping = updateValueMapping(leftToRightValueMapping, leftValue, rightValue, matchResult);
+            rightToLeftValueMapping = updateValueMapping(rightToLeftValueMapping, leftValue, rightValue, matchResult);
+            if (leftToRightValueMapping == null || rightToLeftValueMapping == null) {
                 if (logger.isTraceEnabled()) logger.trace("Conflicting mapping for values...");
                 return null;
             }
             score += score(matchResult);
         }
-        TupleMatch tupleMatch = new TupleMatch(sourceTuple, destinationTuple, valueMapping, score);
+        if (!consistentValueMappings(leftToRightValueMapping, rightToLeftValueMapping)) {
+            return null;
+        }
+        TupleMatch tupleMatch = new TupleMatch(sourceTuple, destinationTuple, leftToRightValueMapping, rightToLeftValueMapping, score);
         return tupleMatch;
     }
 
@@ -138,13 +143,20 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
         return 0;
     }
 
-    private ValueMapping updateValueMapping(ValueMapping valueMapping, IValue sourceValue, IValue destinationValue, ValueMatchResult matchResult) {
+    private ValueMapping updateValueMapping(ValueMapping valueMapping, IValue leftValue, IValue rightValue, ValueMatchResult matchResult) {
         if (matchResult == ValueMatchResult.BOTH_NULLS || matchResult == ValueMatchResult.NULL_TO_CONSTANT) {
-            IValue valueForSourceValue = valueMapping.getValueMapping(sourceValue);
-            if (valueForSourceValue != null && !valueForSourceValue.equals(destinationValue)) {
+            IValue valueForSourceValue = valueMapping.getValueMapping(leftValue);
+            if (valueForSourceValue != null && !valueForSourceValue.equals(rightValue)) {
                 return null;
             }
-            valueMapping.putValueMapping(sourceValue, destinationValue);
+            valueMapping.putValueMapping(leftValue, rightValue);
+        }
+        if (matchResult == ValueMatchResult.CONSTANT_TO_NULL) {
+            IValue valueForDestinationValue = valueMapping.getValueMapping(rightValue);
+            if (valueForDestinationValue != null && !valueForDestinationValue.equals(leftValue)) {
+                return null;
+            }
+            valueMapping.putValueMapping(rightValue, leftValue);
         }
         return valueMapping;
     }
@@ -173,22 +185,33 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
             }
             tupleMapping.putTupleMapping(tupleMatch.getLeftTuple(), tupleMatch.getRightTuple());
         }
+        if (!consistentValueMappings(tupleMapping.getLeftToRightValueMapping(), tupleMapping.getRightToLeftValueMapping())) {
+            return null;
+        }
         if (ComparisonConfiguration.isInjective() && !isInjective(tupleMapping)) {
             return null;
         }
         return tupleMapping;
     }
 
-    private TupleMapping addTupleMatch(TupleMapping homomorphism, TupleMatch tupleMatch) {
-        for (IValue sourceValue : tupleMatch.getLeftToRightValueMapping().getSourceValues()) {
-            IValue destinationValue = tupleMatch.getLeftToRightValueMapping().getValueMapping(sourceValue);
-            IValue valueForSourceValueInHomomorphism = homomorphism.getLeftToRightMappingForValue(sourceValue);
-            if (valueForSourceValueInHomomorphism != null && !valueForSourceValueInHomomorphism.equals(destinationValue)) {
+    private TupleMapping addTupleMatch(TupleMapping tupleMapping, TupleMatch tupleMatch) {
+        for (IValue leftValue : tupleMatch.getLeftToRightValueMapping().getKeys()) {
+            IValue rightValue = tupleMatch.getLeftToRightValueMapping().getValueMapping(leftValue);
+            IValue valueForLeftValueInMapping = tupleMapping.getLeftToRightMappingForValue(leftValue);
+            if (valueForLeftValueInMapping != null && !valueForLeftValueInMapping.equals(rightValue)) {
                 return null;
             }
-            homomorphism.addLeftToRightMappingForValue(sourceValue, destinationValue);
+            tupleMapping.addLeftToRightMappingForValue(leftValue, rightValue);
         }
-        return homomorphism;
+        for (IValue rightValue : tupleMatch.getRightToLeftValueMapping().getKeys()) {
+            IValue leftValue = tupleMatch.getRightToLeftValueMapping().getValueMapping(rightValue);
+            IValue valueForRightValueInMapping = tupleMapping.getRightToLeftMappingForValue(rightValue);
+            if (valueForRightValueInMapping != null && !valueForRightValueInMapping.equals(leftValue)) {
+                return null;
+            }
+            tupleMapping.addRightToLeftMappingForValue(rightValue, leftValue);
+        }
+        return tupleMapping;
     }
 
     private double computeSimilarityScore(List<TupleMatch> tupleMatches) {
@@ -204,5 +227,16 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
         Set<TupleWithTable> imageTupleSet = new HashSet<TupleWithTable>(imageTuples);
         return imageTuples.size() == imageTupleSet.size();
     }
-
+    
+    private boolean consistentValueMappings(ValueMapping leftToRightValueMapping, ValueMapping rightToLeftValueMapping) {
+        for (IValue leftValue : leftToRightValueMapping.getKeys()) {
+            IValue rightValue = leftToRightValueMapping.getValueMapping(leftValue);
+            IValue leftValueInRightToLeft = rightToLeftValueMapping.getValueMapping(rightValue);
+            if (leftValueInRightToLeft != null) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
 }

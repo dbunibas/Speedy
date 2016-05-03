@@ -18,7 +18,7 @@ public class ValueMapping {
         return this.map.get(value);
     }
 
-    public Set<IValue> getSourceValues() {
+    public Set<IValue> getKeys() {
         return this.map.keySet();
     }
     

@@ -22,6 +22,12 @@ public class TupleMatch {
         this.leftToRightValueMapping = valueMapping;
     }
 
+    public TupleMatch(TupleWithTable leftTuple, TupleWithTable rightTuple, ValueMapping leftToRightValueMapping, ValueMapping rightToLeftValueMapping, double similarity) {
+        this(leftTuple, rightTuple, similarity);
+        this.leftToRightValueMapping = leftToRightValueMapping;
+        this.rightToLeftValueMapping = rightToLeftValueMapping;
+    }
+
     public TupleWithTable getLeftTuple() {
         return leftTuple;
     }
@@ -40,10 +46,6 @@ public class TupleMatch {
 
     public ValueMapping getRightToLeftValueMapping() {
         return rightToLeftValueMapping;
-    }
-
-    public void setRightToLeftValueMapping(ValueMapping rightToLeftValueMapping) {
-        this.rightToLeftValueMapping = rightToLeftValueMapping;
     }
 
     @Override

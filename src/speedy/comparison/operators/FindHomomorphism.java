@@ -183,7 +183,7 @@ public class FindHomomorphism {
     }
 
     private TupleMapping addTupleMatch(TupleMapping homomorphism, TupleMatch tupleMatch) {
-        for (IValue sourceValue : tupleMatch.getLeftToRightValueMapping().getSourceValues()) {
+        for (IValue sourceValue : tupleMatch.getLeftToRightValueMapping().getKeys()) {
             IValue destinationValue = tupleMatch.getLeftToRightValueMapping().getValueMapping(sourceValue);
             IValue valueForSourceValueInHomomorphism = homomorphism.getLeftToRightMappingForValue(sourceValue);
             if (valueForSourceValueInHomomorphism != null && !valueForSourceValueInHomomorphism.equals(destinationValue)) {
