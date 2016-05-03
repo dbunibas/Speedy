@@ -6,6 +6,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.SpeedyConstants;
+import speedy.SpeedyConstants.ValueMatchResult;
 import speedy.comparison.TupleMapping;
 import speedy.comparison.InstanceMatch;
 import speedy.comparison.TupleMatch;
@@ -23,10 +24,6 @@ import speedy.utility.comparator.TupleMatchComparatorScore;
 public class FindHomomorphism {
 
     private final static Logger logger = LoggerFactory.getLogger(FindHomomorphism.class);
-
-    public enum ValueMatchResult {
-        EQUAL_CONSTANTS, BOTH_NULLS, NULL_TO_CONSTANT, NOT_MATCHING
-    }
 
     public InstanceMatch findHomomorphism(IDatabase sourceDb, IDatabase destinationDb) {
         InstanceMatch result = new InstanceMatch(sourceDb, destinationDb);
@@ -186,13 +183,13 @@ public class FindHomomorphism {
     }
 
     private TupleMapping addTupleMatch(TupleMapping homomorphism, TupleMatch tupleMatch) {
-        for (IValue sourceValue : tupleMatch.getValueMapping().getSourceValues()) {
-            IValue destinationValue = tupleMatch.getValueMapping().getValueMapping(sourceValue);
-            IValue valueForSourceValueInHomomorphism = homomorphism.getMappingForValue(sourceValue);
+        for (IValue sourceValue : tupleMatch.getLeftToRightValueMapping().getSourceValues()) {
+            IValue destinationValue = tupleMatch.getLeftToRightValueMapping().getValueMapping(sourceValue);
+            IValue valueForSourceValueInHomomorphism = homomorphism.getLeftToRightMappingForValue(sourceValue);
             if (valueForSourceValueInHomomorphism != null && !valueForSourceValueInHomomorphism.equals(destinationValue)) {
                 return null;
             }
-            homomorphism.addMappingForValue(sourceValue, destinationValue);
+            homomorphism.addLeftToRightMappingForValue(sourceValue, destinationValue);
         }
         return homomorphism;
     }

@@ -90,6 +90,9 @@ public class SpeedyConstants {
     public static String CSV = "CSV";
     public static String XML = "XML";
 
+    public enum ValueMatchResult {
+        EQUAL_CONSTANTS, BOTH_NULLS, NULL_TO_CONSTANT, CONSTANT_TO_NULL, NOT_MATCHING
+    }
     ///////////////    DEBUG MODE     ///////////////////
 //    public static final boolean DBMS_DEBUG = true;
     public static final boolean DBMS_DEBUG = false;

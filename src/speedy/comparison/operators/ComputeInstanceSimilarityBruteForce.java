@@ -1,11 +1,15 @@
 package speedy.comparison.operators;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.SpeedyConstants;
+import speedy.SpeedyConstants.ValueMatchResult;
 import speedy.comparison.ComparisonConfiguration;
 import speedy.comparison.TupleMapping;
 import speedy.comparison.InstanceMatch;
@@ -25,10 +29,6 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
 
     private final static Logger logger = LoggerFactory.getLogger(ComputeInstanceSimilarityBruteForce.class);
 
-    public enum ValueMatchResult {
-        EQUAL_CONSTANTS, BOTH_NULLS, NULL_TO_CONSTANT, CONSTANT_TO_NULL, NOT_MATCHING
-    }
-
     public InstanceMatch compare(IDatabase leftDb, IDatabase rightDb) {
         InstanceMatch instanceMatch = new InstanceMatch(leftDb, rightDb);
         List<TupleWithTable> sourceTuples = SpeedyUtility.extractAllTuplesFromDatabase(leftDb);
@@ -40,12 +40,14 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
         TupleMapping bestTupleMapping = null;
         double bestScore = 0;
         while (iterator.hasNext()) {
-            TupleMapping nextTupleMapping = extractTupleMapping(iterator.next());
+            List<TupleMatch> candidateTupleMatches = iterator.next();
+            TupleMapping nextTupleMapping = extractTupleMapping(candidateTupleMatches);
             if (nextTupleMapping == null) {
                 continue;
             }
-            double score = computeScore(nextTupleMapping);
-            if (score > bestScore) {
+            double similarityScore = computeSimilarityScore(candidateTupleMatches);
+            nextTupleMapping.setScore(similarityScore);
+            if (similarityScore > bestScore) {
                 bestTupleMapping = nextTupleMapping;
             }
         }
@@ -120,7 +122,7 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
         return ValueMatchResult.NOT_MATCHING;
     }
 
-    private int score(ValueMatchResult matchResult) {
+    private double score(ValueMatchResult matchResult) {
         if (matchResult == ValueMatchResult.EQUAL_CONSTANTS) {
             return 1;
         }
@@ -128,7 +130,10 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
             return 1;
         }
         if (matchResult == ValueMatchResult.NULL_TO_CONSTANT) {
-            return 0;
+            return ComparisonConfiguration.getK();
+        }
+        if (matchResult == ValueMatchResult.CONSTANT_TO_NULL) {
+            return ComparisonConfiguration.getK();
         }
         return 0;
     }
@@ -150,15 +155,6 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
             Collections.sort(matchesForTuple, new TupleMatchComparatorScore());
         }
     }
-
-//    private List<List<TupleMatch>> combineMatches(List<TupleWithTable> sourceTuples, TupleMatches tupleMatches) {
-//        GenericListGenerator<TupleMatch> generator = new GenericListGenerator<TupleMatch>();
-//        List<List<TupleMatch>> allTupleMatches = new ArrayList<List<TupleMatch>>();
-//        for (TupleWithTable sourceTuple : sourceTuples) {
-//            allTupleMatches.add(tupleMatches.getMatchesForTuple(sourceTuple));
-//        }
-//        return generator.generateListsOfElements(allTupleMatches);
-//    }
     
     private List<List<TupleMatch>> combineMatches(List<TupleWithTable> sourceTuples, TupleMatches tupleMatches) {
         List<List<TupleMatch>> allTupleMatches = new ArrayList<List<TupleMatch>>();
@@ -169,31 +165,44 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
     }
 
     private TupleMapping extractTupleMapping(List<TupleMatch> tupleMatches) {
-        TupleMapping homomorphism = new TupleMapping();
+        TupleMapping tupleMapping = new TupleMapping();
         for (TupleMatch tupleMatch : tupleMatches) {
-            homomorphism = addTupleMatch(homomorphism, tupleMatch);
-            if (homomorphism == null) {
+            tupleMapping = addTupleMatch(tupleMapping, tupleMatch);
+            if (tupleMapping == null) {
                 return null;
             }
-            homomorphism.putTupleMapping(tupleMatch.getLeftTuple(), tupleMatch.getRightTuple());
+            tupleMapping.putTupleMapping(tupleMatch.getLeftTuple(), tupleMatch.getRightTuple());
         }
-        return homomorphism;
+        if (ComparisonConfiguration.isInjective() && !isInjective(tupleMapping)) {
+            return null;
+        }
+        return tupleMapping;
     }
 
     private TupleMapping addTupleMatch(TupleMapping homomorphism, TupleMatch tupleMatch) {
-        for (IValue sourceValue : tupleMatch.getValueMapping().getSourceValues()) {
-            IValue destinationValue = tupleMatch.getValueMapping().getValueMapping(sourceValue);
-            IValue valueForSourceValueInHomomorphism = homomorphism.getMappingForValue(sourceValue);
+        for (IValue sourceValue : tupleMatch.getLeftToRightValueMapping().getSourceValues()) {
+            IValue destinationValue = tupleMatch.getLeftToRightValueMapping().getValueMapping(sourceValue);
+            IValue valueForSourceValueInHomomorphism = homomorphism.getLeftToRightMappingForValue(sourceValue);
             if (valueForSourceValueInHomomorphism != null && !valueForSourceValueInHomomorphism.equals(destinationValue)) {
                 return null;
             }
-            homomorphism.addMappingForValue(sourceValue, destinationValue);
+            homomorphism.addLeftToRightMappingForValue(sourceValue, destinationValue);
         }
         return homomorphism;
     }
 
-    private double computeScore(TupleMapping nextTupleMapping) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    private double computeSimilarityScore(List<TupleMatch> tupleMatches) {
+        double similarityScore = 0;
+        for (TupleMatch tupleMatch : tupleMatches) {
+            similarityScore += tupleMatch.getSimilarity();            
+        }
+        return similarityScore;
+    }
+
+    private boolean isInjective(TupleMapping tupleMapping) {
+        Collection<TupleWithTable> imageTuples = tupleMapping.getTupleMapping().values();
+        Set<TupleWithTable> imageTupleSet = new HashSet<TupleWithTable>(imageTuples);
+        return imageTuples.size() == imageTupleSet.size();
     }
 
 }

@@ -22,6 +22,14 @@ public class ValueMapping {
         return this.map.keySet();
     }
     
+    public int size() {
+        return map.size();
+    }
+    
+    public boolean isEmpty() {
+        return map.isEmpty();
+    }
+    
     public String toString() {
         return "----------- Value Mapping -------------\n" + SpeedyUtility.printMap(map);
     }
