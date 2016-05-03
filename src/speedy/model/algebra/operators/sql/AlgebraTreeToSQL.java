@@ -949,7 +949,7 @@ public class AlgebraTreeToSQL {
 
     }
 
-    static class SQLQueryBuilder {
+    class SQLQueryBuilder {
 
         private StringBuilder sb = new StringBuilder();
         private boolean distinct;

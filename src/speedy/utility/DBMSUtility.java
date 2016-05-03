@@ -672,4 +672,22 @@ public class DBMSUtility {
         return accessConfiguration;
     }
 
+    public static void cleanWorkTargetSchemas(AccessConfiguration accessConfiguration) {
+        if (accessConfiguration == null) {
+            return;
+        }
+        try {
+            PrintUtility.printInformation("Removing schema " + accessConfiguration.getSchemaName() + " and "
+                    + SpeedyConstants.WORK_SCHEMA + ", if exist...");
+            DBMSUtility.removeSchema(accessConfiguration.getSchemaName(), accessConfiguration);
+            DBMSUtility.removeSchema(SpeedyConstants.WORK_SCHEMA, accessConfiguration);
+            PrintUtility.printSuccess("Schemas removed!");
+        } catch (DBMSException ex) {
+            String message = ex.getMessage();
+            if (!message.contains("does not exist")) {
+                PrintUtility.printError("Unable to drop schema.\n" + ex.getLocalizedMessage());
+            }
+        }
+    }
+
 }

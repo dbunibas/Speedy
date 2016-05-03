@@ -15,7 +15,6 @@ public class DBMSVirtualDB implements IDatabase {
     private DBMSDB deltaDB;
     private String suffix;
     private AccessConfiguration accessConfiguration;
-//    private List<DBMSVirtualTable> tables = new ArrayList<DBMSVirtualTable>();
     private List<ITable> tables = new ArrayList<ITable>();
 
     public DBMSVirtualDB(DBMSDB originalDB, DBMSDB deltaDB, String suffix, AccessConfiguration accessConfiguration) {
@@ -34,7 +33,6 @@ public class DBMSVirtualDB implements IDatabase {
     }
 
     public void addTable(ITable table) {
-//        tables.add((DBMSVirtualTable) table);
         tables.add(table);
     }
 
@@ -52,7 +50,6 @@ public class DBMSVirtualDB implements IDatabase {
             result.add(virtualTable.getName());
         }
         return result;
-//        return originalDB.getTableNames();
     }
 
     public List<Key> getKeys() {

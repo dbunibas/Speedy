@@ -17,27 +17,28 @@ public class CompareInstances {
 
     private final static Logger logger = LoggerFactory.getLogger(CompareInstances.class);
 
-    public SimilarityResult compare(IDatabase expected, IDatabase generated) {
+    public SimilarityResult compare(IDatabase leftInstance, IDatabase rightInstance) {
         SimilarityResult result = new SimilarityResult();
-        for (String tableName : expected.getTableNames()) {
-            ITable expectedTable = expected.getTable(tableName);
-            ITable generatedTable = generated.getTable(tableName);
-            compareTable(expectedTable, generatedTable, result);
+        for (String tableName : leftInstance.getTableNames()) {
+            ITable leftTable = leftInstance.getTable(tableName);
+            ITable rightTable = rightInstance.getTable(tableName);
+            compareTable(leftTable, rightTable, result);
         }
         return result;
     }
 
-    private void compareTable(ITable expectedTable, ITable generatedTable, SimilarityResult result) {
+    private void compareTable(ITable leftTable, ITable rightTable, SimilarityResult result) {
         List<TupleMatch> tupleMatches = new ArrayList<TupleMatch>();
         Set<TupleOID> matchedExpected = new HashSet<TupleOID>();
         Set<TupleOID> matchedGenerated = new HashSet<TupleOID>();
-        findExactMatches(expectedTable, generatedTable, tupleMatches, matchedExpected, matchedGenerated);
-        TableSimilarity similarity = computeSimilarity(tupleMatches, expectedTable, generatedTable);
-        if (logger.isDebugEnabled()) logger.debug("Similarity for table " + expectedTable.getName() + ": " + similarity);
-        result.setTableSimilarity(expectedTable.getName(), similarity);
+        findExactMatches(leftTable, rightTable, tupleMatches, matchedExpected, matchedGenerated);
+        TableSimilarity similarity = computeSimilarity(tupleMatches, leftTable, rightTable);
+        if (logger.isDebugEnabled()) logger.debug("Similarity for table " + leftTable.getName() + ": " + similarity);
+        result.setTableSimilarity(leftTable.getName(), similarity);
     }
 
-    private void findExactMatches(ITable expectedTable, ITable generatedTable, List<TupleMatch> tupleMatches, Set<TupleOID> matchedExpected, Set<TupleOID> matchedGenerated) {
+    private void findExactMatches(ITable leftTable, ITable rightTable
+            , List<TupleMatch> tupleMatches, Set<TupleOID> matchedExpected, Set<TupleOID> matchedGenerated) {
     }
 
     private TableSimilarity computeSimilarity(List<TupleMatch> tupleMatches, ITable expectedTable, ITable generatedTable) {
