@@ -47,8 +47,9 @@ public class InstanceMatch {
     @Override
     public String toString() {
         return "InstanceMatch[\n" 
-                + "Tuple match:" + tupleMatch 
-                + "\nNon matching tuples=" + SpeedyUtility.printCollection(nonMatchingTuples)
+                + tupleMatch 
+                + ((nonMatchingTuples != null && !nonMatchingTuples.isEmpty()) ? 
+                        "\nNon matching tuples=" + SpeedyUtility.printCollection(nonMatchingTuples) : "")
                 + "\n]";
     }    
 

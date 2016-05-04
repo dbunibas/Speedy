@@ -143,10 +143,11 @@ public class MainMemoryTable implements ITable {
         Collections.sort(tuples, new OidTupleComparator());
         for (Tuple tuple : tuples) {
             result.append(indent).append(SpeedyConstants.INDENT);
-            for (Attribute attribute : getAttributes()) {
-                result.append(tuple.getCell(new AttributeRef(attribute.getTableName(), attribute.getName()))).append(", ");
-            }
-            SpeedyUtility.removeChars(", ".length(), result);
+//            for (Attribute attribute : getAttributes()) {
+//                result.append(tuple.getCell(new AttributeRef(attribute.getTableName(), attribute.getName()))).append(", ");
+//            }
+//            SpeedyUtility.removeChars(", ".length(), result);
+            result.append(tuple.toStringWithOID());
             result.append("\n");
         }
         iterator.close();

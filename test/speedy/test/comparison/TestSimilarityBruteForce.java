@@ -27,6 +27,14 @@ public class TestSimilarityBruteForce extends TestCase {
         logger.info(result.toString());
 //        assert(result.getNonMatchingTuples() == null);
     }
+
+    public void test2() {
+        IDatabase leftDb = loadDatabase("left2");
+        IDatabase rightDb = loadDatabase("right2");
+        InstanceMatch result = similarityChecker.compare(leftDb, rightDb);
+        logger.info(result.toString());
+//        assert(result.getNonMatchingTuples() == null);
+    }
  
     private IDatabase loadDatabase(String folderName) {
         String folder = UtilityForTests.getAbsoluteFileName(BASE_FOLDER + File.separator + folderName);

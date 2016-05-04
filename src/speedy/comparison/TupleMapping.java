@@ -58,12 +58,12 @@ public class TupleMapping {
 
     @Override
     public String toString() {
-        return "----------------- Tuple Mapping ------------------ [\n" 
-                + SpeedyUtility.printMap(tupleMapping) 
-                + "\n" + (leftToRightValueMapping.isEmpty() ? "" : "Left to right value mapping: " + leftToRightValueMapping) 
+        return "----------------- Tuple Mapping ------------------\n" 
+                + SpeedyUtility.printMapCompact(tupleMapping) 
+                + "\n" + (leftToRightValueMapping.isEmpty() ? "" : "Value mapping: " + leftToRightValueMapping) 
                 + "\n" + (rightToLeftValueMapping.isEmpty() ? "" : "Right to left value mapping: " + rightToLeftValueMapping)
                 + (score != null ? "\nScore: " + score : "") 
-                + "\n]";
+                + "\n";
     }   
 
 }

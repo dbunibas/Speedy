@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import speedy.model.database.IValue;
-import speedy.utility.SpeedyUtility;
 
 public class ValueMapping {
     
@@ -31,6 +30,7 @@ public class ValueMapping {
     }
     
     public String toString() {
-        return SpeedyUtility.printMap(map);
+        return map.toString();
+//        return SpeedyUtility.printMap(map);
     }
 }

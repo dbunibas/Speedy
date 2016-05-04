@@ -186,6 +186,22 @@ public class SpeedyUtility {
         }
         return result.toString();
     }
+    
+    @SuppressWarnings("unchecked")
+    public static String printMapCompact(Map m) {
+        if (m == null) {
+            return "(null)";
+        }
+        StringBuilder result = new StringBuilder("{\n");
+        List<Object> keys = new ArrayList<Object>(m.keySet());
+        Collections.sort(keys, new StringComparator());
+        for (Object key : keys) {
+            Object value = m.get(key);
+            result.append(SpeedyConstants.INDENT).append(key).append(":").append(value).append("\n");
+        }
+        result.append("}");
+        return result.toString();
+    }
 
     public static String printTupleIterator(Iterator<Tuple> iterator) {
         StringBuilder result = new StringBuilder();

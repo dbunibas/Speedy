@@ -21,7 +21,7 @@
     </root>
     <!--<logger name="speedy.model.algebra.operators.sql.AlgebraTreeToSQL" level="DEBUG"/>-->
     <!--     COMPARISON     -->
-    <logger name="speedy.comparison" level="TRACE"/>
+    <logger name="speedy.comparison" level="INFO"/>
     <!--     TEST     -->
     <logger name="speedy.test" level="DEBUG"/>
     <!--     STATS     -->
