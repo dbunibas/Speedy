@@ -161,7 +161,6 @@ public class FindHomomorphism {
 //        }
 //        return generator.generateListsOfElements(allTupleMatches);
 //    }
-    
     private List<List<TupleMatch>> combineMatches(List<TupleWithTable> sourceTuples, TupleMatches tupleMatches) {
         List<List<TupleMatch>> allTupleMatches = new ArrayList<List<TupleMatch>>();
         for (TupleWithTable sourceTuple : sourceTuples) {

@@ -51,7 +51,7 @@ public class TupleMatch {
     @Override
     public String toString() {
         return "Match: (" + df.format(similarity) + ") " + leftTuple.toString() + " <-> " + rightTuple.toString() +
-                (!this.leftToRightValueMapping.isEmpty() ? "\nLeft to right value mapping:" + leftToRightValueMapping : "") +
-                (!this.rightToLeftValueMapping.isEmpty() ? "\nRight to left value mapping:" + rightToLeftValueMapping : "");
+                (this.leftToRightValueMapping != null && !this.leftToRightValueMapping.isEmpty() ? "\nLeft to right value mapping:" + leftToRightValueMapping : "") +
+                (this.rightToLeftValueMapping != null &&!this.rightToLeftValueMapping.isEmpty() ? "\nRight to left value mapping:" + rightToLeftValueMapping : "");
     }
 }

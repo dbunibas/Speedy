@@ -43,13 +43,9 @@ public class DAOFile {
     public DataSource loadSchema(String instancePath, char separator, Character quoteCharacter) {
         List<File> filesTable = SpeedyUtility.getFileInFolder(instancePath, CSV_EXTENSION);
         Map<File, CSVTable> mapTable = loadTable(filesTable, separator, quoteCharacter);
-//        String dbName = getDBName(instancePath);
         INode schemaNode = new TupleNode(PersistenceConstants.DATASOURCE_ROOT_LABEL, IntegerOIDGenerator.getNextOID());
         schemaNode.setRoot(true);
-//        SetNode setNodeDB = new SetNode(dbName, IntegerOIDGenerator.getNextOID());
-//        schemaNode.addChild(setNodeDB);
         generateSchema(schemaNode, mapTable);
-//        generateSchema(setNodeDB, mapTable);
         DataSource dataSource = new DataSource(PersistenceConstants.TYPE_CSV, schemaNode);
         if (logger.isDebugEnabled()) logger.debug(dataSource.getSchema().toString());
         return dataSource;
@@ -60,10 +56,6 @@ public class DAOFile {
         Map<File, CSVTable> mapTable = loadTable(filesTable, separator, quoteCharacter);
         INode instanceNode = new TupleNode(PersistenceConstants.DATASOURCE_ROOT_LABEL, IntegerOIDGenerator.getNextOID());
         instanceNode.setRoot(true);
-//        String dbName = getDBName(instancePath);
-//        SetNode setNodeDB = new SetNode(dbName, IntegerOIDGenerator.getNextOID());
-//        instanceNode.addChild(setNodeDB);
-//        insertData(setNodeDB, mapTable, separator);
         insertData(instanceNode, mapTable, separator, quoteCharacter);
         dataSource.addInstanceWithCheck(instanceNode);
 
@@ -126,19 +118,6 @@ public class DAOFile {
         return attributeNodeInstance;
     }
 
-    private void addTable(INode root, CSVTable table) {
-        INode tableNode = SpeedyUtility.createNode("SetNode", table.getName(), null);
-        INode tupleNode = SpeedyUtility.createNode("TupleNode", "", null);
-        tableNode.addChild(tupleNode);
-        for (String attribute : table.getAttributes()) {
-            INode attributeNode = SpeedyUtility.createNode("AttributeNode", attribute, attribute);
-            tupleNode.addChild(attributeNode);
-            INode valueNode = SpeedyUtility.createNode("LeafNode", null, null);
-            attributeNode.addChild(valueNode);
-        }
-        root.addChild(tableNode);
-    }
-
     private void addTable(INode setNodeDB, CSVTable csvTable, File file, char separator, Character quoteCharacter) {
         INode setNodeTable = new SetNode(csvTable.getName(), IntegerOIDGenerator.getNextOID());
         setNodeDB.addChild(setNodeTable);
@@ -174,16 +153,6 @@ public class DAOFile {
 
     private BufferedReader getReader(String fileName) throws UnsupportedEncodingException, FileNotFoundException {
         return new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "UTF8"));
-    }
-
-    private List<String> extractAttributes(BufferedReader reader, char separator) throws IOException {
-        String headerLine = reader.readLine();
-        StringTokenizer tokenizer = new StringTokenizer(headerLine, separator + "");
-        List<String> attributes = new ArrayList<String>();
-        while (tokenizer.hasMoreTokens()) {
-            attributes.add(tokenizer.nextToken().trim());
-        }
-        return attributes;
     }
 
     private void insertData(INode setNodeDB, Map<File, CSVTable> mapTable, char separator, Character quoteCharacter) {
