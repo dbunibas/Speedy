@@ -1,8 +1,11 @@
 package speedy.comparison.operators;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.SpeedyConstants;
@@ -43,7 +46,8 @@ public class FindHomomorphism {
             TupleMapping homomorphism = checkIfIsHomomorphism(candidateHomomorphism);
             if (homomorphism != null) {
                 result.setTupleMatch(homomorphism);
-                return result;
+                result.setIsomorphism(checkIsomorphism(result));
+                break;
             }
         }
         return result;
@@ -179,4 +183,35 @@ public class FindHomomorphism {
         return homomorphism;
     }
 
+    private boolean checkIsomorphism(InstanceMatch instanceMatch) {
+        if (!instanceMatch.hasHomomorphism()) {
+            return false;
+        }
+        if (instanceMatch.getSourceDb().getSize() != instanceMatch.getTargetDb().getSize()) {
+            return false;
+        }
+        if (!injective(instanceMatch)) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean injective(InstanceMatch instanceMatch) {
+        Collection<TupleWithTable> rightMatchedTuples = instanceMatch.getTupleMatch().getTupleMapping().values();
+        Set<TupleWithTable> distinctMatchedTuples = new HashSet<TupleWithTable>(rightMatchedTuples);
+        if (rightMatchedTuples.size() != distinctMatchedTuples.size()) {
+            return false;
+        }
+        Collection<IValue> rightMatchedNulls = instanceMatch.getTupleMatch().getLeftToRightValueMapping().getValues();
+        Set<IValue> distinctMatchedNulls = new HashSet<IValue>(rightMatchedNulls);
+        if (rightMatchedNulls.size() != distinctMatchedNulls.size()) {
+            return false;
+        }
+        for (IValue rightNull : distinctMatchedNulls) {
+            if (rightNull instanceof ConstantValue) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
