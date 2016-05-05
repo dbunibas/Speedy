@@ -7,23 +7,16 @@
         <property name="build.sysclasspath" value="ignore" />
         <path id="compile.classpath">
             <pathelement location="${build.dir}" />
-            <!--<pathelement location="${lib.dir}/lunaticEngine-${lunaticEngine.ver}.jar" />-->
             <pathelement location="${lib.dir}/slf4j-api-${slf4j.ver}.jar" />
             <pathelement location="${lib.dir}/logback-core-${logback.ver}.jar" />
             <pathelement location="${lib.dir}/logback-classic-${logback.ver}.jar" />
             <pathelement location="${lib.dir}/jdom.jar" />
             <pathelement location="${lib.dir}/xercesImpl.jar" />
-            <pathelement location="${lib.dir}/antlr-3.1.1-runtime.jar" />            
             <pathelement location="${lib.dir}/mybatis-3.1.1.jar" />
             <pathelement location="${lib.dir}/jep-${jep.ver}.jar" />    
-            <pathelement location="${lib.dir}/js.jar" />  
-            <pathelement location="${lib.dir}/js-engine.jar" />  
-            <pathelement location="${lib.dir}/simmetrics-1.6.2.jar" />  
-            <pathelement location="${lib.dir}/jgrapht-core-${jgrapht-core.ver}.jar" />  
             <pathelement location="${lib.dir}/c3p0-${c3p0.ver}.jar" />  
             <pathelement location="${lib.dir}/mchange-commons-java-${mchange.ver}.jar" />  
             <pathelement location="${lib.dir}/commons-io-2.4.jar" />  
-            <pathelement location="${lib.dir}/jcs-1.3.jar" />  
             <pathelement location="${lib.dir}/concurrent.jar" />  
             <pathelement location="${lib.dir}/commons-logging-${commons-logging.ver}.jar" />
             <pathelement location="${lib.dir}/commons-math3-${commons-math3.ver}.jar" />

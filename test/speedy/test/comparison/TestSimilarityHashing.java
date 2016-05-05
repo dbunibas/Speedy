@@ -5,40 +5,24 @@ import junit.framework.TestCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.comparison.InstanceMatch;
-import speedy.comparison.operators.ComputeInstanceSimilarityBruteForce;
+import speedy.comparison.operators.CompareInstancesHashing;
 import speedy.comparison.operators.IComputeInstanceSimilarity;
 import speedy.model.database.IDatabase;
 import speedy.model.database.mainmemory.MainMemoryDB;
 import speedy.persistence.DAOMainMemoryDatabase;
 import speedy.utility.test.UtilityForTests;
 
-public class TestSimilarityBruteForce extends TestCase {
+public class TestSimilarityHashing extends TestCase {
     
-    private final static Logger logger = LoggerFactory.getLogger(TestSimilarityBruteForce.class);
+    private final static Logger logger = LoggerFactory.getLogger(TestSimilarityHashing.class);
 
-    private IComputeInstanceSimilarity similarityChecker = new ComputeInstanceSimilarityBruteForce();
+    private IComputeInstanceSimilarity similarityChecker = new CompareInstancesHashing();
     private DAOMainMemoryDatabase dao = new DAOMainMemoryDatabase();
     private static String BASE_FOLDER = "/resources/similarity/";
 
     public void test1() {
-        IDatabase leftDb = loadDatabase("01/left");
-        IDatabase rightDb = loadDatabase("01/right");
-        InstanceMatch result = similarityChecker.compare(leftDb, rightDb);
-        logger.info(result.toString());
-//        assert(result.getNonMatchingTuples() == null);
-    }
-
-    public void test2() {
-        IDatabase leftDb = loadDatabase("02/left");
-        IDatabase rightDb = loadDatabase("02/right");
-        InstanceMatch result = similarityChecker.compare(leftDb, rightDb);
-        logger.info(result.toString());
-//        assert(result.getNonMatchingTuples() == null);
-    }
-
-    public void test3() {
-        IDatabase leftDb = loadDatabase("03/left");
-        IDatabase rightDb = loadDatabase("03/right");
+        IDatabase leftDb = loadDatabase("left1");
+        IDatabase rightDb = loadDatabase("right1");
         InstanceMatch result = similarityChecker.compare(leftDb, rightDb);
         logger.info(result.toString());
 //        assert(result.getNonMatchingTuples() == null);

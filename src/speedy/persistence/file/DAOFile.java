@@ -1,21 +1,15 @@
 package speedy.persistence.file;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -41,7 +35,7 @@ public class DAOFile {
     private static final Logger logger = LoggerFactory.getLogger(DAOFile.class);
 
     public DataSource loadSchema(String instancePath, char separator, Character quoteCharacter) {
-        List<File> filesTable = SpeedyUtility.getFileInFolder(instancePath, CSV_EXTENSION);
+        List<File> filesTable = getFileInFolder(instancePath, CSV_EXTENSION);
         Map<File, CSVTable> mapTable = loadTable(filesTable, separator, quoteCharacter);
         INode schemaNode = new TupleNode(PersistenceConstants.DATASOURCE_ROOT_LABEL, IntegerOIDGenerator.getNextOID());
         schemaNode.setRoot(true);
@@ -52,13 +46,12 @@ public class DAOFile {
     }
 
     public void loadInstance(DataSource dataSource, String instancePath, char separator, Character quoteCharacter) {
-        List<File> filesTable = SpeedyUtility.getFileInFolder(instancePath, CSV_EXTENSION);
+        List<File> filesTable = getFileInFolder(instancePath, CSV_EXTENSION);
         Map<File, CSVTable> mapTable = loadTable(filesTable, separator, quoteCharacter);
         INode instanceNode = new TupleNode(PersistenceConstants.DATASOURCE_ROOT_LABEL, IntegerOIDGenerator.getNextOID());
         instanceNode.setRoot(true);
         insertData(instanceNode, mapTable, separator, quoteCharacter);
         dataSource.addInstanceWithCheck(instanceNode);
-
     }
 
     private Map<File, CSVTable> loadTable(List<File> filesTable, char separator, Character quoteCharacter) throws DAOException {
@@ -94,10 +87,6 @@ public class DAOFile {
         return file.getName().replaceAll(CSV_EXTENSION, "");
     }
 
-    private String getDBName(String instancePath) {
-        return new File(instancePath).getName();
-    }
-
     private void generateSchema(INode schemaNode, Map<File, CSVTable> mapTable) {
         Collection<CSVTable> csvTables = mapTable.values();
         for (CSVTable csvTable : csvTables) {
@@ -118,6 +107,14 @@ public class DAOFile {
         return attributeNodeInstance;
     }
 
+    private void insertData(INode setNodeDB, Map<File, CSVTable> mapTable, char separator, Character quoteCharacter) {
+        Set<File> fileSet = mapTable.keySet();
+        for (File file : fileSet) {
+            CSVTable csvTable = mapTable.get(file);
+            addTable(setNodeDB, csvTable, file, separator, quoteCharacter);
+        }
+    }
+
     private void addTable(INode setNodeDB, CSVTable csvTable, File file, char separator, Character quoteCharacter) {
         INode setNodeTable = new SetNode(csvTable.getName(), IntegerOIDGenerator.getNextOID());
         setNodeDB.addChild(setNodeTable);
@@ -126,7 +123,9 @@ public class DAOFile {
             reader = new FileReader(file);
             CSVFormat format = CSVFormat.newFormat(separator)
                     .withQuote(quoteCharacter)
-                    .withHeader();
+                    .withHeader()
+                    .withIgnoreEmptyLines()
+                    .withIgnoreSurroundingSpaces();
             CSVParser parser = format.parse(reader);
             Iterable<CSVRecord> records = parser.getRecords();
             if (!records.iterator().hasNext()) {
@@ -134,7 +133,7 @@ public class DAOFile {
             }
             insertDataInTable(setNodeTable, csvTable, records);
         } catch (Exception ex) {
-            throw new DAOException(ex.getMessage());
+            throw new DAOException("Unable to load csv file " + file.toString() + "\n" + ex.getLocalizedMessage());
         } finally {
             try {
                 reader.close();
@@ -151,18 +150,6 @@ public class DAOFile {
         return attributeNodeInstance;
     }
 
-    private BufferedReader getReader(String fileName) throws UnsupportedEncodingException, FileNotFoundException {
-        return new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "UTF8"));
-    }
-
-    private void insertData(INode setNodeDB, Map<File, CSVTable> mapTable, char separator, Character quoteCharacter) {
-        Set<File> fileSet = mapTable.keySet();
-        for (File file : fileSet) {
-            CSVTable csvTable = mapTable.get(file);
-            addTable(setNodeDB, csvTable, file, separator, quoteCharacter);
-        }
-    }
-
     private void insertDataInTable(INode setNodeTable, CSVTable csvTable, Iterable<CSVRecord> records) {
         for (CSVRecord record : records) {
             TupleNode tupleNodeInstance = new TupleNode(csvTable.getName() + "Tuple", IntegerOIDGenerator.getNextOID());
@@ -173,6 +160,21 @@ public class DAOFile {
                 tupleNodeInstance.addChild(attributeNode);
             }
         }
+    }
+
+    private List<File> getFileInFolder(String folderPath, String extension) {
+        File folder = new File(folderPath);
+        if(!folder.exists()){
+            throw new DAOException("Folder " + folder + " doesn't exist");
+        }
+        List<File> files = new ArrayList<File>();
+        File[] listFiles = folder.listFiles();
+        for (File file : listFiles) {
+            if (file.isFile() && (extension == null || file.getName().endsWith(extension))) {
+                files.add(file);
+            }
+        }
+        return files;
     }
 
     private class CSVTable {

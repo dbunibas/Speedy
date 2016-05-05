@@ -13,8 +13,6 @@ public class TransformFilePaths {
 
     private static Logger logger = LoggerFactory.getLogger(TransformFilePaths.class);
 
-    static final String SEPARATOR = "/";
-    
     public String relativize(String baseFilePath, String relativeFilePath) {
         baseFilePath = SpeedyUtility.generateFolderPath(baseFilePath);
         List<String> basePathSteps = getPathSteps(baseFilePath);
@@ -22,6 +20,7 @@ public class TransformFilePaths {
         List<String> filePathSteps = getPathSteps(relativeFilePath);
         if (logger.isDebugEnabled()) logger.debug("File path steps: " + filePathSteps);
         String s = findRelativePathList(basePathSteps, filePathSteps);
+        if (logger.isDebugEnabled()) logger.debug("Result: " + s);
         return s;
     }
 
@@ -33,6 +32,7 @@ public class TransformFilePaths {
         List<String> filePathSteps = getPathSteps(filePath);
         if (logger.isDebugEnabled()) logger.debug("File path steps: " + filePathSteps);
         String s = mergePathLists(basePathSteps, filePathSteps);
+        if (logger.isDebugEnabled()) logger.debug("Result: " + s);
         return s;
     }
 
@@ -61,12 +61,12 @@ public class TransformFilePaths {
 
         // for each remaining level in the base path, add a ..
         for (; i >= 0; i--) {
-            s += ".." + SEPARATOR;
+            s += ".." + File.separator;
         }
 
         // for each level in the file path, add the path
         for (; j >= 1; j--) {
-            s += filePathSteps.get(j) + SEPARATOR;
+            s += filePathSteps.get(j) + File.separator;
         }
 
         // file name
@@ -94,8 +94,8 @@ public class TransformFilePaths {
             }
         }
         String resultString = resultPath.toString();
-        if (!resultString.startsWith("/")) {
-            resultString = "/" + resultString;
+        if (!resultString.startsWith(File.separator)) {
+            resultString = File.separator + resultString;
         }
         return resultString;
     }
