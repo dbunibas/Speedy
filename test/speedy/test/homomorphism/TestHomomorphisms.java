@@ -19,29 +19,29 @@ public class TestHomomorphisms extends TestCase {
     private static String BASE_FOLDER = "/resources/homomorphism/";
     private DAOMainMemoryDatabase dao = new DAOMainMemoryDatabase();
 
-//    public void test1() {
-//        IDatabase leftDb = loadDatabase("01/left");
-//        IDatabase rightDb = loadDatabase("01/right");
-//        InstanceMatch result = homomorphismFinder.findHomomorphism(leftDb, rightDb);
-//        logger.info(result.toString());
-//        assert (result.getNonMatchingTuples() == null);
-//    }
-//
-//    public void test2() {
-//        IDatabase leftDb = loadDatabase("02/left");
-//        IDatabase rightDb = loadDatabase("02/right");
-//        InstanceMatch result = homomorphismFinder.findHomomorphism(leftDb, rightDb);
-//        logger.info(result.toString());
-//        assert (result.getNonMatchingTuples() == null);
-//    }
-//
-//    public void test3() {
-//        IDatabase leftDb = loadDatabase("03/left");
-//        IDatabase rightDb = loadDatabase("03/right");
-//        InstanceMatch result = homomorphismFinder.findHomomorphism(leftDb, rightDb);
-//        logger.info(result.toString());
-//        assert (result.getNonMatchingTuples() == null);
-//    }
+    public void test1() {
+        IDatabase leftDb = loadDatabase("01/left");
+        IDatabase rightDb = loadDatabase("01/right");
+        InstanceMatch result = homomorphismFinder.findHomomorphism(leftDb, rightDb);
+        logger.info(result.toString());
+        assert (result.getNonMatchingTuples() == null);
+    }
+
+    public void test2() {
+        IDatabase leftDb = loadDatabase("02/left");
+        IDatabase rightDb = loadDatabase("02/right");
+        InstanceMatch result = homomorphismFinder.findHomomorphism(leftDb, rightDb);
+        logger.info(result.toString());
+        assert (result.getNonMatchingTuples() == null);
+    }
+
+    public void test3() {
+        IDatabase leftDb = loadDatabase("03/left");
+        IDatabase rightDb = loadDatabase("03/right");
+        InstanceMatch result = homomorphismFinder.findHomomorphism(leftDb, rightDb);
+        logger.info(result.toString());
+        assert (result.getNonMatchingTuples() == null);
+    }
 
     public void test4Isomorphism() {
         IDatabase leftDb = loadDatabase("04/left");
