@@ -34,9 +34,10 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
         List<TupleWithTable> sourceTuples = SpeedyUtility.extractAllTuplesFromDatabase(leftDb);
         List<TupleWithTable> destinationTuples = SpeedyUtility.extractAllTuplesFromDatabase(rightDb);
         TupleMatches tupleMatches = findTupleMatches(sourceTuples, destinationTuples);
+        instanceMatch.setNonMatchingTuples(tupleMatches.getNonMatchingTuples());
         sortTupleMatches(tupleMatches);
         if (logger.isTraceEnabled()) logger.trace(tupleMatches.toString());
-        List<List<TupleMatch>> allTupleMatches = combineMatches(sourceTuples, tupleMatches);
+        List<List<TupleMatch>> allTupleMatches = combineMatches(sourceTuples, tupleMatches, instanceMatch);
         GenericListGeneratorIterator<TupleMatch> iterator = new GenericListGeneratorIterator<TupleMatch>(allTupleMatches);
         TupleMapping bestTupleMapping = null;
         double bestScore = 0;
@@ -93,7 +94,7 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
             }
             IValue leftValue = sourceTuple.getTuple().getCells().get(i).getValue();
             IValue rightValue = destinationTuple.getTuple().getCells().get(i).getValue();
-            if (logger.isTraceEnabled()) logger.trace("Comparing values: " + leftValue + ", " + rightValue);
+            if (logger.isTraceEnabled()) logger.trace("Comparing values: '" + leftValue + "', '" + rightValue + "'");
             ValueMatchResult matchResult = match(leftValue, rightValue);
             if (matchResult == ValueMatchResult.NOT_MATCHING) {
                 if (logger.isTraceEnabled()) logger.trace("Values not match...");
@@ -171,11 +172,15 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
             Collections.sort(matchesForTuple, new TupleMatchComparatorScore());
         }
     }
-    
-    private List<List<TupleMatch>> combineMatches(List<TupleWithTable> sourceTuples, TupleMatches tupleMatches) {
+
+    private List<List<TupleMatch>> combineMatches(List<TupleWithTable> sourceTuples, TupleMatches tupleMatches, InstanceMatch instanceMatch) {
         List<List<TupleMatch>> allTupleMatches = new ArrayList<List<TupleMatch>>();
         for (TupleWithTable sourceTuple : sourceTuples) {
-            allTupleMatches.add(tupleMatches.getMatchesForTuple(sourceTuple));
+            List<TupleMatch> tupleMatchesForTuple = tupleMatches.getMatchesForTuple(sourceTuple);
+            if (tupleMatchesForTuple == null || tupleMatchesForTuple.isEmpty()) {
+                continue;
+            }
+            allTupleMatches.add(tupleMatchesForTuple);
         }
         return allTupleMatches;
     }
@@ -221,7 +226,7 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
     private double computeSimilarityScore(List<TupleMatch> tupleMatches) {
         double similarityScore = 0;
         for (TupleMatch tupleMatch : tupleMatches) {
-            similarityScore += tupleMatch.getSimilarity();            
+            similarityScore += tupleMatch.getSimilarity();
         }
         return similarityScore;
     }
@@ -231,7 +236,7 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
         Set<TupleWithTable> imageTupleSet = new HashSet<TupleWithTable>(imageTuples);
         return imageTuples.size() == imageTupleSet.size();
     }
-    
+
     private boolean consistentValueMappings(ValueMapping leftToRightValueMapping, ValueMapping rightToLeftValueMapping) {
         for (IValue leftValue : leftToRightValueMapping.getKeys()) {
             IValue rightValue = leftToRightValueMapping.getValueMapping(leftValue);
@@ -242,5 +247,5 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
         }
         return true;
     }
-    
+
 }

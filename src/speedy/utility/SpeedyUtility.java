@@ -1,6 +1,5 @@
 package speedy.utility;
 
-import java.io.File;
 import speedy.model.algebra.operators.ITupleIterator;
 import speedy.model.database.AttributeRef;
 import speedy.model.database.Cell;
@@ -39,6 +38,7 @@ import speedy.comparison.TupleWithTable;
 import speedy.model.algebra.ProjectionAttribute;
 import speedy.model.database.LLUNValue;
 import speedy.utility.comparator.StringComparator;
+import speedy.utility.comparator.TableComparatorBySizeAndName;
 
 public class SpeedyUtility {
 
@@ -186,7 +186,7 @@ public class SpeedyUtility {
         }
         return result.toString();
     }
-    
+
     @SuppressWarnings("unchecked")
     public static String printMapCompact(Map m) {
         if (m == null) {
@@ -385,7 +385,8 @@ public class SpeedyUtility {
 
     public static List<TupleWithTable> extractAllTuplesFromDatabase(IDatabase db) {
         List<TupleWithTable> result = new ArrayList<TupleWithTable>();
-        for (String tableName : db.getTableNames()) {
+        List<String> sortedTables = orderTablesBySizeAndName(db);
+        for (String tableName : sortedTables) {
             ITable table = db.getTable(tableName);
             ITupleIterator iterator = table.getTupleIterator();
             while (iterator.hasNext()) {
@@ -394,6 +395,12 @@ public class SpeedyUtility {
             iterator.close();
         }
         return result;
+    }
+
+    private static List<String> orderTablesBySizeAndName(IDatabase db) {
+        List<String> sortedTableNames = new ArrayList<String>(db.getTableNames());
+        Collections.sort(sortedTableNames, new TableComparatorBySizeAndName(db));
+        return sortedTableNames;
     }
 
     public static boolean isNullValue(Object attributeValue) {
@@ -413,19 +420,6 @@ public class SpeedyUtility {
     public static boolean pickRandom(double probability) {
         double random = new Random().nextDouble();
         return random < probability;
-    }
-
-    // FILE METHODS
-    public static List<File> getFileInFolder(String folderPath, String extension) {
-        File folder = new File(folderPath);
-        List<File> files = new ArrayList<File>();
-        File[] listFiles = folder.listFiles();
-        for (File file : listFiles) {
-            if (file.isFile() && (extension == null || file.getName().endsWith(extension))) {
-                files.add(file);
-            }
-        }
-        return files;
     }
 
 }

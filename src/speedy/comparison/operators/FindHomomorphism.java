@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.SpeedyConstants;
 import speedy.SpeedyConstants.ValueMatchResult;
+import speedy.comparison.ComparisonConfiguration;
 import speedy.comparison.TupleMapping;
 import speedy.comparison.InstanceMatch;
 import speedy.comparison.TupleMatch;
@@ -35,7 +36,6 @@ public class FindHomomorphism {
             return result;
         }
         sortTupleMatches(tupleMatches);
-        // new version: lazy combinations
         List<List<TupleMatch>> allTupleMatches = combineMatches(sourceTuples, tupleMatches);
         GenericListGeneratorIterator<TupleMatch> iterator = new GenericListGeneratorIterator<TupleMatch>(allTupleMatches);
         while (iterator.hasNext()) {
@@ -46,32 +46,26 @@ public class FindHomomorphism {
                 return result;
             }
         }
-        // old version: greedy combinations
-//        List<List<TupleMatch>> allCandidateHomomorphisms = combineMatches(sourceTuples, tupleMatches);
-//        for (List<TupleMatch> candidateHomomorphism : allCandidateHomomorphisms) {
-//            Homomorphism homomorphism = checkIfIsHomomorphism(candidateHomomorphism);
-//            if (homomorphism != null) {
-//                result.setHomomorphism(homomorphism);
-//                return result;
-//            }
-//        }
         return result;
     }
 
-    private TupleMatches findTupleMatches(List<TupleWithTable> sourceTuples, List<TupleWithTable> destinationTuples) {
+    private TupleMatches findTupleMatches(List<TupleWithTable> leftTuples, List<TupleWithTable> rightTuples) {
         TupleMatches tupleMatches = new TupleMatches();
-        for (TupleWithTable sourceTuple : sourceTuples) {
-            for (TupleWithTable destinationTuple : destinationTuples) {
-                TupleMatch match = checkMatch(sourceTuple, destinationTuple);
+        for (TupleWithTable leftTuple : leftTuples) {
+            for (TupleWithTable rightTuple : rightTuples) {
+                TupleMatch match = checkMatch(leftTuple, rightTuple);
                 if (match != null) {
                     if (logger.isDebugEnabled()) logger.debug("Match found: " + match);
-                    tupleMatches.addTupleMatch(sourceTuple, match);
+                    tupleMatches.addTupleMatch(leftTuple, match);
                 }
             }
-            List<TupleMatch> matchesForTuple = tupleMatches.getMatchesForTuple(sourceTuple);
+            List<TupleMatch> matchesForTuple = tupleMatches.getMatchesForTuple(leftTuple);
             if (matchesForTuple == null) {
-                if (logger.isDebugEnabled()) logger.debug("Non matching tuple: " + sourceTuple);
-                tupleMatches.addNonMatchingTuple(sourceTuple);
+                if (logger.isInfoEnabled()) logger.info("Non matching tuple: " + leftTuple);
+                tupleMatches.addNonMatchingTuple(leftTuple);
+                if (ComparisonConfiguration.isStopIfNonMatchingTuples()) {
+                    return tupleMatches;
+                }
             }
         }
         return tupleMatches;
@@ -90,7 +84,7 @@ public class FindHomomorphism {
             }
             IValue sourceValue = sourceTuple.getTuple().getCells().get(i).getValue();
             IValue destinationValue = destinationTuple.getTuple().getCells().get(i).getValue();
-            if (logger.isTraceEnabled()) logger.trace("Comparing values: " + sourceValue + ", " + destinationValue);
+            if (logger.isTraceEnabled()) logger.trace("Comparing values: '" + sourceValue + "', '" + destinationValue + "'");
             ValueMatchResult matchResult = match(sourceValue, destinationValue);
             if (matchResult == ValueMatchResult.NOT_MATCHING) {
                 if (logger.isTraceEnabled()) logger.trace("Values not match...");
@@ -153,14 +147,6 @@ public class FindHomomorphism {
         }
     }
 
-//    private List<List<TupleMatch>> combineMatches(List<TupleWithTable> sourceTuples, TupleMatches tupleMatches) {
-//        GenericListGenerator<TupleMatch> generator = new GenericListGenerator<TupleMatch>();
-//        List<List<TupleMatch>> allTupleMatches = new ArrayList<List<TupleMatch>>();
-//        for (TupleWithTable sourceTuple : sourceTuples) {
-//            allTupleMatches.add(tupleMatches.getMatchesForTuple(sourceTuple));
-//        }
-//        return generator.generateListsOfElements(allTupleMatches);
-//    }
     private List<List<TupleMatch>> combineMatches(List<TupleWithTable> sourceTuples, TupleMatches tupleMatches) {
         List<List<TupleMatch>> allTupleMatches = new ArrayList<List<TupleMatch>>();
         for (TupleWithTable sourceTuple : sourceTuples) {

@@ -6,8 +6,6 @@ import speedy.model.database.IValue;
 import speedy.model.database.Tuple;
 import speedy.model.database.NullValue;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import speedy.model.database.ConstantValue;
 

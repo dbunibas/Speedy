@@ -5,7 +5,7 @@ import speedy.model.database.IDatabase;
 import speedy.utility.SpeedyUtility;
 
 public class InstanceMatch {
-    
+
     private final IDatabase sourceDb;
     private final IDatabase targetDb;
     private TupleMapping tupleMatch;
@@ -23,7 +23,7 @@ public class InstanceMatch {
     public IDatabase getTargetDb() {
         return targetDb;
     }
-    
+
     public boolean hasHomomorphism() {
         return this.tupleMatch != null;
     }
@@ -46,11 +46,11 @@ public class InstanceMatch {
 
     @Override
     public String toString() {
-        return "InstanceMatch[\n" 
-                + tupleMatch 
-                + ((nonMatchingTuples != null && !nonMatchingTuples.isEmpty()) ? 
-                        "\nNon matching tuples=" + SpeedyUtility.printCollection(nonMatchingTuples) : "")
+        return "InstanceMatch[\n"
+                + (tupleMatch != null ? tupleMatch : " no match")
+                + ((nonMatchingTuples != null && !nonMatchingTuples.isEmpty())
+                        ? "\nNon matching tuples=" + SpeedyUtility.printCollection(nonMatchingTuples) : "")
                 + "\n]";
-    }    
+    }
 
 }
