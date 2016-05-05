@@ -43,7 +43,7 @@ public class CompareInstancesHashing implements IComputeInstanceSimilarity {
         List<TupleWithTable> remainingLeftTuples = collectRemainingTuples(leftSignatureMapCollection);
         if (logger.isDebugEnabled()) logger.debug("Remaining left tuples:\n" + SpeedyUtility.printCollection(remainingLeftTuples));
         //compute score
-        instanceMatch.setTupleMatch(tupleMapping);
+        instanceMatch.setTupleMapping(tupleMapping);
         return instanceMatch;
     }
 

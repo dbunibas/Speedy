@@ -57,7 +57,7 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
                 if (logger.isDebugEnabled()) logger.debug("Found new best score: " + similarityScore);
             }
         }
-        instanceMatch.setTupleMatch(bestTupleMapping);
+        instanceMatch.setTupleMapping(bestTupleMapping);
         return instanceMatch;
     }
 

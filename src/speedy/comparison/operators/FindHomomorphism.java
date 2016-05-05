@@ -42,7 +42,7 @@ public class FindHomomorphism {
             List<TupleMatch> candidateHomomorphism = iterator.next();
             TupleMapping homomorphism = checkIfIsHomomorphism(candidateHomomorphism);
             if (homomorphism != null) {
-                result.setTupleMatch(homomorphism);
+                result.setTupleMapping(homomorphism);
                 return result;
             }
         }
