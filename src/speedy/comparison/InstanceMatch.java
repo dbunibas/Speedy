@@ -10,6 +10,7 @@ public class InstanceMatch {
     private final IDatabase targetDb;
     private TupleMapping tupleMatch;
     private List<TupleWithTable> nonMatchingTuples;
+    private boolean isomorphism;
 
     public InstanceMatch(IDatabase sourceDb, IDatabase targetDb) {
         this.sourceDb = sourceDb;
@@ -44,10 +45,19 @@ public class InstanceMatch {
         this.nonMatchingTuples = nonMatchingTuples;
     }
 
+    public boolean isIsomorphism() {
+        return isomorphism;
+    }
+
+    public void setIsomorphism(boolean isomorphism) {
+        this.isomorphism = isomorphism;
+    }
+
     @Override
     public String toString() {
         return "InstanceMatch[\n" 
                 + tupleMatch 
+                + (isomorphism ? "(isomorphism)" : "") 
                 + ((nonMatchingTuples != null && !nonMatchingTuples.isEmpty()) ? 
                         "\nNon matching tuples=" + SpeedyUtility.printCollection(nonMatchingTuples) : "")
                 + "\n]";

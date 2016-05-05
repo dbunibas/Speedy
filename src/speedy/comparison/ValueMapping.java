@@ -1,5 +1,6 @@
 package speedy.comparison;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -19,6 +20,10 @@ public class ValueMapping {
 
     public Set<IValue> getKeys() {
         return this.map.keySet();
+    }
+    
+    public Collection<IValue> getValues() {
+        return this.map.values();
     }
     
     public int size() {
