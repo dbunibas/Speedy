@@ -1,4 +1,4 @@
-package speedy.persistence.file;
+package speedy.model.database.operators.mainmemory;
 
 import java.io.File;
 import java.io.FileReader;
@@ -17,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.SpeedyConstants;
 import speedy.exceptions.DAOException;
+import speedy.model.database.IValue;
+import speedy.model.database.NullValue;
 import speedy.model.database.mainmemory.datasource.DataSource;
 import speedy.model.database.mainmemory.datasource.INode;
 import speedy.model.database.mainmemory.datasource.IntegerOIDGenerator;
@@ -27,12 +29,11 @@ import speedy.model.database.mainmemory.datasource.nodes.TupleNode;
 import speedy.persistence.PersistenceConstants;
 import speedy.persistence.Types;
 import speedy.utility.DBMSUtility;
-import speedy.utility.SpeedyUtility;
 
-public class DAOFile {
+public class ImportCSVFileMainMemory {
 
     private static final String CSV_EXTENSION = ".csv";
-    private static final Logger logger = LoggerFactory.getLogger(DAOFile.class);
+    private static final Logger logger = LoggerFactory.getLogger(ImportCSVFileMainMemory.class);
 
     public DataSource loadSchema(String instancePath, char separator, Character quoteCharacter) {
         List<File> filesTable = getFileInFolder(instancePath, CSV_EXTENSION);
@@ -45,12 +46,12 @@ public class DAOFile {
         return dataSource;
     }
 
-    public void loadInstance(DataSource dataSource, String instancePath, char separator, Character quoteCharacter) {
+    public void loadInstance(DataSource dataSource, String instancePath, char separator, Character quoteCharacter, boolean convertSkolemInHash) {
         List<File> filesTable = getFileInFolder(instancePath, CSV_EXTENSION);
         Map<File, CSVTable> mapTable = loadTable(filesTable, separator, quoteCharacter);
         INode instanceNode = new TupleNode(PersistenceConstants.DATASOURCE_ROOT_LABEL, IntegerOIDGenerator.getNextOID());
         instanceNode.setRoot(true);
-        insertData(instanceNode, mapTable, separator, quoteCharacter);
+        insertData(instanceNode, mapTable, separator, quoteCharacter, convertSkolemInHash);
         dataSource.addInstanceWithCheck(instanceNode);
     }
 
@@ -107,15 +108,15 @@ public class DAOFile {
         return attributeNodeInstance;
     }
 
-    private void insertData(INode setNodeDB, Map<File, CSVTable> mapTable, char separator, Character quoteCharacter) {
+    private void insertData(INode setNodeDB, Map<File, CSVTable> mapTable, char separator, Character quoteCharacter, boolean convertSkolemInHash) {
         Set<File> fileSet = mapTable.keySet();
         for (File file : fileSet) {
             CSVTable csvTable = mapTable.get(file);
-            addTable(setNodeDB, csvTable, file, separator, quoteCharacter);
+            addTable(setNodeDB, csvTable, file, separator, quoteCharacter, convertSkolemInHash);
         }
     }
 
-    private void addTable(INode setNodeDB, CSVTable csvTable, File file, char separator, Character quoteCharacter) {
+    private void addTable(INode setNodeDB, CSVTable csvTable, File file, char separator, Character quoteCharacter, boolean convertSkolemInHash) {
         INode setNodeTable = new SetNode(csvTable.getName(), IntegerOIDGenerator.getNextOID());
         setNodeDB.addChild(setNodeTable);
         Reader reader = null;
@@ -131,7 +132,7 @@ public class DAOFile {
             if (!records.iterator().hasNext()) {
                 throw new DAOException("Unable to import file from empty file " + file);
             }
-            insertDataInTable(setNodeTable, csvTable, records);
+            insertDataInTable(setNodeTable, csvTable, records, convertSkolemInHash);
         } catch (Exception ex) {
             throw new DAOException("Unable to load csv file " + file.toString() + "\n" + ex.getLocalizedMessage());
         } finally {
@@ -143,20 +144,24 @@ public class DAOFile {
         }
     }
 
-    private AttributeNode createAttributeInstance(String attributeName, Object value) {
+    private AttributeNode createAttributeInstance(String attributeName, Object objValue, boolean convertSkolemInHash) {
         AttributeNode attributeNodeInstance = new AttributeNode(attributeName, IntegerOIDGenerator.getNextOID());
-        LeafNode leafNodeInstance = new LeafNode(Types.STRING, DBMSUtility.convertDBMSValue(value));
+        IValue value = DBMSUtility.convertDBMSValue(objValue);
+        if (convertSkolemInHash && (value instanceof NullValue) && ((NullValue) value).isLabeledNull()) {
+            value = new NullValue(SpeedyConstants.SKOLEM_PREFIX + value.hashCode());
+        }
+        LeafNode leafNodeInstance = new LeafNode(Types.STRING, value);
         attributeNodeInstance.addChild(leafNodeInstance);
         return attributeNodeInstance;
     }
 
-    private void insertDataInTable(INode setNodeTable, CSVTable csvTable, Iterable<CSVRecord> records) {
+    private void insertDataInTable(INode setNodeTable, CSVTable csvTable, Iterable<CSVRecord> records, boolean convertSkolemInHash) {
         for (CSVRecord record : records) {
             TupleNode tupleNodeInstance = new TupleNode(csvTable.getName() + "Tuple", IntegerOIDGenerator.getNextOID());
             setNodeTable.addChild(tupleNodeInstance);
             for (String attributeName : csvTable.getAttributes()) {
                 String value = record.get(attributeName);
-                AttributeNode attributeNode = createAttributeInstance(attributeName, value);
+                AttributeNode attributeNode = createAttributeInstance(attributeName, value, convertSkolemInHash);
                 tupleNodeInstance.addChild(attributeNode);
             }
         }
@@ -164,7 +169,7 @@ public class DAOFile {
 
     private List<File> getFileInFolder(String folderPath, String extension) {
         File folder = new File(folderPath);
-        if(!folder.exists()){
+        if (!folder.exists()) {
             throw new DAOException("Folder " + folder + " doesn't exist");
         }
         List<File> files = new ArrayList<File>();

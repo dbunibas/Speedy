@@ -29,7 +29,7 @@ public class TestMainMemoryCSV {
     @Before
     public void setUp() {
         String folder = UtilityForTests.getAbsoluteFileName("/resources/homomorphism/");
-        database = dao.loadCSVDatabase(folder, ',', null);
+        database = dao.loadCSVDatabase(folder, ',', null, false);
     }
 
     @Test

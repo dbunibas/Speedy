@@ -42,9 +42,13 @@ public class SignatureMapCollection {
     public Set<String> getTables() {
         return signatureAttributesForTable.keySet();
     }
-    
-    public Collection<SignatureMap> getSignatureMaps(){
+
+    public Collection<SignatureMap> getSignatureMaps() {
         return signatures.values();
+    }
+
+    public Map<String, List<SignatureAttributes>> getSignatureAttributesForTable() {
+        return signatureAttributesForTable;
     }
 
     @SuppressWarnings("unchecked")

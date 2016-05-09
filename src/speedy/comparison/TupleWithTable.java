@@ -3,7 +3,7 @@ package speedy.comparison;
 import speedy.model.database.Tuple;
 
 public class TupleWithTable {
-    
+
     private String table;
     private Tuple tuple;
 
@@ -20,9 +20,27 @@ public class TupleWithTable {
         return tuple;
     }
 
+    private String hashString() {
+        return table + "." + tuple.getOid();
+    }
+
+    @Override
+    public int hashCode() {
+        return hashString().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        final TupleWithTable other = (TupleWithTable) obj;
+        return other.hashString().equals(this.hashCode());
+    }
+
     @Override
     public String toString() {
         return table + "." + tuple;
     }
-        
+
 }

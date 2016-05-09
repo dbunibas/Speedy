@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import speedy.comparison.ComparisonStats;
 import speedy.comparison.ComparisonUtility;
 import speedy.comparison.SignatureAttributes;
 import speedy.comparison.SignatureMap;
@@ -25,6 +26,7 @@ public class SignatureMapCollectionGenerator {
     private final static String SIGNATURE_SEPARATOR = "|";
 
     public SignatureMapCollection generateIndexForTuples(List<TupleWithTable> tuples) {
+        long start = System.currentTimeMillis();
         SignatureMapCollection signatureCollection = new SignatureMapCollection();
         for (TupleWithTable tupleWithTable : tuples) {
             Set<AttributeRef> groundAttributes = ComparisonUtility.findAttributesWithGroundValue(tupleWithTable.getTuple());
@@ -33,10 +35,14 @@ public class SignatureMapCollectionGenerator {
             SignatureMap signatureMap = signatureCollection.getOrCreateSignatureMap(maximalSignature.getSignatureAttribute());
             signatureMap.addSignature(maximalSignature);
         }
+        long end = System.currentTimeMillis();
+        if (logger.isInfoEnabled()) logger.info("Generating index time:" + (end - start) + " ms");
+        ComparisonStats.getInstance().addStat(ComparisonStats.GENERATE_SIGNATURE_MAP_COLLECTION_TIME, end-start);
         return signatureCollection;
     }
 
     public TupleSignature generateSignature(TupleWithTable tupleWithTable, Collection<AttributeRef> attributes) {
+        long start = System.currentTimeMillis();
         List<AttributeRef> sortedAttributes = new ArrayList<AttributeRef>(attributes);
         Collections.sort(sortedAttributes, new StringComparator());
         Tuple tuple = tupleWithTable.getTuple();
@@ -48,6 +54,8 @@ public class SignatureMapCollectionGenerator {
         }
         SpeedyUtility.removeChars(SIGNATURE_SEPARATOR.length(), signature);
         SignatureAttributes signatureAttribute = new SignatureAttributes(tableName, sortedAttributes);
+        long end = System.currentTimeMillis();
+        ComparisonStats.getInstance().addStat(ComparisonStats.GENERATE_TUPLE_SIGNATURE_TIME, end-start);
         return new TupleSignature(tuple, signatureAttribute, signature.toString());
     }
 }

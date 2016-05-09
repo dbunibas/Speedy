@@ -1,9 +1,9 @@
 package speedy.comparison.operators;
 
-import speedy.comparison.InstanceMatch;
+import speedy.comparison.InstanceMatchTask;
 import speedy.model.database.IDatabase;
 
 public interface IComputeInstanceSimilarity {
 
-    public InstanceMatch compare(IDatabase leftInstance, IDatabase rightInstance);
+    public InstanceMatchTask compare(IDatabase leftInstance, IDatabase rightInstance);
 }

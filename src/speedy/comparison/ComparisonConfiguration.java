@@ -9,6 +9,7 @@ public class ComparisonConfiguration {
     private static boolean injective = false;
     private static boolean stopIfNonMatchingTuples = false;
     private static double K = 0.5;
+    private static boolean convertSkolemInHash = false;
 
     public static boolean isTwoWayValueMapping() {
         return twoWayValueMapping;
@@ -50,15 +51,24 @@ public class ComparisonConfiguration {
         ComparisonConfiguration.stopIfNonMatchingTuples = stopIfNonMatchingTuples;
     }
 
+    public static boolean isConvertSkolemInHash() {
+        return convertSkolemInHash;
+    }
+
+    public static void setConvertSkolemInHash(boolean convertSkolemInHash) {
+        ComparisonConfiguration.convertSkolemInHash = convertSkolemInHash;
+    }
+
     @Override
-    public String toString(){
+    public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("nullPrefixes:").append(nullPrefixes).append("\n");
         sb.append("twoWayValueMapping:").append(twoWayValueMapping).append("\n");
         sb.append("injective:").append(injective).append("\n");
         sb.append("stopIfNonMatchingTuples:").append(stopIfNonMatchingTuples).append("\n");
         sb.append("K:").append(K).append("\n");
+        sb.append("convertSkolemInHash:").append(convertSkolemInHash).append("\n");
         return sb.toString();
     }
-    
+
 }

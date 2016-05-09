@@ -12,7 +12,7 @@ import speedy.SpeedyConstants;
 import speedy.SpeedyConstants.ValueMatchResult;
 import speedy.comparison.ComparisonConfiguration;
 import speedy.comparison.TupleMapping;
-import speedy.comparison.InstanceMatch;
+import speedy.comparison.InstanceMatchTask;
 import speedy.comparison.TupleMatch;
 import speedy.comparison.TupleMatches;
 import speedy.comparison.TupleWithTable;
@@ -29,13 +29,13 @@ public class FindHomomorphism {
 
     private final static Logger logger = LoggerFactory.getLogger(FindHomomorphism.class);
 
-    public InstanceMatch findHomomorphism(IDatabase sourceDb, IDatabase destinationDb) {
-        InstanceMatch result = new InstanceMatch(sourceDb, destinationDb);
+    public InstanceMatchTask findHomomorphism(IDatabase sourceDb, IDatabase destinationDb) {
+        InstanceMatchTask result = new InstanceMatchTask(sourceDb, destinationDb);
         List<TupleWithTable> sourceTuples = SpeedyUtility.extractAllTuplesFromDatabase(sourceDb);
         List<TupleWithTable> destinationTuples = SpeedyUtility.extractAllTuplesFromDatabase(destinationDb);
         TupleMatches tupleMatches = findTupleMatches(sourceTuples, destinationTuples);
         if (tupleMatches.hasNonMatchingTuples()) {
-            result.setNonMatchingTuples(tupleMatches.getNonMatchingTuples());
+            result.getTupleMapping().setNonMatchingTuples(tupleMatches.getNonMatchingTuples());
             return result;
         }
         sortTupleMatches(tupleMatches);
@@ -183,7 +183,7 @@ public class FindHomomorphism {
         return homomorphism;
     }
 
-    private boolean checkIsomorphism(InstanceMatch instanceMatch) {
+    private boolean checkIsomorphism(InstanceMatchTask instanceMatch) {
         if (!instanceMatch.hasHomomorphism()) {
             return false;
         }
@@ -196,7 +196,7 @@ public class FindHomomorphism {
         return true;
     }
 
-    private boolean injective(InstanceMatch instanceMatch) {
+    private boolean injective(InstanceMatchTask instanceMatch) {
         Collection<TupleWithTable> rightMatchedTuples = instanceMatch.getTupleMapping().getTupleMapping().values();
         Set<TupleWithTable> distinctMatchedTuples = new HashSet<TupleWithTable>(rightMatchedTuples);
         if (rightMatchedTuples.size() != distinctMatchedTuples.size()) {

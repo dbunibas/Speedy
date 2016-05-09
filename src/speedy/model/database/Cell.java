@@ -25,6 +25,12 @@ public class Cell implements Serializable, Cloneable {
         this.value = originalCell.value;
     }
 
+    public Cell(Cell originalCell, IValue newValue) {
+        this.tupleOid = originalCell.tupleOid;
+        this.attributeRef = originalCell.attributeRef;
+        this.value = newValue;
+    }
+
     public boolean isOID() {
         return attributeRef.getName().equals(SpeedyConstants.OID);
     }

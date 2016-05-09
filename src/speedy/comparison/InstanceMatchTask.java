@@ -1,18 +1,15 @@
 package speedy.comparison;
 
-import java.util.List;
 import speedy.model.database.IDatabase;
-import speedy.utility.SpeedyUtility;
 
-public class InstanceMatch {
+public class InstanceMatchTask {
 
     private final IDatabase sourceDb;
     private final IDatabase targetDb;
-    private TupleMapping tupleMapping;
-    private List<TupleWithTable> nonMatchingTuples;
+    private TupleMapping tupleMapping = new TupleMapping();
     private Boolean isomorphism;
 
-    public InstanceMatch(IDatabase sourceDb, IDatabase targetDb) {
+    public InstanceMatchTask(IDatabase sourceDb, IDatabase targetDb) {
         this.sourceDb = sourceDb;
         this.targetDb = targetDb;
     }
@@ -26,7 +23,7 @@ public class InstanceMatch {
     }
 
     public boolean hasHomomorphism() {
-        return this.tupleMapping != null;
+        return !this.tupleMapping.isEmpty();
     }
 
     public TupleMapping getTupleMapping() {
@@ -35,14 +32,6 @@ public class InstanceMatch {
 
     public void setTupleMapping(TupleMapping tupleMapping) {
         this.tupleMapping = tupleMapping;
-    }
-
-    public List<TupleWithTable> getNonMatchingTuples() {
-        return nonMatchingTuples;
-    }
-
-    public void setNonMatchingTuples(List<TupleWithTable> nonMatchingTuples) {
-        this.nonMatchingTuples = nonMatchingTuples;
     }
 
     public Boolean isIsomorphism() {
@@ -55,10 +44,8 @@ public class InstanceMatch {
 
     @Override
     public String toString() {
-        return (tupleMapping != null ? tupleMapping : "")
-                + (isomorphism != null && isomorphism ? "(isomorphism)\n" : "")
-                + ((nonMatchingTuples != null && !nonMatchingTuples.isEmpty())
-                        ? "Non matching tuples=" + SpeedyUtility.printCollection(nonMatchingTuples) : "");
+        return (isomorphism != null && isomorphism ? "(isomorphism) \n" : "")
+                + tupleMapping + "\n";
     }
 
 }

@@ -1,7 +1,7 @@
 package speedy.test.comparison;
 
 import junit.framework.TestCase;
-import speedy.comparison.InstanceMatch;
+import speedy.comparison.InstanceMatchTask;
 import speedy.comparison.operators.CompareInstancesHashing;
 import speedy.model.database.IDatabase;
 import speedy.model.database.dbms.DBMSDB;
@@ -18,7 +18,7 @@ public class TestCompareGroundInstances extends TestCase {
     public void testInstance1() {
         IDatabase expected = loadDatabase("01", "expected");
         IDatabase generated = loadDatabase("01", "generated");
-        InstanceMatch result = instanceComparator.compare(expected, generated);
+        InstanceMatchTask result = instanceComparator.compare(expected, generated);
 //        assertEquals(1.0, result.getSimilarityForTable("r").getFMeasure());
     }
 
