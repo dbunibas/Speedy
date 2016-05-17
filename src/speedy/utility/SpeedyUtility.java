@@ -366,6 +366,14 @@ public class SpeedyUtility {
         return table.getAttribute(attributeRef.getName());
     }
 
+    public static IDatabase getDatabase(AttributeRef attributeRef, IDatabase source, IDatabase target) {
+        if (attributeRef.isSource()) {
+            return source;
+        } else {
+            return target;
+        }
+    }
+
     public static String getDeltaRelationName(String tableName, String attributeName) {
         return tableName + SpeedyConstants.DELTA_TABLE_SEPARATOR + attributeName;
     }
@@ -403,23 +411,78 @@ public class SpeedyUtility {
         return sortedTableNames;
     }
 
-    public static boolean isNullValue(Object attributeValue) {
-        for (String nullPrefix : ComparisonConfiguration.getNullPrefixes()) {
-            if (attributeValue.toString().startsWith(nullPrefix)) {
+    // SKOLEM METHODS
+    public static boolean isSkolem(Object o) {
+        String stringValue = o.toString();
+        for (String nullPrefix : ComparisonConfiguration.getStringSkolemPrefixes()) {
+            if (stringValue.startsWith(nullPrefix)) {
+                return true;
+            }
+        }
+        if (stringValue.length() < SpeedyConstants.MIN_LENGTH_FOR_NUMERIC_PLACEHOLDERS) {
+            return false;
+        }
+        if (!isNumericalValue(stringValue)) {
+            return false;
+        }
+        for (String nullPrefix : ComparisonConfiguration.getNumericSkolemPrefixes()) {
+            if (stringValue.startsWith(nullPrefix)) {
                 return true;
             }
         }
         return false;
     }
 
-    // NUMERICAL METHOD
+    public static boolean isVariable(Object o) {
+        String stringValue = o.toString();
+        for (String llunPrefix : ComparisonConfiguration.getStringLlunPrefixes()) {
+            if (stringValue.startsWith(llunPrefix)) {
+                return true;
+            }
+        }
+        if (stringValue.length() < SpeedyConstants.MIN_LENGTH_FOR_NUMERIC_PLACEHOLDERS) {
+            return false;
+        }
+        if (!isNumericalValue(stringValue)) {
+            return false;
+        }
+        for (String nullPrefix : ComparisonConfiguration.getNumericLlunPrefixes()) {
+            if (stringValue.startsWith(nullPrefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // NUMERICAL METHODS
     public static boolean isNumeric(String type) {
-        return (type.equals(SpeedyConstants.NUMERIC) || type.equals(Types.LONG) || type.equals(Types.DOUBLE) || type.equals(Types.INTEGER));
+        return (type.equals(Types.DOUBLE_PRECISION) || type.equals(Types.LONG) || type.equals(Types.REAL) || type.equals(Types.INTEGER));
+    }
+
+    public static boolean isBigNumeric(String type) {
+        return (type.equals(Types.DOUBLE_PRECISION) || type.equals(Types.LONG));
+    }
+
+    public static boolean isBigInt(String type) {
+        return type.equals(Types.LONG);
+    }
+
+    public static boolean isDoublePrecision(String type) {
+        return type.equals(Types.DOUBLE_PRECISION);
     }
 
     public static boolean pickRandom(double probability) {
         double random = new Random().nextDouble();
         return random < probability;
+    }
+
+    public static boolean isNumericalValue(String string) {
+        try {
+            Double.parseDouble(string);
+            return true;
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
     }
 
 }

@@ -4,7 +4,6 @@ import speedy.SpeedyConstants;
 import speedy.exceptions.DAOException;
 import speedy.exceptions.DBMSException;
 import speedy.model.database.mainmemory.datasource.IntegerOIDGenerator;
-import speedy.model.expressions.Expression;
 import speedy.persistence.Types;
 import speedy.persistence.relational.AccessConfiguration;
 import speedy.persistence.relational.QueryManager;
@@ -20,7 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.ibatis.jdbc.ScriptRunner;
-import org.nfunk.jep.Variable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.model.database.Attribute;
@@ -30,7 +28,6 @@ import speedy.model.database.ConstantValue;
 import speedy.model.database.ForeignKey;
 import speedy.model.database.IDatabase;
 import speedy.model.database.IValue;
-import speedy.model.database.IVariableDescription;
 import speedy.model.database.Key;
 import speedy.model.database.LLUNValue;
 import speedy.model.database.NullValue;
@@ -387,6 +384,36 @@ public class DBMSUtility {
         }
     }
 
+    private static AttributeRef extractAttributeRef(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("Unable to extract attribute from empty string");
+        }
+        boolean source = false;
+        if (value.startsWith("source_")) {
+            source = true;
+            value = value.substring("source_".length());
+        }
+        int lastIndex = value.lastIndexOf(SpeedyConstants.DELTA_TABLE_SEPARATOR);
+        if (lastIndex == -1) {
+            return new AttributeRef("", value);
+//            throw new IllegalArgumentException("Unable to extract attribute from string " + value);
+        }
+        String tableAliasSQL = value.substring(0, lastIndex);
+        String attributeSQL = value.substring(lastIndex + SpeedyConstants.DELTA_TABLE_SEPARATOR.length());
+        TableAlias tableAlias;
+        if (tableAliasSQL.contains(SpeedyConstants.DELTA_TABLE_SEPARATOR)) {
+            int firstIndex = tableAliasSQL.indexOf(SpeedyConstants.DELTA_TABLE_SEPARATOR);
+            String tableName = tableAliasSQL.substring(0, firstIndex);
+            String alias = tableAliasSQL.substring(firstIndex + SpeedyConstants.DELTA_TABLE_SEPARATOR.length());
+            tableAlias = new TableAlias(tableName, alias);
+        } else {
+            tableAlias = new TableAlias(tableAliasSQL);
+        }
+        tableAlias.setSource(source);
+        AttributeRef attributeRef = new AttributeRef(tableAlias, attributeSQL);
+        return attributeRef;
+    }
+
     private static Object findOIDColumn(ResultSetMetaData metadata, ResultSet resultSet) throws SQLException {
         for (int i = 1; i <= metadata.getColumnCount(); i++) {
             if (metadata.getColumnName(i).equalsIgnoreCase(SpeedyConstants.OID)) {
@@ -403,6 +430,7 @@ public class DBMSUtility {
         for (int col = 1; col <= columns; col++) {
             String attributeName = metadata.getColumnName(col);
             String attributeType = metadata.getColumnTypeName(col);
+            if (logger.isDebugEnabled()) logger.debug("Table: " + tableName + " - Attribute: " + attributeName + " - Type: " + attributeType);
             Attribute attribute = new Attribute(tableName, attributeName, DBMSUtility.convertDBTypeToDataSourceType(attributeType));
             result.add(attribute);
         }
@@ -464,11 +492,17 @@ public class DBMSUtility {
         if (columnType.equalsIgnoreCase("datetime") || columnType.equalsIgnoreCase("timestamp")) {
             return Types.DATETIME;
         }
-        if (columnType.toLowerCase().startsWith("serial") || columnType.toLowerCase().startsWith("int") || columnType.toLowerCase().startsWith("tinyint") || columnType.toLowerCase().startsWith("bigint") || columnType.toLowerCase().startsWith("smallint")) {
+        if (columnType.toLowerCase().equals("int8") || columnType.toLowerCase().startsWith("bigint")) {
+            return Types.LONG;
+        }
+        if (columnType.toLowerCase().equals("float8") || columnType.toLowerCase().startsWith("double precision")) {
+            return Types.DOUBLE_PRECISION;
+        }
+        if (columnType.toLowerCase().startsWith("serial") || columnType.toLowerCase().startsWith("int") || columnType.toLowerCase().startsWith("tinyint") || columnType.toLowerCase().startsWith("smallint")) {
             return Types.INTEGER;
         }
-        if (columnType.toLowerCase().startsWith("float") || columnType.toLowerCase().startsWith("real") || columnType.toLowerCase().startsWith("float")) {
-            return Types.DOUBLE;
+        if (columnType.toLowerCase().startsWith("float") || columnType.toLowerCase().startsWith("real")) {
+            return Types.REAL;
         }
         if (columnType.equalsIgnoreCase("bool")) {
             return Types.BOOLEAN;
@@ -486,7 +520,7 @@ public class DBMSUtility {
         if (columnType.equals(Types.INTEGER)) {
             return "bigint";
         }
-        if (columnType.equals(Types.DOUBLE)) {
+        if (columnType.equals(Types.REAL)) {
             return "float";
         }
         if (columnType.equals(Types.BOOLEAN)) {
@@ -499,9 +533,9 @@ public class DBMSUtility {
         IValue value;
         if (attributeValue == null || attributeValue.toString().equalsIgnoreCase(SpeedyConstants.NULL)) {
             value = new NullValue(SpeedyConstants.NULL_VALUE);
-        } else if (SpeedyUtility.isNullValue(attributeValue)) {
+        } else if (SpeedyUtility.isSkolem(attributeValue)) {
             value = new NullValue(attributeValue);
-        } else if (attributeValue.toString().startsWith(SpeedyConstants.LLUN_PREFIX)) {
+        } else if (SpeedyUtility.isVariable(attributeValue)) {
             value = new LLUNValue(attributeValue);
         } else {
             value = new ConstantValue(attributeValue);
@@ -537,113 +571,10 @@ public class DBMSUtility {
         return sb.toString();
     }
 
-    public static String expressionToSQL(Expression expression) {
-        return expressionToSQL(expression, true);
-    }
-
     public static String cleanRelationName(String name) {
         String clean = name;
         clean = clean.replaceAll("-", SpeedyConstants.DELTA_TABLE_SEPARATOR);
         return clean;
-    }
-
-    public static String expressionToSQL(Expression expression, boolean useAlias) {
-        if (logger.isDebugEnabled()) logger.debug("Converting expression " + expression);
-        Expression expressionClone = expression.clone();
-        String expressionString = expression.toString();
-        List<Variable> jepVariables = expressionClone.getJepExpression().getSymbolTable().getVariables();
-        List<String> variables = expressionClone.getVariables();
-        if (expressionString.startsWith("isNull(") || expressionString.startsWith("isNotNull(")) {
-            Variable var = jepVariables.get(0);
-            String attributeName = extractAttributeNameFromVariable(var.getDescription().toString(), expressionClone, useAlias);
-            var.setDescription(attributeName);
-            return expressionClone.toSQLString();
-        }
-        if (expressionString.startsWith("\"") && expressionString.endsWith("\"") && expressionString.length() > 1) {
-            return expressionString.substring(1, expressionString.length() - 1);
-        }
-        for (String variable : variables) {
-            String attributeName = extractAttributeNameFromVariable(variable, expressionClone, useAlias);
-            Variable var = expressionClone.getJepExpression().getSymbolTable().getVar(variable);
-            if (var == null) {
-                var = expressionClone.getJepExpression().getSymbolTable().getVar("Source." + variable);
-            }
-            if (var != null) {
-                var.setDescription(attributeName);
-            }
-        }
-        return expressionClone.toSQLString();
-    }
-
-    private static String extractAttributeNameFromVariable(String variable, Expression expression, boolean useAlias) {
-        if (logger.isDebugEnabled()) logger.debug("Extracting attribute name for variable " + variable + " in expression " + expression);
-        Variable variableExpression = expression.getJepExpression().getVar(variable);
-        for (Variable var : expression.getJepExpression().getSymbolTable().getVariables()) {
-            if (var.getDescription() != null && var.getDescription().toString().equals(variable)) {
-                variableExpression = var;
-            }
-        }
-        if (variableExpression == null) {
-            throw new IllegalArgumentException("Unknow variable " + variable + " in expression " + expression);
-//            return variable;
-        }
-        Object objectVariable = variableExpression.getDescription();
-        if (logger.isDebugEnabled()) logger.debug("Object variable class: " + objectVariable.getClass());
-        if (objectVariable instanceof IVariableDescription) {
-            IVariableDescription variableDescription = (IVariableDescription) variableExpression.getDescription();
-            AttributeRef attributeRef = variableDescription.getAttributeRefs().get(0);
-            String result;
-            if (useAlias) {
-                result = DBMSUtility.attributeRefToSQLDot(attributeRef);
-            } else {
-                result = DBMSUtility.attributeRefToSQL(attributeRef);
-            }
-            if (logger.isDebugEnabled()) logger.debug("Return IVariableDescription: " + result);
-            return result;
-        }
-        if (objectVariable instanceof AttributeRef) {
-            AttributeRef attributeRef = (AttributeRef) objectVariable;
-            String result;
-            if (useAlias) {
-                result = DBMSUtility.attributeRefToSQLDot(attributeRef);
-            } else {
-                result = DBMSUtility.attributeRefToSQL(attributeRef);
-            }
-            if (logger.isDebugEnabled()) logger.debug("Return AttributeRef: " + result);
-            return result;
-        }
-        if (logger.isDebugEnabled()) logger.debug("Return: " + variable);
-        return variable;
-    }
-
-    private static AttributeRef extractAttributeRef(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("Unable to extract attribute from empty string");
-        }
-        boolean source = false;
-        if (value.startsWith("source_")) {
-            source = true;
-            value = value.substring("source_".length());
-        }
-        int lastIndex = value.lastIndexOf(SpeedyConstants.DELTA_TABLE_SEPARATOR);
-        if (lastIndex == -1) {
-            return new AttributeRef("", value);
-//            throw new IllegalArgumentException("Unable to extract attribute from string " + value);
-        }
-        String tableAliasSQL = value.substring(0, lastIndex);
-        String attributeSQL = value.substring(lastIndex + SpeedyConstants.DELTA_TABLE_SEPARATOR.length());
-        TableAlias tableAlias;
-        if (tableAliasSQL.contains(SpeedyConstants.DELTA_TABLE_SEPARATOR)) {
-            int firstIndex = tableAliasSQL.indexOf(SpeedyConstants.DELTA_TABLE_SEPARATOR);
-            String tableName = tableAliasSQL.substring(0, firstIndex);
-            String alias = tableAliasSQL.substring(firstIndex + SpeedyConstants.DELTA_TABLE_SEPARATOR.length());
-            tableAlias = new TableAlias(tableName, alias);
-        } else {
-            tableAlias = new TableAlias(tableAliasSQL);
-        }
-        tableAlias.setSource(source);
-        AttributeRef attributeRef = new AttributeRef(tableAlias, attributeSQL);
-        return attributeRef;
     }
 
     public static void createSchema(AccessConfiguration accessConfiguration) {
@@ -704,6 +635,11 @@ public class DBMSUtility {
                 PrintUtility.printError("Unable to drop schema.\n" + ex.getLocalizedMessage());
             }
         }
+    }
+
+    public static String cleanTableName(String tableName) {
+        tableName = tableName.replace("-", "");
+        return tableName.toLowerCase();
     }
 
 }

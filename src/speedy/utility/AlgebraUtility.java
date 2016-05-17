@@ -105,7 +105,7 @@ public class AlgebraUtility {
     }
 
     private static Comparable getTypedValue(IValue value, String type) {
-        if (type.equals(Types.LONG) || type.equals(Types.DOUBLE) || type.equals(Types.INTEGER)) {
+        if (type.equals(Types.LONG) || type.equals(Types.REAL) || type.equals(Types.INTEGER)) {
             return Double.parseDouble(value.toString());
         }
         return value.toString();

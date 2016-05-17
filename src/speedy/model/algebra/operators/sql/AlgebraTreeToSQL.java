@@ -42,6 +42,7 @@ import speedy.model.algebra.Union;
 import speedy.model.algebra.aggregatefunctions.StdDevAggregateFunction;
 import speedy.model.algebra.aggregatefunctions.SumAggregateFunction;
 import speedy.model.algebra.aggregatefunctions.ValueAggregateFunction;
+import speedy.model.database.Attribute;
 import speedy.model.database.dbms.DBMSDB;
 import speedy.persistence.relational.AccessConfiguration;
 
@@ -62,6 +63,7 @@ public class AlgebraTreeToSQL {
         private int counter = 0;
         private int indentLevel = 0;
         private boolean addOIDColumn = false;
+        private ExpressionToSQL sqlGenerator = new ExpressionToSQL();
         private SQLQueryBuilder result = new SQLQueryBuilder();
         private IDatabase source;
         private IDatabase target;
@@ -480,11 +482,14 @@ public class AlgebraTreeToSQL {
             List<AttributeRef> leftAttributes = operator.getLeftAttributes();
             List<AttributeRef> rightAttributes = operator.getRightAttributes();
             for (int i = 0; i < leftAttributes.size(); i++) {
-                AttributeRef leftAttribute = leftAttributes.get(i);
-                result.append(getJoinAttributeSQL(leftAttribute, leftOperator, nestedSelects));
+                AttributeRef leftAttributeRef = leftAttributes.get(i);
+                AttributeRef rightAttributeRef = rightAttributes.get(i);
+                Attribute leftAttribute = SpeedyUtility.getAttribute(leftAttributeRef, SpeedyUtility.getDatabase(leftAttributeRef, source, target));
+                Attribute rightAttribute = SpeedyUtility.getAttribute(rightAttributeRef, SpeedyUtility.getDatabase(rightAttributeRef, source, target));
+                boolean castNeeded = isCastNeeded(leftAttribute, rightAttribute);
+                result.append(getJoinAttributeSQL(leftAttributeRef, castNeeded, leftOperator, nestedSelects));
                 result.append(" = ");
-                AttributeRef rightAttribute = rightAttributes.get(i);
-                result.append(getJoinAttributeSQL(rightAttribute, rightOperator, nestedSelects));
+                result.append(getJoinAttributeSQL(rightAttributeRef, castNeeded, rightOperator, nestedSelects));
                 result.append(" AND ");
             }
             SpeedyUtility.removeChars(" AND ".length(), result.getStringBuilder());
@@ -496,7 +501,11 @@ public class AlgebraTreeToSQL {
             }
         }
 
-        private String getJoinAttributeSQL(AttributeRef attribute, IAlgebraOperator operator, List<NestedOperator> nestedSelects) {
+        private boolean isCastNeeded(Attribute leftAttribute, Attribute rightAttribute) {
+            return !leftAttribute.getType().equals(rightAttribute.getType());
+        }
+
+        private String getJoinAttributeSQL(AttributeRef attribute, boolean castNeeded, IAlgebraOperator operator, List<NestedOperator> nestedSelects) {
             boolean useAlias = false;
             if (operator instanceof CreateTableAs) {
                 useAlias = true;
@@ -515,6 +524,9 @@ public class AlgebraTreeToSQL {
                 attributeResult = DBMSUtility.attributeRefToAliasSQL(attribute);
             } else {
                 attributeResult = DBMSUtility.attributeRefToSQLDot(attribute);
+            }
+            if (castNeeded) {
+                attributeResult = "CAST(" + attributeResult + " as text)";
             }
 //            if (attributeResult.equals("")) {
 //                logger.error(" Attribute: " + attribute);
@@ -572,7 +584,7 @@ public class AlgebraTreeToSQL {
                         }
                     }
                 }
-                String expressionSQL = DBMSUtility.expressionToSQL(condition, useAlias);
+                String expressionSQL = sqlGenerator.expressionToSQL(condition, useAlias, source, target);
                 result.append(expressionSQL);
                 result.append(" AND ");
             }
@@ -702,7 +714,7 @@ public class AlgebraTreeToSQL {
             this.indentLevel++;
             result.append("\n").append(this.indentString());
             for (Expression condition : operator.getSelections()) {
-                result.append(DBMSUtility.expressionToSQL(condition));
+                result.append(sqlGenerator.expressionToSQL(condition, source, target));
                 result.append(" AND ");
             }
             SpeedyUtility.removeChars(" AND ".length(), result.getStringBuilder());

@@ -56,7 +56,7 @@ public class TestMainMemoryCSV {
         Assert.assertTrue(cell1.getValue() instanceof ConstantValue);
         Assert.assertTrue(cellNull5.getValue().toString().equals("_N5"));
         Assert.assertTrue(cellNull5.getValue() instanceof NullValue);
-        Assert.assertTrue(SpeedyUtility.isNullValue(cellNull5.getValue()));
+        Assert.assertTrue(SpeedyUtility.isSkolem(cellNull5.getValue()));
         tupleIterator.close();
         ITable table2 = database.getTable("03-source");
         ITupleIterator tupleIterator2 = table2.getTupleIterator();

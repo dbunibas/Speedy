@@ -18,6 +18,7 @@ import speedy.persistence.relational.AccessConfiguration;
 public class SQLDelete implements IDelete {
 
     private static Logger logger = LoggerFactory.getLogger(SQLDelete.class);
+    private ExpressionToSQL sqlGenerator = new ExpressionToSQL();
 
     public boolean execute(String tableName, IAlgebraOperator operator, IDatabase source, IDatabase target) {
         StringBuilder deleteQuery = new StringBuilder();
@@ -27,7 +28,7 @@ public class SQLDelete implements IDelete {
         } else {
             deleteQuery.append(getScanQuery(operator, source, target));
         }
-        deleteQuery.append(getSelectQuery(operator));
+        deleteQuery.append(getSelectQuery(operator, source, target));
         deleteQuery.append(";");
         if (logger.isDebugEnabled()) logger.debug("Delete query:\n" + deleteQuery.toString());
         return QueryManager.executeInsertOrDelete(deleteQuery.toString(), ((DBMSDB) target).getAccessConfiguration());
@@ -44,7 +45,7 @@ public class SQLDelete implements IDelete {
         throw new IllegalArgumentException("Unable to create delete query from " + operator);
     }
 
-    private String getSelectQuery(IAlgebraOperator operator) {
+    private String getSelectQuery(IAlgebraOperator operator, IDatabase source, IDatabase target) {
         if (operator == null) {
             return "";
         }
@@ -52,14 +53,14 @@ public class SQLDelete implements IDelete {
             StringBuilder result = new StringBuilder();
             result.append(" WHERE ");
             for (Expression condition : ((Select) operator).getSelections()) {
-                result.append(DBMSUtility.expressionToSQL(condition));
+                result.append(sqlGenerator.expressionToSQL(condition, source, target));
                 result.append(" AND ");
             }
             SpeedyUtility.removeChars(" AND ".length(), result);
             return result.toString();
         }
         for (IAlgebraOperator child : operator.getChildren()) {
-            return getSelectQuery(child);
+            return getSelectQuery(child, source, target);
         }
         return "";
     }

@@ -2,6 +2,7 @@ package speedy.persistence.xml.operators;
 
 import speedy.utility.SpeedyUtility;
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,6 +15,9 @@ public class TransformFilePaths {
     private static Logger logger = LoggerFactory.getLogger(TransformFilePaths.class);
 
     public String relativize(String baseFilePath, String relativeFilePath) {
+        if (baseFilePath == null || baseFilePath.trim().isEmpty()) {
+            throw new IllegalArgumentException("Unable to relativize path from a null base path");
+        }
         baseFilePath = SpeedyUtility.generateFolderPath(baseFilePath);
         List<String> basePathSteps = getPathSteps(baseFilePath);
         if (logger.isDebugEnabled()) logger.debug("Base path steps: " + basePathSteps);
@@ -25,6 +29,13 @@ public class TransformFilePaths {
     }
 
     public String expand(String baseFilePath, String filePath) {
+        if (baseFilePath == null || baseFilePath.trim().isEmpty()) {
+            throw new IllegalArgumentException("Unable to expand path frin a null base path");
+        }
+        if (isAbsolutePath(filePath)) {
+            if (logger.isDebugEnabled()) logger.debug("File path is absolute. Nothing to expand...");
+            return filePath;
+        }
         if (logger.isDebugEnabled()) logger.debug("Expanding filePath: " + filePath + " wrt base path " + baseFilePath);
         baseFilePath = SpeedyUtility.generateFolderPath(baseFilePath);
         List<String> basePathSteps = getPathSteps(baseFilePath);
@@ -34,6 +45,10 @@ public class TransformFilePaths {
         String s = mergePathLists(basePathSteps, filePathSteps);
         if (logger.isDebugEnabled()) logger.debug("Result: " + s);
         return s;
+    }
+
+    private boolean isAbsolutePath(String filePath) {
+        return Paths.get(filePath).isAbsolute();
     }
 
     private List<String> getPathSteps(String filePath) {

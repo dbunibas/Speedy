@@ -1,6 +1,7 @@
 package speedy.model.database;
 
 import speedy.SpeedyConstants;
+import speedy.utility.SpeedyUtility;
 
 public class ConstantValue implements IValue {
 
@@ -10,8 +11,11 @@ public class ConstantValue implements IValue {
         if (value == null) {
             throw new IllegalArgumentException("Unable to set NULL as constant value");
         }
-        if (value.toString().startsWith(SpeedyConstants.LLUN_PREFIX)) {
-            throw new IllegalArgumentException("Trying to create a constant value in place of a llun value");
+        if (SpeedyUtility.isSkolem(value)) {
+            throw new IllegalArgumentException("Trying to create a constant value in place of a skolem value " + value);
+        }
+        if (SpeedyUtility.isVariable(value)) {
+            throw new IllegalArgumentException("Trying to create a constant value in place of a llun value " + value);
         }
         this.value = value;
     }

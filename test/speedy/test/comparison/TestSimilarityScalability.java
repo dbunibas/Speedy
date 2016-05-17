@@ -19,7 +19,7 @@ public class TestSimilarityScalability extends TestCase {
 
     public void testDoctors() {
         String baseFolder = "/Users/donatello/Dropbox (Informatica)/Shared Folders/Enzo/Omomorfismi/";
-        ComparisonConfiguration.setNullPrefixes(new String[]{"_SK", "_:e"});
+        ComparisonConfiguration.setStringSkolemPrefixes(new String[]{"_SK", "_:e"});
         ComparisonConfiguration.setConvertSkolemInHash(true);
         String[] sizes = new String[]{"10k", "100k", "500k", "1m"};
         for (String size : sizes) {

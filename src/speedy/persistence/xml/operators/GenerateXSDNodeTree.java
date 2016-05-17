@@ -136,7 +136,7 @@ public class GenerateXSDNodeTree {
             case XSConstants.DECIMAL_DT:
             case XSConstants.FLOAT_DT:
             case XSConstants.DOUBLE_DT:
-                return Types.DOUBLE;
+                return Types.REAL;
             case XSConstants.DATE_DT:
                 return Types.DATE;
             case XSConstants.TIME_DT:

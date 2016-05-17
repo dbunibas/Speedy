@@ -40,6 +40,7 @@ public class DAOXmlUtility {
             logger.error(jde.toString());
             throw new DAOException(jde.getMessage());
         } catch (java.io.IOException ioe) {
+            ioe.printStackTrace();
             logger.error(ioe.toString());
             throw new DAOException(ioe.getMessage());
         }

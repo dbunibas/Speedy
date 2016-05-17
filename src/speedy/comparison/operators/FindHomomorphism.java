@@ -39,10 +39,13 @@ public class FindHomomorphism {
             return result;
         }
         sortTupleMatches(tupleMatches);
+        if (logger.isTraceEnabled()) logger.trace("Tuple matches: " + tupleMatches);
         List<List<TupleMatch>> allTupleMatches = combineMatches(sourceTuples, tupleMatches);
+        if (logger.isDebugEnabled()) logger.debug("Analyzing combinations...");
         GenericListGeneratorIterator<TupleMatch> iterator = new GenericListGeneratorIterator<TupleMatch>(allTupleMatches);
         while (iterator.hasNext()) {
             List<TupleMatch> candidateHomomorphism = iterator.next();
+            if (logger.isDebugEnabled()) logger.debug("Analyzing combination: " + candidateHomomorphism);
             TupleMapping homomorphism = checkIfIsHomomorphism(candidateHomomorphism);
             if (homomorphism != null) {
                 result.setTupleMapping(homomorphism);

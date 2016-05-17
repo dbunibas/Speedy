@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import speedy.model.database.operators.dbms.IValueEncoder;
 import speedy.persistence.file.IImportFile;
 
 public class InitDBConfiguration {
@@ -13,6 +14,7 @@ public class InitDBConfiguration {
     private String postDBScript;
     private Map<String, List<IImportFile>> filesToImport = new HashMap<String, List<IImportFile>>();
     private boolean createTablesFromFiles = true;
+    private IValueEncoder valueEncoder;
 
     public String getInitDBScript() {
         return initDBScript;
@@ -28,6 +30,14 @@ public class InitDBConfiguration {
 
     public void setPostDBScript(String postDBScript) {
         this.postDBScript = postDBScript;
+    }
+
+    public IValueEncoder getValueEncoder() {
+        return valueEncoder;
+    }
+
+    public void setValueEncoder(IValueEncoder valueEncoder) {
+        this.valueEncoder = valueEncoder;
     }
 
     public void addFileToImportForTable(String tableName, IImportFile fileToImport) {

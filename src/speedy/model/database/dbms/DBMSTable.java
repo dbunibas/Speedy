@@ -45,7 +45,7 @@ public class DBMSTable implements ITable {
 
     public Attribute getAttribute(String name) {
         for (Attribute attribute : getAttributes()) {
-            if (attribute.getName().equals(name)) {
+            if (attribute.getName().equalsIgnoreCase(name)) {
                 return attribute;
             }
         }

@@ -9,6 +9,7 @@ public class CSVFile implements IImportFile {
     private char separator = ';';
     private Character quoteCharacter;
     private boolean randomizeInput;
+    private boolean hasHeader = true;
 
     public CSVFile(String fileName) {
         this.fileName = fileName;
@@ -70,6 +71,14 @@ public class CSVFile implements IImportFile {
 
     public void setRandomizeInput(boolean randomizeInput) {
         this.randomizeInput = randomizeInput;
+    }
+
+    public boolean isHasHeader() {
+        return hasHeader;
+    }
+
+    public void setHasHeader(boolean hasHeader) {
+        this.hasHeader = hasHeader;
     }
 
 }

@@ -48,7 +48,7 @@ public class DBMSDB implements IDatabase {
         }
     }
 
-    private void loadTables() {
+    public void loadTables() {
         for (String tableName : getTableNames()) {
             tables.add(new DBMSTable(tableName, accessConfiguration));
         }
@@ -115,11 +115,11 @@ public class DBMSDB implements IDatabase {
 //        return new DBMSTable(name, accessConfiguration);
         initDBMS();
         for (DBMSTable table : tables) {
-            if (table.getName().equalsIgnoreCase(name)) {
+            if (table.getName().equalsIgnoreCase(name.trim())) {
                 return table;
             }
         }
-        throw new IllegalArgumentException("Unable to find table " + name + " in database " + printSchema());
+        throw new IllegalArgumentException("Unable to find table " + name + " in database " + getName());
     }
 
     public ITable getFirstTable() {

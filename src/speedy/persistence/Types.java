@@ -13,7 +13,8 @@ public class Types {
     public final static String STRING = "string";
     public final static String INTEGER = "integer";
     public final static String LONG = "long";
-    public final static String DOUBLE = "double";
+    public final static String REAL = "real";
+    public final static String DOUBLE_PRECISION = "double precision";
     public final static String DATE = "date";
     public final static String DATETIME = "datetime";
     public final static String ANY = "any";
@@ -36,7 +37,7 @@ public class Types {
                 throw new DAOException(ex.getMessage());
             }
         }
-        if (type.equals(DOUBLE)) {
+        if (type.equals(REAL)) {
             try {
                 return Double.parseDouble(value.toString());
             } catch (NumberFormatException ex) {

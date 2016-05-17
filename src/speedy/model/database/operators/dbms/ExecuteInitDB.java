@@ -32,6 +32,7 @@ import speedy.model.database.AttributeRef;
 import speedy.model.database.Cell;
 import speedy.model.database.ConstantValue;
 import speedy.model.database.IDatabase;
+import speedy.model.database.ITable;
 import speedy.model.database.IValue;
 import speedy.model.database.NullValue;
 import speedy.model.database.Tuple;
@@ -48,10 +49,12 @@ public class ExecuteInitDB {
     private DAOXmlUtility daoUtility = new DAOXmlUtility();
     private ICreateTable tableCreator;
     private IBatchInsert batchInsertOperator;
+    private IValueEncoder valueEncoder;
 
     public void execute(DBMSDB db) {
         initOperators(db);
         InitDBConfiguration configuration = db.getInitDBConfiguration();
+        valueEncoder = configuration.getValueEncoder();
         if (logger.isDebugEnabled()) logger.debug("Initializating DB with configuration " + configuration);
         AccessConfiguration accessConfiguration = db.getAccessConfiguration();
         if (configuration.getInitDBScript() == null && configuration.hasFilesToImport() && !DBMSUtility.isSchemaExists(accessConfiguration)
@@ -148,6 +151,9 @@ public class ExecuteInitDB {
                 AttributeRef attributeRef = new AttributeRef(attribute.getTableName(), attribute.getName());
                 IValue value;
                 if (notNull(stringValue)) {
+                    if (valueEncoder != null) {
+                        stringValue = valueEncoder.encode(stringValue);
+                    }
                     value = new ConstantValue(stringValue);
                 } else {
                     value = new NullValue(SpeedyConstants.NULL);
@@ -168,20 +174,30 @@ public class ExecuteInitDB {
         try {
             in = new FileReader(csvFile);
             CSVFormat format = CSVFormat.newFormat(fileToImport.getSeparator())
-                    .withQuote(fileToImport.getQuoteCharacter())
-                    .withHeader();
-            CSVParser parser = format.parse(in);
-            List<Attribute> attributes = readCSVAttributes(tableName, parser.getHeaderMap().keySet());
-            Iterable<CSVRecord> records = parser.getRecords();
-            if (!records.iterator().hasNext()) {
-                throw new DAOException("Unable to import file from empty file " + csvFile);
+                    .withQuote(fileToImport.getQuoteCharacter());
+            if (fileToImport.isHasHeader()) {
+                format = format.withHeader();
             }
-            System.out.println("Importing file " + csvFile + " into table " + tableName + "...");
-            if (!tablesAdded.containsKey(tableName)) {
-                tablesAdded.put(tableName, attributes);
-                if (configuration.isCreateTablesFromFiles()) {
-                    tableCreator.createTable(tableName, attributes, database);
+            CSVParser parser = format.parse(in);
+            List<Attribute> attributes;
+            Iterable<CSVRecord> records;
+            if (fileToImport.isHasHeader()) {
+                attributes = readCSVAttributes(tableName, parser.getHeaderMap().keySet());
+                records = parser.getRecords();
+                if (!records.iterator().hasNext()) {
+                    throw new DAOException("Unable to import file from empty file " + csvFile);
                 }
+                System.out.println("Importing file " + csvFile + " into table " + tableName + "...");
+                if (!tablesAdded.containsKey(tableName)) {
+                    tablesAdded.put(tableName, attributes);
+                    if (configuration.isCreateTablesFromFiles()) {
+                        tableCreator.createTable(tableName, attributes, database);
+                    }
+                }
+            } else {
+                database.loadTables();
+                attributes = extractAttributesFromDB(tableName, database);
+                records = parser.getRecords();
             }
             insertCSVTuples(tableName, attributes, records, database, csvFile, fileToImport.getRecordsToImport(), fileToImport.isRandomizeInput());
         } catch (Exception ex) {
@@ -211,9 +227,9 @@ public class ExecuteInitDB {
                 attributeType = Types.INTEGER;
                 attributeName = attributeName.substring(0, attributeName.length() - integerSuffix.length()).trim();
             }
-            String doubleSuffix = "(" + Types.DOUBLE + ")";
+            String doubleSuffix = "(" + Types.REAL + ")";
             if (attributeName.endsWith(doubleSuffix)) {
-                attributeType = Types.DOUBLE;
+                attributeType = Types.REAL;
                 attributeName = attributeName.substring(0, attributeName.length() - doubleSuffix.length()).trim();
             }
             String booleanSuffix = "(" + Types.BOOLEAN + ")";
@@ -249,6 +265,9 @@ public class ExecuteInitDB {
                 AttributeRef attributeRef = new AttributeRef(attribute.getTableName(), attribute.getName());
                 IValue value;
                 if (notNull(stringValue)) {
+                    if (valueEncoder != null) {
+                        stringValue = valueEncoder.encode(stringValue);
+                    }
                     value = new ConstantValue(stringValue);
                 } else {
                     value = new NullValue(SpeedyConstants.NULL);
@@ -294,6 +313,18 @@ public class ExecuteInitDB {
 
     private boolean notNull(String value) {
         return value != null && !value.equalsIgnoreCase("NULL");
+    }
+
+    private List<Attribute> extractAttributesFromDB(String tableName, DBMSDB database) {
+        List<Attribute> result = new ArrayList<Attribute>();
+        ITable table = database.getTable(tableName);
+        for (Attribute attribute : table.getAttributes()) {
+            if (attribute.getName().equals(SpeedyConstants.OID)) {
+                continue;
+            }
+            result.add(attribute);
+        }
+        return result;
     }
 
     private void initOperators(DBMSDB database) {
