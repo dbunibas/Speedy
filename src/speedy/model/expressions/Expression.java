@@ -68,8 +68,8 @@ public class Expression implements Cloneable {
             }
         }
     }
-    
-    public void setVariableDescription(String variableId, Object description){
+
+    public void setVariableDescription(String variableId, Object description) {
         SymbolTable symbolTable = jepExpression.getSymbolTable();
         for (Variable variableInExpression : symbolTable.getVariables()) {
             if (variableInExpression.getName().equals(variableId)) {
@@ -123,6 +123,10 @@ public class Expression implements Cloneable {
     @Override
     public String toString() {
         return this.jepExpression.toString();
+    }
+
+    public String toStringWithDollar() {
+        return this.jepExpression.toStringWithDollars();
     }
 
     public String toSQLString() {
