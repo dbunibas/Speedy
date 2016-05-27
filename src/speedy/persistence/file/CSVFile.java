@@ -4,7 +4,7 @@ import speedy.SpeedyConstants;
 
 public class CSVFile implements IImportFile {
 
-    private final String fileName;
+    private String fileName;
     private Integer recordsToImport;
     private char separator = ';';
     private Character quoteCharacter;
@@ -35,6 +35,10 @@ public class CSVFile implements IImportFile {
 
     public String getFileName() {
         return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 
     public String getType() {

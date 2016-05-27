@@ -21,20 +21,20 @@ public class SpeedyConstants {
 
     public static final String SKOLEM_PREFIX = "_SK";
     public static final String BIGINT_SKOLEM_PREFIX = "888";
-    public static final String REAL_SKOLEM_PREFIX = "8.88";
+    public static final String DOUBLE_SKOLEM_PREFIX = "8.88";
     public static final String SKOLEM_SEPARATOR = "-";
     public static final Long MIN_BIGINT_SKOLEM_VALUE = 8880000000L;
-        
+
     public static final String LLUN_PREFIX = "_L";
     public static final String BIGINT_LLUN_PREFIX = "887";
     public static final String REAL_LLUN_PREFIX = "7.77";
     public static final String LLUN_SEPARATOR = "|";
     public static final Long MIN_BIGINT_LLUN_VALUE = 8870000000L;
-    
+
     public static final Long MIN_BIGINT_SAFETY_SKIP_VALUE = 20000000L;
-    
+
     public static final int MIN_LENGTH_FOR_NUMERIC_PLACEHOLDERS = 10;
-    
+
     public static final String SUFFIX_SEPARATOR = "_";
 
     public static String STANDARD_QUERY_TYPE = "Standard Query";
@@ -59,7 +59,7 @@ public class SpeedyConstants {
     public static String STEP = "step";
 
     public static String DC = "DC";
-    
+
     // CELL CHANGE TYPES
     public static final String VIOGEN_CHANGE = "Viogen change";
     public static final String OUTLIER_CHANGE = "Outlier change";
@@ -96,9 +96,10 @@ public class SpeedyConstants {
     public static String DIRTY_SUFFIX = "_dirty";
 
     public static long TEST_TIMEOUT = 300000;
-    
+
     public static String CSV = "CSV";
     public static String XML = "XML";
+    public static String WORK_DIR = ".temp";
 
     public enum ValueMatchResult {
         EQUAL_CONSTANTS, BOTH_NULLS, NULL_TO_CONSTANT, CONSTANT_TO_NULL, NOT_MATCHING

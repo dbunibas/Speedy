@@ -39,6 +39,7 @@ public class QueryManager {
             }
             long finish = new Date().getTime();
             if (logger.isDebugEnabled()) logger.debug((finish - start) + " ~ " + intoSingleLine(script));
+//            if (!Thread.currentThread().getName().equals("main")) logger.error("Thread: " + Thread.currentThread().getName() + " ~ " + intoSingleLine(script));
             QueryStatManager.getInstance().addQuery(script, (finish - start));
         } catch (Exception daoe) {
             try {
@@ -64,12 +65,14 @@ public class QueryManager {
             int affectedRows = statement.executeUpdate(query);
             long finish = new Date().getTime();
             if (logger.isTraceEnabled()) logger.trace((finish - start) + " ~ " + intoSingleLine(query));
+//            if (!Thread.currentThread().getName().equals("main")) logger.error("Thread: " + Thread.currentThread().getName() + " ~ " + intoSingleLine(query));
             QueryStatManager.getInstance().addQuery(query, (finish - start));
             return affectedRows > 0;
         } catch (Exception daoe) {
             throw new DBMSException("Unable to execute query \n" + query + " on database " + accessConfiguration.getDatabaseName() + ".\n" + accessConfiguration + "\n" + daoe.getLocalizedMessage());
         } finally {
             closeStatement(statement);
+            closeConnection(connection);
         }
     }
 
@@ -78,6 +81,7 @@ public class QueryManager {
         try {
             connection = getConnection(accessConfiguration);
             ResultSet resultSet = executeQuery(query, connection, accessConfiguration);
+//            if (!Thread.currentThread().getName().equals("main")) logger.error("Thread: " + Thread.currentThread().getName() + " ~ " + intoSingleLine(query));
             return resultSet;
         } catch (Exception daoe) {
             throw new DBMSException("Unable to execute query \n" + query + " on database " + accessConfiguration.getDatabaseName() + ".\n" + accessConfiguration + "\n" + daoe.getLocalizedMessage());
@@ -99,19 +103,17 @@ public class QueryManager {
             resultSet = statement.executeQuery(query);
             long finish = new Date().getTime();
             if (logger.isDebugEnabled()) logger.debug((finish - start) + " ~ " + intoSingleLine(query));
+//            if (!Thread.currentThread().getName().equals("main")) logger.error("Thread: " + Thread.currentThread().getName() + " ~ " + intoSingleLine(query));
             QueryStatManager.getInstance().addQuery(query, (finish - start));
         } catch (Exception daoe) {
             throw new DBMSException("Unable to execute query \n" + query + " on database " + accessConfiguration.getDatabaseName() + ".\n" + accessConfiguration + "\n" + daoe.getLocalizedMessage());
-        } finally {
-//            dataSourceDB.close(resultSet);
-//            dataSourceDB.close(statement);
-//            dataSourceDB.close(connection);
-        }
+        } 
         return resultSet;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
     public static Connection getConnection(AccessConfiguration accessConfiguration) {
+//        if (!Thread.currentThread().getName().equals("main")) logger.error("Thread: " + Thread.currentThread().getName() + " - getting connection" + accessConfiguration.getDatabaseName() + "." + accessConfiguration.getSchemaName());
         return dataSourceDB.getConnection(accessConfiguration);
     }
 

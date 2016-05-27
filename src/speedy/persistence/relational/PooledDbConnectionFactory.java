@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.LoggerFactory;
 
 public class PooledDbConnectionFactory implements IConnectionFactory {
@@ -17,11 +19,11 @@ public class PooledDbConnectionFactory implements IConnectionFactory {
     private AccessConfiguration currentConfiguration;
 
     private void init(AccessConfiguration configuration) throws DAOException {
-        if (cpds != null && isCompatible(currentConfiguration,configuration)) {
+        if (cpds != null && isCompatible(currentConfiguration, configuration)) {
             return;
         }
         try {
-            if(cpds!=null){
+            if (cpds != null) {
                 closeFactory();
             }
             cpds = new ComboPooledDataSource();
@@ -105,7 +107,7 @@ public class PooledDbConnectionFactory implements IConnectionFactory {
     }
 
     private boolean isCompatible(AccessConfiguration currentConfiguration, AccessConfiguration configuration) {
-        if(currentConfiguration == null){
+        if (currentConfiguration == null) {
             return false;
         }
         return currentConfiguration.getDatabaseName().equals(configuration.getDatabaseName()) && currentConfiguration.getDriver().equals(configuration.getDriver());

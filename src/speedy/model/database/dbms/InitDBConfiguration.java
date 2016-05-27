@@ -14,6 +14,7 @@ public class InitDBConfiguration {
     private String postDBScript;
     private Map<String, List<IImportFile>> filesToImport = new HashMap<String, List<IImportFile>>();
     private boolean createTablesFromFiles = true;
+    private boolean useCopyStatement = true;
     private IValueEncoder valueEncoder;
 
     public String getInitDBScript() {
@@ -38,6 +39,14 @@ public class InitDBConfiguration {
 
     public void setValueEncoder(IValueEncoder valueEncoder) {
         this.valueEncoder = valueEncoder;
+    }
+
+    public boolean isUseCopyStatement() {
+        return useCopyStatement;
+    }
+
+    public void setUseCopyStatement(boolean useCopyStatement) {
+        this.useCopyStatement = useCopyStatement;
     }
 
     public void addFileToImportForTable(String tableName, IImportFile fileToImport) {

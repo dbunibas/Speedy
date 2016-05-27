@@ -47,9 +47,11 @@ public class TestDBMSCSV {
         String password = "pguser";
         database = daoDatabase.loadDatabase(driver, uri, schema, login, password);
         database.getInitDBConfiguration().setCreateTablesFromFiles(true);
+//        database.getInitDBConfiguration().setUseCopyStatement(false);
         CSVFile fileToImport = new CSVFile(UtilityForTests.getAbsoluteFileName("/resources/employees/csv/50_emp.csv"));
         fileToImport.setSeparator(',');
-//        database.getInitDBConfiguration().addFileToImportForTable("emp", fileToImport);
+        database.getInitDBConfiguration().addFileToImportForTable("emp", fileToImport);
+        database.initDBMS();
 //        UtilityForTests.deleteDB(database.getAccessConfiguration());
         queryRunner = OperatorFactory.getInstance().getQueryRunner(database);
     }

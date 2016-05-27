@@ -213,13 +213,15 @@ public class AlgebraTreeToSQL {
 
         public void visitDifference(Difference operator) {
             IAlgebraOperator leftChild = operator.getChildren().get(0);
+            result.append("(\n");
             leftChild.accept(this);
             result.append("\n").append(this.indentString());
-            result.append(" EXCEPT \n");
+            result.append(") EXCEPT (\n");
             IAlgebraOperator rightChild = operator.getChildren().get(1);
             this.indentLevel++;
             rightChild.accept(this);
             this.indentLevel--;
+            result.append("\n)");
         }
 
         public void visitUnion(Union operator) {
@@ -771,6 +773,7 @@ public class AlgebraTreeToSQL {
                 }
                 SpeedyUtility.removeChars(",\n".length() + this.indentString().length(), sb);
             } else {
+                boolean hasAttributesInAggregates = false;
                 for (int i = 0; i < aggregateFunctions.size(); i++) {
                     AttributeRef newAttributeRef = null;
                     if (newAttributes != null) {
@@ -786,8 +789,11 @@ public class AlgebraTreeToSQL {
                     }
                     sb.append(aggregateFunctionToString(aggregateFunction, newAttributeRef, nestedSelect));
                     sb.append(", ");
+                    hasAttributesInAggregates = true;
                 }
-                SpeedyUtility.removeChars(", ".length(), sb);
+                if (hasAttributesInAggregates) {
+                    SpeedyUtility.removeChars(", ".length(), sb);
+                }
             }
             return sb.toString();
         }

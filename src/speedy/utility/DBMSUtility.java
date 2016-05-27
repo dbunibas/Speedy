@@ -188,13 +188,12 @@ public class DBMSUtility {
         Connection connection = null;
         try {
             if (logger.isDebugEnabled()) logger.debug("Checking if db exists: " + accessConfiguration);
-//            connection = new SimpleDbConnectionFactory().getConnection(accessConfiguration);
             connection = simpleDataSourceDB.getConnection(accessConfiguration);
-//            connection = QueryManager.getConnection(accessConfiguration);
             return true;
         } catch (Exception daoe) {
+            if (logger.isDebugEnabled()) logger.debug("Error checking if db exists: " + daoe.getLocalizedMessage());
         } finally {
-            QueryManager.closeConnection(connection);
+            simpleDataSourceDB.close(connection);
         }
         return false;
     }
@@ -204,9 +203,7 @@ public class DBMSUtility {
         ResultSet schemaResultSet = null;
         try {
             if (logger.isDebugEnabled()) logger.debug("Checking if schema exists: " + accessConfiguration);
-//            connection = new SimpleDbConnectionFactory().getConnection(accessConfiguration);
             connection = simpleDataSourceDB.getConnection(accessConfiguration);
-//            connection = QueryManager.getConnection(accessConfiguration);
             DatabaseMetaData databaseMetaData = connection.getMetaData();
             schemaResultSet = databaseMetaData.getSchemas();
             while (schemaResultSet.next()) {
@@ -216,9 +213,10 @@ public class DBMSUtility {
                 }
             }
         } catch (Exception daoe) {
+            if (logger.isDebugEnabled()) logger.debug("Error checking if schema exists: " + daoe.getLocalizedMessage());
         } finally {
-            QueryManager.closeResultSet(schemaResultSet);
-            QueryManager.closeConnection(connection);
+            simpleDataSourceDB.close(schemaResultSet);
+            simpleDataSourceDB.close(connection);
         }
         return false;
     }
@@ -236,9 +234,7 @@ public class DBMSUtility {
         Connection connection = null;
         try {
             if (logger.isDebugEnabled()) logger.debug("Creating db: " + accessConfiguration);
-//            connection = new SimpleDbConnectionFactory().getConnection(tempAccessConfiguration);
             connection = simpleDataSourceDB.getConnection(tempAccessConfiguration);
-//            connection = QueryManager.getConnection(tempAccessConfiguration);
             String createQuery = "create database " + accessConfiguration.getDatabaseName() + ";";
             ScriptRunner scriptRunner = getScriptRunner(connection);
             scriptRunner.setAutoCommit(true);
@@ -247,7 +243,7 @@ public class DBMSUtility {
         } catch (Exception daoe) {
             throw new DBMSException("Unable to create new database " + accessConfiguration.getDatabaseName() + ".\n" + tempAccessConfiguration + "\n" + daoe.getLocalizedMessage());
         } finally {
-            QueryManager.closeConnection(connection);
+            simpleDataSourceDB.close(connection);
         }
     }
 
@@ -257,9 +253,7 @@ public class DBMSUtility {
         Connection connection = null;
         try {
             if (logger.isDebugEnabled()) logger.debug("Deleting db: " + accessConfiguration);
-//            connection = new SimpleDbConnectionFactory().getConnection(tempAccessConfiguration);
             connection = simpleDataSourceDB.getConnection(tempAccessConfiguration);
-//            connection = QueryManager.getConnection(tempAccessConfiguration);
             ScriptRunner scriptRunner = getScriptRunner(connection);
             scriptRunner.setAutoCommit(true);
             scriptRunner.setStopOnError(true);
@@ -267,7 +261,7 @@ public class DBMSUtility {
         } catch (Exception daoe) {
             throw new DBMSException("Unable to drop database " + accessConfiguration.getDatabaseName() + ".\n" + tempAccessConfiguration + "\n" + daoe.getLocalizedMessage());
         } finally {
-            QueryManager.closeConnection(connection);
+            simpleDataSourceDB.close(connection);
         }
     }
 
@@ -463,11 +457,6 @@ public class DBMSUtility {
         return false;
     }
 
-//    public static AccessConfiguration getWorkAccessConfiguration(AccessConfiguration accessConfiguration) {
-//        AccessConfiguration workSchema = accessConfiguration.clone();
-//        workSchema.setSchemaName(SpeedyConstants.WORK_SCHEMA);
-//        return workSchema;
-//    }
     private static String getTempDBName(AccessConfiguration accessConfiguration, String tempDBName) {
         String uri = accessConfiguration.getUri();
         if (uri.lastIndexOf("/") != -1) {
@@ -589,9 +578,7 @@ public class DBMSUtility {
         Connection connection = null;
         try {
             if (logger.isDebugEnabled()) logger.debug("Dropping schema: " + schema);
-//            connection = new SimpleDbConnectionFactory().getConnection(tempAccessConfiguration);
             connection = simpleDataSourceDB.getConnection(accessConfiguration);
-//            connection = QueryManager.getConnection(tempAccessConfiguration);
             ScriptRunner scriptRunner = getScriptRunner(connection);
             scriptRunner.setAutoCommit(true);
             scriptRunner.setStopOnError(true);
@@ -599,7 +586,33 @@ public class DBMSUtility {
         } catch (Exception daoe) {
             throw new DBMSException("Unable to drop schema " + accessConfiguration.getDatabaseName() + ".\n" + daoe.getLocalizedMessage());
         } finally {
-            QueryManager.closeConnection(connection);
+            simpleDataSourceDB.close(connection);
+        }
+    }
+
+    public static void createFunctionsForNumericalSkolem(AccessConfiguration accessConfiguration) {
+        StringBuilder script = new StringBuilder();
+        script.append("drop function if exists bigint_skolem(text); create function bigint_skolem(text) returns bigint as $$\n"
+                + " select ('" + SpeedyConstants.BIGINT_SKOLEM_PREFIX + "' || @('x'||substr(md5($1),1,13))::bit(52)::bigint)::bigint;\n"
+                + "$$ language sql;\n"
+                + "\n"
+                + "drop function if exists double_skolem(text); create or replace function double_skolem(text) returns double precision as $$\n"
+                + " select ('" + SpeedyConstants.BIGINT_SKOLEM_PREFIX + "' || @('x'||substr(md5($1),1,13))::bit(52)::bigint)::double precision;\n"
+                + "$$ language sql;\n"
+                + "\n");
+        Connection connection = null;
+        try {
+            connection = simpleDataSourceDB.getConnection(accessConfiguration);
+            ScriptRunner scriptRunner = getScriptRunner(connection);
+            scriptRunner.setAutoCommit(true);
+            scriptRunner.setStopOnError(true);
+            scriptRunner.setSendFullScript(true);
+            scriptRunner.runScript(new StringReader(script.toString()));
+        } catch (Exception daoe) {
+            daoe.printStackTrace();
+            throw new DBMSException("Unable to execute\n" + script + "\n on " + accessConfiguration + "\n" + daoe.getLocalizedMessage());
+        } finally {
+            simpleDataSourceDB.close(connection);
         }
     }
 
@@ -619,27 +632,62 @@ public class DBMSUtility {
         return accessConfiguration;
     }
 
+//    public static void cleanWorkTargetSchemas(AccessConfiguration accessConfiguration) {
+//        if (accessConfiguration == null) {
+//            return;
+//        }
+//        try {
+//            PrintUtility.printInformation("Removing schema " + accessConfiguration.getSchemaName() + " and "
+//                    + SpeedyConstants.WORK_SCHEMA + ", if exist...");
+//            DBMSUtility.removeSchema(accessConfiguration.getSchemaName(), accessConfiguration);
+//            DBMSUtility.removeSchema(SpeedyConstants.WORK_SCHEMA, accessConfiguration);
+//            PrintUtility.printSuccess("Schemas removed!");
+//        } catch (DBMSException ex) {
+//            String message = ex.getMessage();
+//            if (!message.contains("does not exist")) {
+//                PrintUtility.printError("Unable to drop schema.\n" + ex.getLocalizedMessage());
+//            }
+//        }
+//    }
     public static void cleanWorkTargetSchemas(AccessConfiguration accessConfiguration) {
         if (accessConfiguration == null) {
             return;
         }
+        StringBuilder script = new StringBuilder();
+        script.append("DROP SCHEMA IF EXISTS ").append(accessConfiguration.getSchemaName()).append(" CASCADE;");
+        script.append("DROP SCHEMA IF EXISTS ").append(SpeedyConstants.WORK_SCHEMA).append(" CASCADE;");
+        script.append("VACUUM FULL;");
+        Connection connection = null;
         try {
             PrintUtility.printInformation("Removing schema " + accessConfiguration.getSchemaName() + " and "
                     + SpeedyConstants.WORK_SCHEMA + ", if exist...");
-            DBMSUtility.removeSchema(accessConfiguration.getSchemaName(), accessConfiguration);
-            DBMSUtility.removeSchema(SpeedyConstants.WORK_SCHEMA, accessConfiguration);
+            connection = simpleDataSourceDB.getConnection(accessConfiguration);
+            ScriptRunner scriptRunner = getScriptRunner(connection);
+            scriptRunner.setAutoCommit(true);
+            scriptRunner.setStopOnError(true);
+            scriptRunner.runScript(new StringReader(script.toString()));
             PrintUtility.printSuccess("Schemas removed!");
-        } catch (DBMSException ex) {
+        } catch (Exception ex) {
             String message = ex.getMessage();
             if (!message.contains("does not exist")) {
                 PrintUtility.printError("Unable to drop schema.\n" + ex.getLocalizedMessage());
+                throw new DBMSException("Unable to drop schema " + accessConfiguration.getDatabaseName() + ".\n" + ex.getLocalizedMessage());
             }
+        } finally {
+            simpleDataSourceDB.close(connection);
         }
     }
 
     public static String cleanTableName(String tableName) {
         tableName = tableName.replace("-", "");
         return tableName.toLowerCase();
+    }
+
+    public static String cleanFunctionName(String function) {
+        if (function.length() < 63) {
+            return function;
+        }
+        return "function_" + Math.abs(function.hashCode());
     }
 
 }

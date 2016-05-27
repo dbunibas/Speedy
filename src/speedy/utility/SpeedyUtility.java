@@ -37,6 +37,7 @@ import speedy.comparison.ComparisonConfiguration;
 import speedy.comparison.TupleWithTable;
 import speedy.model.algebra.ProjectionAttribute;
 import speedy.model.database.LLUNValue;
+import speedy.model.database.dbms.DBMSDB;
 import speedy.utility.comparator.StringComparator;
 import speedy.utility.comparator.TableComparatorBySizeAndName;
 
@@ -483,6 +484,22 @@ public class SpeedyUtility {
         } catch (NumberFormatException nfe) {
             return false;
         }
+    }
+
+    public static boolean isNull(String value) {
+        return value == null || value.equalsIgnoreCase("NULL");
+    }
+
+    public static List<Attribute> extractAttributesFromDB(String tableName, DBMSDB database) {
+        List<Attribute> result = new ArrayList<Attribute>();
+        ITable table = database.getTable(tableName);
+        for (Attribute attribute : table.getAttributes()) {
+            if (attribute.getName().equals(SpeedyConstants.OID)) {
+                continue;
+            }
+            result.add(attribute);
+        }
+        return result;
     }
 
 }

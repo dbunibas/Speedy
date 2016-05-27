@@ -8,7 +8,7 @@ public class ComparisonConfiguration {
 
     private static String[] numericSkolemPrefixes = {
         SpeedyConstants.BIGINT_SKOLEM_PREFIX,
-        SpeedyConstants.REAL_SKOLEM_PREFIX};
+        SpeedyConstants.DOUBLE_SKOLEM_PREFIX};
 
     private static String[] stringLlunPrefixes = {SpeedyConstants.LLUN_PREFIX};
 
