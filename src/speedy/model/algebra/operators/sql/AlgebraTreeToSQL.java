@@ -38,6 +38,7 @@ import speedy.model.algebra.RestoreOIDs;
 import speedy.model.algebra.Scan;
 import speedy.model.algebra.Select;
 import speedy.model.algebra.SelectIn;
+import speedy.model.algebra.SelectNotIn;
 import speedy.model.algebra.Union;
 import speedy.model.algebra.aggregatefunctions.StdDevAggregateFunction;
 import speedy.model.algebra.aggregatefunctions.SumAggregateFunction;
@@ -144,6 +145,36 @@ public class AlgebraTreeToSQL {
                 }
                 SpeedyUtility.removeChars(", ".length(), result.getStringBuilder());
                 result.append(") IN (");
+                result.append("\n").append(this.indentString());
+                indentLevel++;
+                selectionOperator.accept(this);
+//            operator.getSelectionOperator().accept(this);
+                indentLevel--;
+                result.append("\n").append(this.indentString());
+                result.append(")");
+                result.append(" AND ");
+            }
+            SpeedyUtility.removeChars(" AND ".length(), result.getStringBuilder());
+        }
+
+        public void visitSelectNotIn(SelectNotIn operator) {
+            visitChildren(operator);
+            result.append("\n").append(this.indentString());
+            if (operator.getChildren() != null
+                    && (operator.getChildren().get(0) instanceof Select
+                    || operator.getChildren().get(0) instanceof Join)) {
+                result.append(" AND ");
+            } else {
+                result.append(" WHERE ");
+            }
+//            result.append(" WHERE (");
+            for (IAlgebraOperator selectionOperator : operator.getSelectionOperators()) {
+                result.append("(");
+                for (AttributeRef attributeRef : operator.getAttributes(source, target)) {
+                    result.append(DBMSUtility.attributeRefToSQLDot(attributeRef)).append(", ");
+                }
+                SpeedyUtility.removeChars(", ".length(), result.getStringBuilder());
+                result.append(") NOT IN (");
                 result.append("\n").append(this.indentString());
                 indentLevel++;
                 selectionOperator.accept(this);

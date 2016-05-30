@@ -19,6 +19,7 @@ import speedy.model.algebra.RestoreOIDs;
 import speedy.model.algebra.Scan;
 import speedy.model.algebra.Select;
 import speedy.model.algebra.SelectIn;
+import speedy.model.algebra.SelectNotIn;
 import speedy.model.algebra.Union;
 
 public class AlgebraTreeToString {
@@ -122,6 +123,11 @@ class AlgebraTreeToStringVisitor implements IAlgebraTreeVisitor {
     }
 
     public void visitSelectIn(SelectIn operator) {
+        result.append(this.indentString()).append(operator.getName()).append("\n");
+        visitChildren(operator);
+    }
+
+    public void visitSelectNotIn(SelectNotIn operator) {
         result.append(this.indentString()).append(operator.getName()).append("\n");
         visitChildren(operator);
     }

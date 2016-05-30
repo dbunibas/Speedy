@@ -9,30 +9,31 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.model.database.AttributeRef;
+import speedy.model.database.Cell;
 import speedy.model.database.IDatabase;
 import speedy.model.database.IValue;
 import speedy.model.database.Tuple;
 
-public class SelectIn extends AbstractOperator {
+public class SelectNotIn extends AbstractOperator {
 
-    private static Logger logger = LoggerFactory.getLogger(SelectIn.class);
+    private static Logger logger = LoggerFactory.getLogger(SelectNotIn.class);
 
     private List<AttributeRef> attributes;
     private List<IAlgebraOperator> selectionOperators;
 
-    public SelectIn(List<AttributeRef> attributes, List<IAlgebraOperator> selectionOperators) {
+    public SelectNotIn(List<AttributeRef> attributes, List<IAlgebraOperator> selectionOperators) {
         assert (!selectionOperators.isEmpty());
         this.attributes = attributes;
         this.selectionOperators = selectionOperators;
     }
 
     public void accept(IAlgebraTreeVisitor visitor) {
-        visitor.visitSelectIn(this);
+        visitor.visitSelectNotIn(this);
     }
 
     public String getName() {
         StringBuilder sb = new StringBuilder();
-        sb.append("SELECT").append(attributes).append(" IN (\n");
+        sb.append("SELECT").append(attributes).append(" NOT IN (\n");
         for (IAlgebraOperator selectionOperator : selectionOperators) {
             sb.append(selectionOperator.toString(SpeedyConstants.INDENT + SpeedyConstants.INDENT)).append("\n");
         }
@@ -47,7 +48,7 @@ public class SelectIn extends AbstractOperator {
             }
         }
         List<List<String>> valueMap = materializeInnerOperator(source, target);
-        SelectInTupleIterator tupleIterator = new SelectInTupleIterator(children.get(0).execute(source, target), valueMap);
+        SelectNotInTupleIterator tupleIterator = new SelectNotInTupleIterator(children.get(0).execute(source, target), valueMap);
         if (logger.isDebugEnabled()) logger.debug("Executing SelectIn: " + getName() + " in attributes\n" + attributes + "Map:\n" + SpeedyUtility.printCollection(valueMap) + " on source\n" + (source == null ? "" : source.printInstances()) + "\nand target:\n" + target.printInstances());
         if (logger.isDebugEnabled()) logger.debug("Result: " + SpeedyUtility.printTupleIterator(tupleIterator));
         if (logger.isDebugEnabled()) tupleIterator.reset();
@@ -62,16 +63,19 @@ public class SelectIn extends AbstractOperator {
             ITupleIterator tuples = selectionOperator.execute(source, target);
             while (tuples.hasNext()) {
                 Tuple tuple = tuples.next();
-                tuplesForOperator.add(buildTupleSignature(tuple, selectionOperator.getAttributes(source, target)));
+                tuplesForOperator.add(buildTupleSignature(tuple.getCells()));
             }
         }
         return result;
     }
 
-    private String buildTupleSignature(Tuple tuple, List<AttributeRef> attributes) {
+    private String buildTupleSignature(List<Cell> cells) {
         StringBuilder stringForTuple = new StringBuilder();
-        for (AttributeRef attribute : attributes) {
-            IValue value = tuple.getCell(attribute).getValue();
+        for (Cell cell : cells) {
+            if (cell.isOID()) {
+                continue;
+            }
+            IValue value = cell.getValue();
             stringForTuple.append(value.toString()).append("-");
         }
         return stringForTuple.toString();
@@ -87,7 +91,7 @@ public class SelectIn extends AbstractOperator {
 
     @Override
     public IAlgebraOperator clone() {
-        SelectIn clone = (SelectIn) super.clone();
+        SelectNotIn clone = (SelectNotIn) super.clone();
         clone.selectionOperators = new ArrayList<IAlgebraOperator>();
         for (IAlgebraOperator selectionOperator : selectionOperators) {
             clone.selectionOperators.add((Scan) selectionOperator.clone());
@@ -95,13 +99,13 @@ public class SelectIn extends AbstractOperator {
         return clone;
     }
 
-    class SelectInTupleIterator implements ITupleIterator {
+    class SelectNotInTupleIterator implements ITupleIterator {
 
         private ITupleIterator tableIterator;
         private Tuple nextTuple;
         private List<List<String>> innerTuples;
 
-        public SelectInTupleIterator(ITupleIterator tableIterator, List<List<String>> innerTuples) {
+        public SelectNotInTupleIterator(ITupleIterator tableIterator, List<List<String>> innerTuples) {
             this.innerTuples = innerTuples;
             this.tableIterator = tableIterator;
         }
@@ -127,14 +131,25 @@ public class SelectIn extends AbstractOperator {
         }
 
         private boolean conditionsAreTrue(Tuple tuple) {
-            String tupleSignature = buildTupleSignature(tuple, attributes);
+            List<Cell> selectInCells = extractCellsForSelectIn(tuple);
+            String tupleSignature = buildTupleSignature(selectInCells);
             for (List<String> tuplesForInternalSelector : innerTuples) {
-                if (!tuplesForInternalSelector.contains(tupleSignature)) {
+                if (tuplesForInternalSelector.contains(tupleSignature)) {
                     if (logger.isDebugEnabled()) logger.debug("Inner tuples doesn't contain tuple " + tupleSignature + "\n Inner tuples: " + SpeedyUtility.printCollection(innerTuples));
                     return false;
                 }
             }
             return true;
+        }
+
+        private List<Cell> extractCellsForSelectIn(Tuple tuple) {
+            List<Cell> result = new ArrayList<Cell>();
+            for (Cell cell : tuple.getCells()) {
+                if (attributes.contains(cell.getAttributeRef())) {
+                    result.add(cell);
+                }
+            }
+            return result;
         }
 
         public Tuple next() {

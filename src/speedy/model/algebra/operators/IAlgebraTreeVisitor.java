@@ -17,6 +17,7 @@ import speedy.model.algebra.RestoreOIDs;
 import speedy.model.algebra.Scan;
 import speedy.model.algebra.Select;
 import speedy.model.algebra.SelectIn;
+import speedy.model.algebra.SelectNotIn;
 import speedy.model.algebra.Union;
 
 public interface IAlgebraTreeVisitor {
@@ -25,6 +26,7 @@ public interface IAlgebraTreeVisitor {
     void visitSelect(Select operator);
     void visitDistinct(Distinct operator);
     void visitSelectIn(SelectIn operator);
+    void visitSelectNotIn(SelectNotIn operator);
     void visitJoin(Join operator);
     void visitCartesianProduct(CartesianProduct operator);
     void visitProject(Project operator);
