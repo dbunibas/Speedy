@@ -162,7 +162,8 @@ public class AlgebraTreeToSQL {
             result.append("\n").append(this.indentString());
             if (operator.getChildren() != null
                     && (operator.getChildren().get(0) instanceof Select
-                    || operator.getChildren().get(0) instanceof Join)) {
+                    || operator.getChildren().get(0) instanceof Join
+                    || operator.getChildren().get(0) instanceof SelectNotIn)) {
                 result.append(" AND ");
             } else {
                 result.append(" WHERE ");

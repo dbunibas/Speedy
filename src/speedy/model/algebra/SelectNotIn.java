@@ -63,19 +63,16 @@ public class SelectNotIn extends AbstractOperator {
             ITupleIterator tuples = selectionOperator.execute(source, target);
             while (tuples.hasNext()) {
                 Tuple tuple = tuples.next();
-                tuplesForOperator.add(buildTupleSignature(tuple.getCells()));
+                tuplesForOperator.add(buildTupleSignature(tuple, selectionOperator.getAttributes(source, target)));
             }
         }
         return result;
     }
 
-    private String buildTupleSignature(List<Cell> cells) {
+    private String buildTupleSignature(Tuple tuple, List<AttributeRef> attributes) {
         StringBuilder stringForTuple = new StringBuilder();
-        for (Cell cell : cells) {
-            if (cell.isOID()) {
-                continue;
-            }
-            IValue value = cell.getValue();
+        for (AttributeRef attribute : attributes) {
+            IValue value = tuple.getCell(attribute).getValue();
             stringForTuple.append(value.toString()).append("-");
         }
         return stringForTuple.toString();
@@ -131,8 +128,7 @@ public class SelectNotIn extends AbstractOperator {
         }
 
         private boolean conditionsAreTrue(Tuple tuple) {
-            List<Cell> selectInCells = extractCellsForSelectIn(tuple);
-            String tupleSignature = buildTupleSignature(selectInCells);
+            String tupleSignature = buildTupleSignature(tuple, attributes);
             for (List<String> tuplesForInternalSelector : innerTuples) {
                 if (tuplesForInternalSelector.contains(tupleSignature)) {
                     if (logger.isDebugEnabled()) logger.debug("Inner tuples doesn't contain tuple " + tupleSignature + "\n Inner tuples: " + SpeedyUtility.printCollection(innerTuples));
@@ -140,16 +136,6 @@ public class SelectNotIn extends AbstractOperator {
                 }
             }
             return true;
-        }
-
-        private List<Cell> extractCellsForSelectIn(Tuple tuple) {
-            List<Cell> result = new ArrayList<Cell>();
-            for (Cell cell : tuple.getCells()) {
-                if (attributes.contains(cell.getAttributeRef())) {
-                    result.add(cell);
-                }
-            }
-            return result;
         }
 
         public Tuple next() {

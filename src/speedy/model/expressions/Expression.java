@@ -126,7 +126,11 @@ public class Expression implements Cloneable {
     }
 
     public String toStringWithDollar() {
-        return this.jepExpression.toStringWithDollars();
+        return this.jepExpression.toStringWithDollarsAndUnderscore();
+    }
+
+    public String toSaveString() {
+        return this.jepExpression.toStringWithDollarsAndBrackets();
     }
 
     public String toSQLString() {
