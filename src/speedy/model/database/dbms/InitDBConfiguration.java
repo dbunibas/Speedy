@@ -16,6 +16,7 @@ public class InitDBConfiguration {
     private boolean createTablesFromFiles = true;
     private boolean useCopyStatement = true;
     private IValueEncoder valueEncoder;
+    private int numOfThreads;
 
     public String getInitDBScript() {
         return initDBScript;
@@ -80,6 +81,14 @@ public class InitDBConfiguration {
 
     public boolean isEmpty() {
         return initDBScript == null && filesToImport.isEmpty();
+    }
+
+    public int getNumOfThreads() {
+        return numOfThreads;
+    }
+
+    public void setNumOfThreads(int numOfThreads) {
+        this.numOfThreads = numOfThreads;
     }
 
     @Override

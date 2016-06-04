@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -676,6 +677,43 @@ public class DBMSUtility {
         } finally {
             simpleDataSourceDB.close(connection);
         }
+    }
+
+    public static void renameExistingWorkTargetSchemas(AccessConfiguration accessConfiguration) {
+        if (accessConfiguration == null) {
+            return;
+        }
+        StringBuilder script = new StringBuilder();
+        script.append(getRenamingScript(accessConfiguration.getSchemaName()));
+        script.append(getRenamingScript(SpeedyConstants.WORK_SCHEMA));
+//        script.append("VACUUM FULL;");
+        Connection connection = null;
+        try {
+            PrintUtility.printInformation("Removing schema " + accessConfiguration.getSchemaName() + " and "
+                    + SpeedyConstants.WORK_SCHEMA + ", if exist...");
+            connection = simpleDataSourceDB.getConnection(accessConfiguration);
+            ScriptRunner scriptRunner = getScriptRunner(connection);
+            scriptRunner.setAutoCommit(true);
+            scriptRunner.setStopOnError(false);
+            scriptRunner.setErrorLogWriter(null);
+            scriptRunner.runScript(new StringReader(script.toString()));
+            PrintUtility.printSuccess("Schemas removed!");
+        } catch (Exception ex) {
+            String message = ex.getMessage();
+            if (!message.contains("does not exist")) {
+                PrintUtility.printError("Unable to drop schema.\n" + ex.getLocalizedMessage());
+                throw new DBMSException("Unable to drop schema " + accessConfiguration.getDatabaseName() + ".\n" + ex.getLocalizedMessage());
+            }
+        } finally {
+            simpleDataSourceDB.close(connection);
+        }
+    }
+
+    private static String getRenamingScript(String schemaName) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ALTER SCHEMA ").append(schemaName);
+        sb.append(" RENAME TO ").append(schemaName).append("_").append(new Date().getTime()).append(";\n");
+        return sb.toString();
     }
 
     public static String cleanTableName(String tableName) {

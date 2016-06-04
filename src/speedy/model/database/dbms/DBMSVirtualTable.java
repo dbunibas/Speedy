@@ -104,6 +104,10 @@ public class DBMSVirtualTable implements ITable {
         return tableName + suffix;
     }
 
+    public AccessConfiguration getAccessConfiguration() {
+        return accessConfiguration;
+    }
+
     public String toString(String indent) {
         StringBuilder result = new StringBuilder();
         result.append(indent).append("VirtualTable: ").append(toShortString()).append("{\n");

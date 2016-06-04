@@ -10,6 +10,7 @@ import speedy.persistence.relational.AccessConfiguration;
 import speedy.utility.DBMSUtility;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
 
 public class DBMSDB implements IDatabase {
 
@@ -21,6 +22,7 @@ public class DBMSDB implements IDatabase {
     private boolean initialized = false;
     private List<DBMSTable> tables = new ArrayList<DBMSTable>();
     private InitDBConfiguration initDBConfiguration = new InitDBConfiguration();
+    private Lock lock = new java.util.concurrent.locks.ReentrantLock();
 
     public DBMSDB(AccessConfiguration accessConfiguration) {
         this.accessConfiguration = accessConfiguration;
@@ -40,8 +42,8 @@ public class DBMSDB implements IDatabase {
         }
         loadTables();
     }
-    
-    public void reset(){
+
+    public void reset() {
         this.initialized = false;
         for (DBMSTable table : tables) {
             table.reset();
@@ -49,8 +51,13 @@ public class DBMSDB implements IDatabase {
     }
 
     public void loadTables() {
-        for (String tableName : getTableNames()) {
-            tables.add(new DBMSTable(tableName, accessConfiguration));
+        this.lock.lock();
+        try {
+            for (String tableName : getTableNames()) {
+                tables.add(new DBMSTable(tableName, accessConfiguration));
+            }
+        } finally {
+            this.lock.unlock();
         }
     }
 
@@ -112,14 +119,19 @@ public class DBMSDB implements IDatabase {
     }
 
     public ITable getTable(String name) {
+        this.lock.lock();
+        try {
 //        return new DBMSTable(name, accessConfiguration);
-        initDBMS();
-        for (DBMSTable table : tables) {
-            if (table.getName().equalsIgnoreCase(name.trim())) {
-                return table;
+            initDBMS();
+            for (DBMSTable table : tables) {
+                if (table.getName().equalsIgnoreCase(name.trim())) {
+                    return table;
+                }
             }
+            throw new IllegalArgumentException("Unable to find table " + name + " in database " + getName());
+        } finally {
+            this.lock.unlock();
         }
-        throw new IllegalArgumentException("Unable to find table " + name + " in database " + getName());
     }
 
     public ITable getFirstTable() {
