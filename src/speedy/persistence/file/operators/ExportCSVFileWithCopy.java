@@ -117,6 +117,8 @@ public class ExportCSVFileWithCopy {
             Connection con = null;
             PrintWriter writer = null;
             try {
+                File parentDir = new File(file).getParentFile();
+                parentDir.mkdirs();
                 writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file), Charset.forName("UTF-8")));
                 con = DriverManager.getConnection(ac.getUri(), ac.getLogin(), ac.getPassword());
                 CopyManager copyManager = new CopyManager((BaseConnection) con);
