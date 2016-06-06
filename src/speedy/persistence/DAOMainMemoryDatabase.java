@@ -27,9 +27,13 @@ public class DAOMainMemoryDatabase {
     }
 
     public MainMemoryDB loadCSVDatabase(String instancePath, char separator, Character quoteCharacter, boolean convertSkolemInHash) throws DAOException {
+        return loadCSVDatabase(instancePath, separator, quoteCharacter, convertSkolemInHash, false);
+    }
+    
+    public MainMemoryDB loadCSVDatabase(String instancePath, char separator, Character quoteCharacter, boolean convertSkolemInHash, boolean header) throws DAOException {
         logger.debug("Loading main-memory database. From CSV instances in folder: " + instancePath);
-        DataSource dataSource = daoFile.loadSchema(instancePath, separator, quoteCharacter);
-        daoFile.loadInstance(dataSource, instancePath, separator, quoteCharacter, convertSkolemInHash);
+        DataSource dataSource = daoFile.loadSchema(instancePath, separator, quoteCharacter, header);
+        daoFile.loadInstance(dataSource, instancePath, separator, quoteCharacter, convertSkolemInHash, header);
         return new MainMemoryDB(dataSource);
     }
 

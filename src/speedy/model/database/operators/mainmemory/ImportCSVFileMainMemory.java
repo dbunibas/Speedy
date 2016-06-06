@@ -35,10 +35,14 @@ public class ImportCSVFileMainMemory {
 
     private static final String CSV_EXTENSION = ".csv";
     private static final Logger logger = LoggerFactory.getLogger(ImportCSVFileMainMemory.class);
-
+    
     public DataSource loadSchema(String instancePath, char separator, Character quoteCharacter) {
+        return loadSchema(instancePath, separator, quoteCharacter, true);
+    }
+
+    public DataSource loadSchema(String instancePath, char separator, Character quoteCharacter, boolean header) {
         List<File> filesTable = getFileInFolder(instancePath, CSV_EXTENSION);
-        Map<File, CSVTable> mapTable = loadTable(filesTable, separator, quoteCharacter);
+        Map<File, CSVTable> mapTable = loadTable(filesTable, separator, quoteCharacter, header);
         INode schemaNode = new TupleNode(PersistenceConstants.DATASOURCE_ROOT_LABEL, IntegerOIDGenerator.getNextOID());
         schemaNode.setRoot(true);
         generateSchema(schemaNode, mapTable);
@@ -46,17 +50,21 @@ public class ImportCSVFileMainMemory {
         if (logger.isDebugEnabled()) logger.debug(dataSource.getSchema().toString());
         return dataSource;
     }
-
+    
     public void loadInstance(DataSource dataSource, String instancePath, char separator, Character quoteCharacter, boolean convertSkolemInHash) {
+        loadInstance(dataSource, instancePath, separator, quoteCharacter, convertSkolemInHash, true);
+    } 
+
+    public void loadInstance(DataSource dataSource, String instancePath, char separator, Character quoteCharacter, boolean convertSkolemInHash, boolean header) {
         List<File> filesTable = getFileInFolder(instancePath, CSV_EXTENSION);
-        Map<File, CSVTable> mapTable = loadTable(filesTable, separator, quoteCharacter);
+        Map<File, CSVTable> mapTable = loadTable(filesTable, separator, quoteCharacter, header);
         INode instanceNode = new TupleNode(PersistenceConstants.DATASOURCE_ROOT_LABEL, IntegerOIDGenerator.getNextOID());
         instanceNode.setRoot(true);
-        insertData(instanceNode, mapTable, separator, quoteCharacter, convertSkolemInHash);
+        insertData(instanceNode, mapTable, separator, quoteCharacter, convertSkolemInHash, header);
         dataSource.addInstanceWithCheck(instanceNode);
     }
 
-    private Map<File, CSVTable> loadTable(List<File> filesTable, char separator, Character quoteCharacter) throws DAOException {
+    private Map<File, CSVTable> loadTable(List<File> filesTable, char separator, Character quoteCharacter, boolean header) throws DAOException {
         Map<File, CSVTable> mapFileToTable = new HashMap<File, CSVTable>();
         for (File file : filesTable) {
             try {
@@ -65,11 +73,24 @@ public class ImportCSVFileMainMemory {
                 CsvSchema schema = CsvSchema.emptySchema().
                         withColumnSeparator(separator).
                         withQuoteChar(quoteCharacter);
-                MappingIterator<String[]> it = mapper.readerFor(String[].class).with(schema).readValues(file);
-                if (!it.hasNext()) {
-                    throw new DAOException("Empty file " + file);
+                String[] headers = null;
+                if (header) {
+                    MappingIterator<String[]> it = mapper.readerFor(String[].class).with(schema).readValues(file);
+                    if (!it.hasNext()) {
+                        throw new DAOException("Empty file " + file);
+                    }
+                    headers = it.next();
+                } else {
+                    MappingIterator<String[]> it = mapper.readerFor(String[].class).with(schema).readValues(file);
+                    if (!it.hasNext()) {
+                        throw new DAOException("Empty file " + file);
+                    }
+                    String[] values = it.next();
+                    headers = new String[values.length];
+                    for (int i = 0; i < values.length; i++) {
+                        headers[i] = "a_" + i;
+                    }
                 }
-                String[] headers = it.next();
                 String tableName = extractTableName(file, CSV_EXTENSION);
                 CSVTable table = new CSVTable(tableName);
                 for (String attributeName : headers) {
@@ -107,15 +128,15 @@ public class ImportCSVFileMainMemory {
         return attributeNodeInstance;
     }
 
-    private void insertData(INode setNodeDB, Map<File, CSVTable> mapTable, char separator, Character quoteCharacter, boolean convertSkolemInHash) {
+    private void insertData(INode setNodeDB, Map<File, CSVTable> mapTable, char separator, Character quoteCharacter, boolean convertSkolemInHash, boolean header) {
         Set<File> fileSet = mapTable.keySet();
         for (File file : fileSet) {
             CSVTable csvTable = mapTable.get(file);
-            addTable(setNodeDB, csvTable, file, separator, quoteCharacter, convertSkolemInHash);
+            addTable(setNodeDB, csvTable, file, separator, quoteCharacter, convertSkolemInHash, header);
         }
     }
 
-    private void addTable(INode setNodeDB, CSVTable csvTable, File file, char separator, Character quoteCharacter, boolean convertSkolemInHash) {
+    private void addTable(INode setNodeDB, CSVTable csvTable, File file, char separator, Character quoteCharacter, boolean convertSkolemInHash, boolean header) {
         INode setNodeTable = new SetNode(csvTable.getName(), IntegerOIDGenerator.getNextOID());
         setNodeDB.addChild(setNodeTable);
         try {
@@ -128,7 +149,9 @@ public class ImportCSVFileMainMemory {
             if (!it.hasNext()) {
                 throw new DAOException("Empty file " + file);
             }
-            it.next(); //Skipping header
+            if (header) {
+                it.next(); //Skipping header
+            }
             insertDataInTable(setNodeTable, csvTable, it, convertSkolemInHash);
         } catch (Exception ex) {
             throw new DAOException("Unable to load csv file " + file.toString() + "\n" + ex.getLocalizedMessage());
