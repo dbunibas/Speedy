@@ -258,6 +258,7 @@ public class DBMSUtility {
             ScriptRunner scriptRunner = getScriptRunner(connection);
             scriptRunner.setAutoCommit(true);
             scriptRunner.setStopOnError(true);
+            scriptRunner.setErrorLogWriter(null);
             scriptRunner.runScript(new StringReader(script));
         } catch (Exception daoe) {
             throw new DBMSException("Unable to drop database " + accessConfiguration.getDatabaseName() + ".\n" + tempAccessConfiguration + "\n" + daoe.getLocalizedMessage());

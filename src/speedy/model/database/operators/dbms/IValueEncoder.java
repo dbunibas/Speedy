@@ -6,6 +6,7 @@ public interface IValueEncoder {
     public String encode(String original);
     public String decode(String encoded);
 
+    public void removeExistingEncoding();
     public void prepareForEncoding();
     public void closeEncoding();
     
