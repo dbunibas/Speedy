@@ -1,8 +1,10 @@
 package speedy.model.database.dbms;
 
-public class SQLQueryString {
+import java.io.Serializable;
 
-    private static int counter = 0;
+public class SQLQueryString implements Serializable {
+
+    private transient static int counter = 0;
     private String id;
     private String query;
 

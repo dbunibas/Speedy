@@ -141,6 +141,10 @@ public class Expression implements Cloneable {
         return this.jepExpression.toVariableDelimitedString();
     }
 
+    public String toCFString() {
+        return this.jepExpression.toCFString();
+    }
+
     public String toLongString() {
         StringBuilder sb = new StringBuilder();
         sb.append(toString()).append("\n");

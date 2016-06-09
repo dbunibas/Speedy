@@ -31,7 +31,8 @@ public class SQLDelete implements IDelete {
         deleteQuery.append(getSelectQuery(operator, source, target));
         deleteQuery.append(";");
         if (logger.isDebugEnabled()) logger.debug("Delete query:\n" + deleteQuery.toString());
-        return QueryManager.executeInsertOrDelete(deleteQuery.toString(), ((DBMSDB) target).getAccessConfiguration());
+        int affectedTuples = QueryManager.executeInsertOrDelete(deleteQuery.toString(), ((DBMSDB) target).getAccessConfiguration());
+        return affectedTuples > 0;
     }
 
     private String getScanQuery(IAlgebraOperator operator, IDatabase source, IDatabase target) {

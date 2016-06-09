@@ -54,7 +54,7 @@ public class QueryManager {
         }
     }
 
-    public static boolean executeInsertOrDelete(String query, AccessConfiguration accessConfiguration) {
+    public static int executeInsertOrDelete(String query, AccessConfiguration accessConfiguration) {
         Connection connection = null;
         Statement statement = null;
         try {
@@ -67,7 +67,7 @@ public class QueryManager {
             if (logger.isTraceEnabled()) logger.trace((finish - start) + " ~ " + intoSingleLine(query));
 //            if (!Thread.currentThread().getName().equals("main")) logger.error("Thread: " + Thread.currentThread().getName() + " ~ " + intoSingleLine(query));
             QueryStatManager.getInstance().addQuery(query, (finish - start));
-            return affectedRows > 0;
+            return affectedRows;
         } catch (Exception daoe) {
             throw new DBMSException("Unable to execute query \n" + query + " on database " + accessConfiguration.getDatabaseName() + ".\n" + accessConfiguration + "\n" + daoe.getLocalizedMessage());
         } finally {
@@ -107,7 +107,7 @@ public class QueryManager {
             QueryStatManager.getInstance().addQuery(query, (finish - start));
         } catch (Exception daoe) {
             throw new DBMSException("Unable to execute query \n" + query + " on database " + accessConfiguration.getDatabaseName() + ".\n" + accessConfiguration + "\n" + daoe.getLocalizedMessage());
-        } 
+        }
         return resultSet;
     }
 
