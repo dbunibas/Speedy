@@ -59,7 +59,7 @@ public class ExportCSVFileWithCopy {
         String sqlQuery = algebraTreeToSQL.treeToSQL(query, source, target, "\t");
         String script = getCopyQueryToScript(sqlQuery, fileName, withHeader, false);
         if (logger.isDebugEnabled()) logger.debug(script);
-        return executeCopyWithEncoding(script, fileName, valueEncoder, withHeader, target.getAccessConfiguration());
+        return executeCopy(script, fileName, valueEncoder, withHeader, target.getAccessConfiguration());
     }
 
     public long exportQuery(String sqlQuery, String queryId, DBMSDB target, IValueEncoder valueEncoder, boolean withHeader, String path) {
@@ -68,7 +68,7 @@ public class ExportCSVFileWithCopy {
         outputFile.getParentFile().mkdirs();
         String script = getCopyQueryToScript(sqlQuery, fileName, withHeader, false);
         if (logger.isDebugEnabled()) logger.debug(script);
-        return executeCopyWithEncoding(script, fileName, valueEncoder, withHeader, target.getAccessConfiguration());
+        return executeCopy(script, fileName, valueEncoder, withHeader, target.getAccessConfiguration());
     }
 
     class ExportTableThread implements IBackgroundThread {
@@ -92,7 +92,7 @@ public class ExportCSVFileWithCopy {
                 QueryManager.executeScript(script, ac, true, true, true, false);
             } else {
                 String script = getCopyToScript(table, fileName, withHeader, ac, false);
-                executeCopyWithEncoding(script, fileName, valueEncoder, withHeader, ac);
+                executeCopy(script, fileName, valueEncoder, withHeader, ac);
             }
         }
 
@@ -168,7 +168,7 @@ public class ExportCSVFileWithCopy {
         return result;
     }
 
-    private long executeCopyWithEncoding(String script, String file, IValueEncoder valueEncoder, boolean withHeader, AccessConfiguration ac) {
+    private long executeCopy(String script, String file, IValueEncoder valueEncoder, boolean withHeader, AccessConfiguration ac) {
         Connection con = null;
         PrintWriter writer = null;
         try {
