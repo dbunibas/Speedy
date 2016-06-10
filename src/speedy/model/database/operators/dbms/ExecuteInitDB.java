@@ -63,6 +63,7 @@ public class ExecuteInitDB {
     private void importFiles(DBMSDB db) {
         InitDBConfiguration configuration = db.getInitDBConfiguration();
         int numOfThreads = Math.min(5, configuration.getNumOfThreads());
+        assert (numOfThreads > 0);
         ThreadManager threadManager = new ThreadManager(numOfThreads);
         Map<String, List<Attribute>> tablesAdded = Collections.synchronizedMap(new HashMap<String, List<Attribute>>());
         for (String tableName : configuration.getTablesToImport()) {

@@ -23,7 +23,7 @@ public class DBMSDB implements IDatabase {
     private List<DBMSTable> tables = new ArrayList<DBMSTable>();
     private InitDBConfiguration initDBConfiguration = new InitDBConfiguration();
     private Lock lock = new java.util.concurrent.locks.ReentrantLock();
-
+    
     public DBMSDB(AccessConfiguration accessConfiguration) {
         this.accessConfiguration = accessConfiguration;
     }
