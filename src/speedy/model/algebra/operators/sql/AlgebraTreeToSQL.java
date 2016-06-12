@@ -832,19 +832,23 @@ public class AlgebraTreeToSQL {
 
         public String attributeToSQL(AttributeRef attributeRef, boolean useTableName, List<NestedOperator> nestedSelects, AttributeRef newAttributeRef) {
             StringBuilder sb = new StringBuilder();
+            String attributeName;
 //            if (!useTableName || containsAlias(nestedSelects, attributeRef.getTableAlias())) {
             if (!useTableName || containsNestedAttribute(nestedSelects, attributeRef)) {
-                sb.append(DBMSUtility.attributeRefToAliasSQL(attributeRef));
+                attributeName = DBMSUtility.attributeRefToAliasSQL(attributeRef);
             } else {
-                sb.append(DBMSUtility.attributeRefToSQLDot(attributeRef));
+                attributeName = DBMSUtility.attributeRefToSQLDot(attributeRef);
             }
+            sb.append(attributeName);
             if (newAttributeRef != null) {
                 sb.append(" AS ");
-                sb.append(newAttributeRef.getName());
+                String alias = newAttributeRef.getName();
+                sb.append(alias);
 //            } else if (!(containsAlias(nestedSelects, attributeRef.getTableAlias()))) {
             } else if (!(containsNestedAttribute(nestedSelects, attributeRef))) {
                 sb.append(" AS ");
-                sb.append(DBMSUtility.attributeRefToAliasSQL(attributeRef));
+                String alias = DBMSUtility.attributeRefToAliasSQL(attributeRef);
+                sb.append(alias);
             }
             return sb.toString();
         }

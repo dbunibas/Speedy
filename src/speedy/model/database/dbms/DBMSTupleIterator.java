@@ -29,10 +29,6 @@ public class DBMSTupleIterator implements ITupleIterator {
             if (!firstTupleRead) {
                 empty = true;
             }
-//            resultSet.last();
-//            int size = resultSet.getRow();
-//            resultSet.beforeFirst();
-//            this.empty = (size == 0);
         } catch (SQLException ex) {
             throw new DBMSException("Exception in running result set:" + ex);
         }
@@ -40,7 +36,6 @@ public class DBMSTupleIterator implements ITupleIterator {
 
     public boolean hasNext() {
         try {
-//            return !empty && !resultSet.isLast();
             if (empty) {
                 return false;
             }

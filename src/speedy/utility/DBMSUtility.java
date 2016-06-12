@@ -360,7 +360,6 @@ public class DBMSUtility {
             tuple.addCell(oidCell);
             int columns = metadata.getColumnCount();
             for (int col = startColumn; col <= columns; col++) {
-//                String attributeName = metadata.getColumnName(col); //POSTGRES
                 String attributeName = metadata.getColumnLabel(col);
                 Object attributeValue = resultSet.getObject(col);
                 IValue value = convertDBMSValue(attributeValue);
@@ -547,7 +546,8 @@ public class DBMSUtility {
         if (!tableAliasScript.isEmpty()) {
             tableAliasScript += SpeedyConstants.DELTA_TABLE_SEPARATOR;
         }
-        return tableAliasScript + attribureRef.getName();
+        String result = tableAliasScript + attribureRef.getName();
+        return result;
     }
 
     public static String attributeRefToSQLDot(AttributeRef attributeRef) {

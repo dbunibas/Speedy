@@ -39,7 +39,7 @@ public class ExportCSVFileWithCopy {
     private AlgebraTreeToSQL algebraTreeToSQL = new AlgebraTreeToSQL();
 
     public void exportDatabase(IDatabase database, IValueEncoder valueEncoder, boolean withHeader, String path, int numberOfThreads) {
-        numberOfThreads = Math.min(numberOfThreads, 5);
+//        numberOfThreads = Math.min(numberOfThreads, 5);
         ThreadManager threadManager = new ThreadManager(numberOfThreads);
         for (String tableName : database.getTableNames()) {
             ITable table = database.getTable(tableName);
