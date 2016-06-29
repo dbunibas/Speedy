@@ -57,6 +57,7 @@ public class SpeedyConstants {
     public static String OID = "oid";
     public static String TID = "tid";
     public static String STEP = "step";
+    public static String VERSION = "version";
 
     public static String DC = "DC";
 

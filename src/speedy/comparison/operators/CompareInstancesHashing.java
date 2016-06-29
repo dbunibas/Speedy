@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.SpeedyConstants;
 import speedy.comparison.ComparisonConfiguration;
-import speedy.comparison.ComparisonStats;
 import speedy.comparison.ComparisonUtility;
 import speedy.comparison.InstanceMatchTask;
 import speedy.comparison.SignatureAttributes;

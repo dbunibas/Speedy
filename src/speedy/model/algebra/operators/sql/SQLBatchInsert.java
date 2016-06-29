@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.model.algebra.operators.IBatchInsert;
@@ -20,26 +21,37 @@ import speedy.utility.DBMSUtility;
 public class SQLBatchInsert implements IBatchInsert {
 
     private static Logger logger = LoggerFactory.getLogger(SQLBatchInsert.class);
+    private Lock lock = new java.util.concurrent.locks.ReentrantLock();
     private Map<ITable, List<Tuple>> buffer = new HashMap<ITable, List<Tuple>>();
     private SQLInsertTuple insertTupleOperator = new SQLInsertTuple();
     private int BUFFER_SIZE_POSTGRES = 10000;
     private int BUFFER_SIZE_MYSQL = 1000;
 
     public void insert(ITable table, Tuple tuple, IDatabase database) {
-        List<Tuple> tuplesForTable = getTuplesForTable(table);
-        tuplesForTable.add(tuple);
-        if (tuplesForTable.size() > getBufferSize(((DBMSDB) database).getAccessConfiguration())) {
-            insertTuples(table, tuplesForTable, database);
-            buffer.remove(table);
+        lock.lock();
+        try {
+            List<Tuple> tuplesForTable = getTuplesForTable(table);
+            tuplesForTable.add(tuple);
+            if (tuplesForTable.size() > getBufferSize(((DBMSDB) database).getAccessConfiguration())) {
+                insertTuples(table, tuplesForTable, database);
+                buffer.remove(table);
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
     public void flush(IDatabase database) {
-        for (ITable table : buffer.keySet()) {
-            List<Tuple> tuplesForTable = getTuplesForTable(table);
-            insertTuples(table, tuplesForTable, database);
+        lock.lock();
+        try {
+            for (ITable table : buffer.keySet()) {
+                List<Tuple> tuplesForTable = getTuplesForTable(table);
+                insertTuples(table, tuplesForTable, database);
+            }
+            buffer.clear();
+        } finally {
+            lock.unlock();
         }
-        buffer.clear();
     }
 
     private List<Tuple> getTuplesForTable(ITable table) {
