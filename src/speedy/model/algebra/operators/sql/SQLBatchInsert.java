@@ -17,7 +17,6 @@ import speedy.persistence.relational.AccessConfiguration;
 import speedy.persistence.relational.QueryManager;
 import speedy.utility.DBMSUtility;
 
-// Thread unsafe
 public class SQLBatchInsert implements IBatchInsert {
 
     private static Logger logger = LoggerFactory.getLogger(SQLBatchInsert.class);
@@ -28,8 +27,10 @@ public class SQLBatchInsert implements IBatchInsert {
     private int BUFFER_SIZE_MYSQL = 1000;
 
     public void insert(ITable table, Tuple tuple, IDatabase database) {
+        if (logger.isDebugEnabled()) logger.debug("Trying to get lock on inserts... ");
         lock.lock();
         try {
+            if (logger.isDebugEnabled()) logger.debug("Inserting tuple: " + tuple);
             List<Tuple> tuplesForTable = getTuplesForTable(table);
             tuplesForTable.add(tuple);
             if (tuplesForTable.size() > getBufferSize(((DBMSDB) database).getAccessConfiguration())) {
@@ -44,6 +45,7 @@ public class SQLBatchInsert implements IBatchInsert {
     public void flush(IDatabase database) {
         lock.lock();
         try {
+            if (logger.isDebugEnabled()) logger.debug("Flushing tuples...");
             for (ITable table : buffer.keySet()) {
                 List<Tuple> tuplesForTable = getTuplesForTable(table);
                 insertTuples(table, tuplesForTable, database);

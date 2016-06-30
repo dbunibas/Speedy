@@ -73,6 +73,7 @@ public class ImportXMLFile {
 
     @SuppressWarnings("unchecked")
     private List<Attribute> createXMLTable(String tableName, Element tableElement, DBMSDB database, boolean createTable) {
+        if (logger.isDebugEnabled()) logger.debug("Starting to create xml tables...");
         List<Attribute> attributes = new ArrayList<Attribute>();
         Element firstChild = (Element) tableElement.getChildren().get(0);
         for (Element attributeElement : (List<Element>) firstChild.getChildren()) {
@@ -92,10 +93,13 @@ public class ImportXMLFile {
 
     @SuppressWarnings("unchecked")
     private void insertXMLTuples(String tableName, List<Attribute> attributes, Element tableElement, IDatabase target, String xmlFile) {
+        if (logger.isDebugEnabled()) logger.debug("Starting to import xml tuples...");
         for (Element tupleElement : (List<Element>) tableElement.getChildren()) {
             TupleOID tupleOID = new TupleOID(IntegerOIDGenerator.getNextOID());
             Tuple tuple = new Tuple(tupleOID);
+            if (logger.isDebugEnabled()) logger.debug("Importing tuple OID " + tupleOID);
             for (Attribute attribute : attributes) {
+                if (logger.isDebugEnabled()) logger.debug("Attribute: " + attribute.getName());
                 Element attributeElement = tupleElement.getChild(attribute.getName());
                 if (attributeElement == null) {
                     throw new DAOException("Error importing " + xmlFile + ". Attribute " + attribute.getName() + " in table " + tableName + " is missing");
@@ -114,6 +118,7 @@ public class ImportXMLFile {
                 Cell cell = new Cell(tupleOID, attributeRef, value);
                 tuple.addCell(cell);
             }
+            if (logger.isDebugEnabled()) logger.debug("Preparing insert with operator " + batchInsertOperator.getClass().getName());
             batchInsertOperator.insert(target.getTable(tableName), tuple, target);
         }
         batchInsertOperator.flush(target);

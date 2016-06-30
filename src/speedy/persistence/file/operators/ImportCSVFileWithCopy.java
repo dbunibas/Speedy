@@ -33,7 +33,7 @@ import speedy.utility.SpeedyUtility;
 
 public class ImportCSVFileWithCopy {
 
-    private final static Logger logger = LoggerFactory.getLogger(ImportCSVFile.class);
+    private final static Logger logger = LoggerFactory.getLogger(ImportCSVFileWithCopy.class);
     private ICreateTable tableCreator;
     private IValueEncoder valueEncoder;
 
@@ -43,6 +43,7 @@ public class ImportCSVFileWithCopy {
     }
 
     public void importCSVFile(String tableName, CSVFile fileToImport, Map<String, List<Attribute>> tablesAdded, DBMSDB database) {
+        if (logger.isDebugEnabled()) logger.debug("Importing .csv file using copy...");
         String csvFile = fileToImport.getFileName();
         InitDBConfiguration configuration = database.getInitDBConfiguration();
         if (fileToImport.isRandomizeInput()) {
@@ -53,11 +54,11 @@ public class ImportCSVFileWithCopy {
         }
         Reader in = null;
         try {
+            if (logger.isDebugEnabled()) logger.debug("Beginning of try block...");
             List<Attribute> attributes;
             CsvMapper mapper = new CsvMapper();
             mapper.enable(CsvParser.Feature.WRAP_AS_ARRAY);
-            CsvSchema schema = CsvSchema.emptySchema().
-                    withColumnSeparator(fileToImport.getSeparator());
+            CsvSchema schema = CsvSchema.emptySchema().withColumnSeparator(fileToImport.getSeparator());
             if (fileToImport.getQuoteCharacter() != null) {
                 schema = schema.withQuoteChar(fileToImport.getQuoteCharacter());
             }
@@ -133,6 +134,7 @@ public class ImportCSVFileWithCopy {
     }
 
     private void insertCSVTuples(String tableName, List<Attribute> attributes, DBMSDB database, CSVFile csvFile) {
+        if (logger.isDebugEnabled()) logger.debug("Starting to insert csv tuples...");
         AccessConfiguration accessConfiguration = database.getAccessConfiguration();
         StringBuilder script = new StringBuilder();
         script.append("COPY ").append(DBMSUtility.getSchemaNameAndDot(accessConfiguration)).append(tableName).append(" (");
@@ -179,7 +181,6 @@ public class ImportCSVFileWithCopy {
 //        }
 //        fileToImport.setFileName(encodedFile.getAbsolutePath());
 //    }
-
     private void encodeAndInsertCSVTuples(String tableName, List<Attribute> attributes, DBMSDB database, MappingIterator<String[]> it, CSVFile csvFile) {
         Connection con = null;
         try {

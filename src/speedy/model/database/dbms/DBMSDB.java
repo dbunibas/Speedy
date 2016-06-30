@@ -23,7 +23,7 @@ public class DBMSDB implements IDatabase {
     private List<DBMSTable> tables = new ArrayList<DBMSTable>();
     private InitDBConfiguration initDBConfiguration = new InitDBConfiguration();
     private Lock lock = new java.util.concurrent.locks.ReentrantLock();
-    
+
     public DBMSDB(AccessConfiguration accessConfiguration) {
         this.accessConfiguration = accessConfiguration;
     }
@@ -119,10 +119,10 @@ public class DBMSDB implements IDatabase {
     }
 
     public ITable getTable(String name) {
+        initDBMS();
         this.lock.lock();
         try {
 //        return new DBMSTable(name, accessConfiguration);
-            initDBMS();
             for (DBMSTable table : tables) {
                 if (table.getName().equalsIgnoreCase(name.trim())) {
                     return table;
