@@ -16,7 +16,7 @@ public class InitDBConfiguration {
     private boolean createTablesFromFiles = true;
     private boolean useCopyStatement = true;
     private IValueEncoder valueEncoder;
-    private int numOfThreads;
+    private int numOfThreads = 1;
 
     public String getInitDBScript() {
         return initDBScript;
