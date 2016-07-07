@@ -14,6 +14,8 @@ public class TransformFilePaths {
 
     private static Logger logger = LoggerFactory.getLogger(TransformFilePaths.class);
 
+    static final String SEPARATOR = "/";
+
     public String relativize(String baseFilePath, String relativeFilePath) {
         if (baseFilePath == null || baseFilePath.trim().isEmpty()) {
             throw new IllegalArgumentException("Unable to relativize path from a null base path");
@@ -76,12 +78,12 @@ public class TransformFilePaths {
 
         // for each remaining level in the base path, add a ..
         for (; i >= 0; i--) {
-            s += ".." + File.separator;
+            s += ".." + SEPARATOR;
         }
 
         // for each level in the file path, add the path
         for (; j >= 1; j--) {
-            s += filePathSteps.get(j) + File.separator;
+            s += filePathSteps.get(j) + SEPARATOR;
         }
 
         // file name
@@ -109,8 +111,8 @@ public class TransformFilePaths {
             }
         }
         String resultString = resultPath.toString();
-        if (!resultString.startsWith(File.separator)) {
-            resultString = File.separator + resultString;
+        if (!resultString.startsWith(SEPARATOR)) {
+            resultString = SEPARATOR + resultString;
         }
         return resultString;
     }
