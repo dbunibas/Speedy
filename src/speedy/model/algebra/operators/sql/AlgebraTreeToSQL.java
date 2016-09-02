@@ -237,7 +237,7 @@ public class AlgebraTreeToSQL {
             }
             if (!(child instanceof Scan) && !(child instanceof Join) && !(child instanceof Select)
                     && !(child instanceof CreateTableAs) && !(child instanceof RestoreOIDs) && !(child instanceof Distinct)
-                    && !(child instanceof Difference) && !(child instanceof OrderBy)) {
+                    && !(child instanceof Difference) && !(child instanceof OrderBy) && !(child instanceof SelectNotIn)) {
                 throw new IllegalArgumentException("Project of a " + child.getName() + " is not supported");
             }
             child.accept(this);
@@ -493,6 +493,13 @@ public class AlgebraTreeToSQL {
                 result.append("\n").append(this.indentString()).append(") AS ");
                 result.append(generateNestedAlias(operator));
             } else if ((operator instanceof Difference)) {
+                result.append("(\n");
+                this.indentLevel++;
+                operator.accept(this);
+                this.indentLevel--;
+                result.append("\n").append(this.indentString()).append(") AS ");
+                result.append("Nest_").append(operator.hashCode());
+            }else if ((operator instanceof Limit)) {
                 result.append("(\n");
                 this.indentLevel++;
                 operator.accept(this);
