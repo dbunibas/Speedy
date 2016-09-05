@@ -155,6 +155,15 @@ public class DBMSDB implements IDatabase {
         return size;
     }
 
+    public long getSizeNoCache() {
+        long size = 0;
+        for (String tableName : tableNames) {
+            DBMSTable table = (DBMSTable) getTable(tableName);
+            size += table.getSizeNoCache();
+        }
+        return size;
+    }
+
     public IDatabase clone() {
         throw new UnsupportedOperationException("Not supported yet.");
     }

@@ -181,26 +181,5 @@ public class MainMemoryVirtualTable implements ITable {
 
     public void closeConnection() {
     }
-//    public String toString(String indent) {
-//        StringBuilder result = new StringBuilder();
-//        result.append(indent).append("Table: ").append(getName()).append(" {\n");
-//        Iterator<Tuple> iterator = getTupleIterator();
-//        while (iterator.hasNext()) {
-//            result.append(indent).append(SpeedyConstants.INDENT).append(iterator.next().toStringWithOID(database, null, null)).append("\n");
-//        }
-//        result.append(indent).append("}\n");
-//        return result.toString();
-//    }
-//
-//    public String toString(String indent, String stepId) {
-//        StringBuilder result = new StringBuilder();
-//        result.append(indent).append("Table: ").append(getName()).append(" {\n");
-//        Iterator<Tuple> iterator = getTupleIterator();
-//        while (iterator.hasNext()) {
-//            result.append(indent).append(SpeedyConstants.INDENT).append(iterator.next().toStringWithOID(database, new MainMemoryMCOccurrenceHandler(), stepId)).append("\n");
-//        }
-//        result.append(indent).append("}\n");
-//        return result.toString();
-//    }
 
 }

@@ -79,8 +79,13 @@ public class QueryManager {
     public static ResultSet executeQuery(String query, AccessConfiguration accessConfiguration) {
         Connection connection = null;
         try {
+            if (logger.isTraceEnabled()) logger.trace("Executing query " + intoSingleLine(query));
+            long start = new Date().getTime();
             connection = getConnection(accessConfiguration);
             ResultSet resultSet = executeQuery(query, connection, accessConfiguration);
+            long finish = new Date().getTime();
+            if (logger.isTraceEnabled()) logger.trace((finish - start) + " ~ " + intoSingleLine(query));
+            QueryStatManager.getInstance().addQuery(query, (finish - start));
 //            if (!Thread.currentThread().getName().equals("main")) logger.error("Thread: " + Thread.currentThread().getName() + " ~ " + intoSingleLine(query));
             return resultSet;
         } catch (Exception daoe) {

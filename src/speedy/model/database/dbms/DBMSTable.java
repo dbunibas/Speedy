@@ -69,19 +69,23 @@ public class DBMSTable implements ITable {
 
     public long getSize() {
         if (size == null) {
-            String query = "SELECT count(*) as count FROM " + DBMSUtility.getSchemaNameAndDot(accessConfiguration) + tableName;
-            ResultSet resultSet = null;
-            try {
-                resultSet = QueryManager.executeQuery(query, accessConfiguration);
-                resultSet.next();
-                size = resultSet.getLong("count");
-            } catch (SQLException ex) {
-                throw new DBMSException("Unable to execute query " + query + " on database \n" + accessConfiguration + "\n" + ex);
-            } finally {
-                QueryManager.closeResultSet(resultSet);
-            }
+            size = getSizeNoCache();
         }
         return size;
+    }
+
+    public long getSizeNoCache() {
+        String query = "SELECT count(*) as count FROM " + DBMSUtility.getSchemaNameAndDot(accessConfiguration) + tableName;
+        ResultSet resultSet = null;
+        try {
+            resultSet = QueryManager.executeQuery(query, accessConfiguration);
+            resultSet.next();
+            return resultSet.getLong("count");
+        } catch (SQLException ex) {
+            throw new DBMSException("Unable to execute query " + query + " on database \n" + accessConfiguration + "\n" + ex);
+        } finally {
+            QueryManager.closeResultSet(resultSet);
+        }
     }
 
     public long getNumberOfDistinctTuples() {

@@ -95,7 +95,12 @@ public class DBMSVirtualDB implements IDatabase {
     }
 
     public long getSize() {
-        return this.originalDB.getSize();
+        long size = 0;
+        for (String tableName : getTableNames()) {
+            DBMSVirtualTable table = (DBMSVirtualTable) getTable(tableName);
+            size += table.getSize();
+        }
+        return size;
     }
 
     public IDatabase clone() {
