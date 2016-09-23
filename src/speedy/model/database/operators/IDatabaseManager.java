@@ -14,5 +14,7 @@ public interface IDatabaseManager {
     public void analyzeDatabase(IDatabase database);
 
     public void removeTable(String tableName, IDatabase deltaDB);
+    
+    public void addUniqueConstraints(IDatabase db);
 
 }

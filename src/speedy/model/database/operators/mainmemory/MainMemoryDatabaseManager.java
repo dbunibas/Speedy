@@ -33,4 +33,7 @@ public class MainMemoryDatabaseManager implements IDatabaseManager {
 
     public void removeTable(String tableName, IDatabase deltaDB) {
     }
+
+    public void addUniqueConstraints(IDatabase db) {
+    }
 }

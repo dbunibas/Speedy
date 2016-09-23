@@ -1,12 +1,16 @@
 package speedy.model.database.operators.dbms;
 
+import speedy.SpeedyConstants;
+import speedy.model.database.Attribute;
 import speedy.model.database.EmptyDB;
 import speedy.model.database.IDatabase;
 import speedy.model.database.dbms.DBMSDB;
+import speedy.model.database.dbms.DBMSVirtualDB;
 import speedy.model.database.operators.IDatabaseManager;
 import speedy.persistence.relational.AccessConfiguration;
 import speedy.utility.DBMSUtility;
 import speedy.persistence.relational.QueryManager;
+import speedy.utility.SpeedyUtility;
 
 public class SQLDatabaseManager implements IDatabaseManager {
 
@@ -83,5 +87,29 @@ public class SQLDatabaseManager implements IDatabaseManager {
             sb.append("VACUUM ANALYZE ").append(DBMSUtility.getSchemaNameAndDot(ac)).append(tableName).append(";");
         }
         QueryManager.executeScript(sb.toString(), ac, true, true, false, false);
+    }
+
+    public void addUniqueConstraints(IDatabase db) {
+        StringBuilder sb = new StringBuilder();
+        AccessConfiguration ac;
+        if (db instanceof DBMSDB) {
+            ac = ((DBMSDB) db).getAccessConfiguration();
+        } else if (db instanceof DBMSVirtualDB) {
+            ac = ((DBMSVirtualDB) db).getAccessConfiguration();
+        } else {
+            throw new IllegalArgumentException();
+        }
+        for (String tableName : db.getTableNames()) {
+            sb.append("ALTER TABLE ").append(DBMSUtility.getSchemaNameAndDot(ac)).append(tableName).append(" ADD UNIQUE (");
+            for (Attribute attribute : db.getTable(tableName).getAttributes()) {
+                if (attribute.getName().equalsIgnoreCase(SpeedyConstants.OID)) {
+                    continue;
+                }
+                sb.append(attribute.getName()).append(", ");
+            }
+            SpeedyUtility.removeChars(", ".length(), sb);
+            sb.append(") NOT DEFERRABLE INITIALLY IMMEDIATE;\n");
+        }
+        QueryManager.executeScript(sb.toString(), ac, true, true, true, false);
     }
 }
