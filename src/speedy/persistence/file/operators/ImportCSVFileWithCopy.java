@@ -151,7 +151,7 @@ public class ImportCSVFileWithCopy {
         }
         script.append("DELIMITER '").append(csvFile.getSeparator()).append("'");
         script.append(" );\n");
-//        script.append("ANALYZE ").append(DBMSUtility.getSchemaNameAndDot(accessConfiguration)).append(tableName).append(";");
+        script.append("ANALYZE ").append(DBMSUtility.getSchemaNameAndDot(accessConfiguration)).append(tableName).append(";");
         if (logger.isDebugEnabled()) logger.debug("--- Import file script:\n" + script.toString());
         QueryManager.executeScript(script.toString(), accessConfiguration, true, true, true, false);
     }
