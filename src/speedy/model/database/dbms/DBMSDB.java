@@ -11,9 +11,10 @@ import speedy.utility.DBMSUtility;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DBMSDB implements IDatabase {
-
     private static ExecuteInitDB initDBExecutor = new ExecuteInitDB();
     private AccessConfiguration accessConfiguration;
     private List<String> tableNames;
@@ -120,6 +121,12 @@ public class DBMSDB implements IDatabase {
 
     public ITable getTable(String name) {
         initDBMS();
+        if(tables.isEmpty()){
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+            }
+        }
         this.lock.lock();
         try {
 //        return new DBMSTable(name, accessConfiguration);
@@ -128,7 +135,13 @@ public class DBMSDB implements IDatabase {
                     return table;
                 }
             }
-            throw new IllegalArgumentException("Unable to find table " + name + " in database " + getName());
+            StringBuilder error = new StringBuilder();
+            error.append("Unable to find table ").append(name).append(" in database ").append(getName());
+            error.append(" Tables (").append(tables.size()).append("):");
+            for (DBMSTable table : tables) {
+                error.append(table.getName()).append(", ");
+            }
+            throw new IllegalArgumentException(error.toString());
         } finally {
             this.lock.unlock();
         }

@@ -77,18 +77,6 @@ public class SQLDatabaseManager implements IDatabaseManager {
         return function.toString();
     }
 
-    public void analyzeDatabase(IDatabase db) {
-        if (db == null || (db instanceof EmptyDB)) {
-            return;
-        }
-        AccessConfiguration ac = ((DBMSDB) db).getAccessConfiguration();
-        StringBuilder sb = new StringBuilder();
-        for (String tableName : db.getTableNames()) {
-            sb.append("VACUUM ANALYZE ").append(DBMSUtility.getSchemaNameAndDot(ac)).append(tableName).append(";");
-        }
-        QueryManager.executeScript(sb.toString(), ac, true, true, false, false);
-    }
-
     public void addUniqueConstraints(IDatabase db) {
         StringBuilder sb = new StringBuilder();
         AccessConfiguration ac;
@@ -111,5 +99,47 @@ public class SQLDatabaseManager implements IDatabaseManager {
             sb.append(") NOT DEFERRABLE INITIALLY IMMEDIATE;\n");
         }
         QueryManager.executeScript(sb.toString(), ac, true, true, true, false);
+    }
+
+    public void initDatabase(IDatabase source, IDatabase target, boolean cleanTarget, boolean preventInsertDuplicates) {
+        AccessConfiguration accessConfiguration = ((DBMSDB) target).getAccessConfiguration();
+        createWorkSchema(accessConfiguration);
+        createFunctionsForNumericalSkolems(source, target);
+        if (preventInsertDuplicates) {
+            addUniqueConstraints(target);
+        }
+        if (cleanTarget) {
+            QueryManager.executeScript(cleanTargetScript(target), accessConfiguration, true, true, true, true);
+        }
+    }
+
+    private void createWorkSchema(AccessConfiguration accessConfiguration) {
+        StringBuilder result = new StringBuilder();
+        result.append("DROP SCHEMA IF EXISTS ").append(SpeedyConstants.WORK_SCHEMA).append(" CASCADE;\n");
+        result.append("CREATE SCHEMA ").append(SpeedyConstants.WORK_SCHEMA).append(";\n\n");
+        QueryManager.executeScript(result.toString(), accessConfiguration, true, true, false, false);
+    }
+
+    private void createFunctionsForNumericalSkolems(IDatabase source, IDatabase target) {
+        if (!(source instanceof EmptyDB)) {
+            AccessConfiguration sourceAccessConfiguration = ((DBMSDB) source).getAccessConfiguration();
+            DBMSUtility.createFunctionsForNumericalSkolem(sourceAccessConfiguration);
+        }
+        AccessConfiguration targetAccessConfiguration = ((DBMSDB) target).getAccessConfiguration();
+        DBMSUtility.createFunctionsForNumericalSkolem(targetAccessConfiguration);
+        AccessConfiguration workAccessConfiguration = targetAccessConfiguration.clone();
+        workAccessConfiguration.setSchemaName(SpeedyConstants.WORK_SCHEMA);
+        DBMSUtility.createFunctionsForNumericalSkolem(workAccessConfiguration);
+    }
+
+    private String cleanTargetScript(IDatabase target) {
+        StringBuilder result = new StringBuilder();
+        result.append("----- Cleaning Target -----\n");
+        DBMSDB targetDB = (DBMSDB) target;
+        for (String tableName : target.getTableNames()) {
+            result.append("DELETE FROM ").append(DBMSUtility.getSchemaNameAndDot(targetDB.getAccessConfiguration())).append(tableName).append(";\n");
+        }
+        result.append("\n");
+        return result.toString();
     }
 }

@@ -9,7 +9,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.model.database.AttributeRef;
-import speedy.model.database.Cell;
 import speedy.model.database.IDatabase;
 import speedy.model.database.IValue;
 import speedy.model.database.Tuple;
@@ -19,12 +18,12 @@ public class SelectNotIn extends AbstractOperator {
     private static Logger logger = LoggerFactory.getLogger(SelectNotIn.class);
 
     private List<AttributeRef> attributes;
-    private List<IAlgebraOperator> selectionOperators;
+    private IAlgebraOperator selectionOperator;
 
-    public SelectNotIn(List<AttributeRef> attributes, List<IAlgebraOperator> selectionOperators) {
-        assert (!selectionOperators.isEmpty());
+    public SelectNotIn(List<AttributeRef> attributes, IAlgebraOperator selectionOperator) {
+        assert (selectionOperator != null);
         this.attributes = attributes;
-        this.selectionOperators = selectionOperators;
+        this.selectionOperator = selectionOperator;
     }
 
     public void accept(IAlgebraTreeVisitor visitor) {
@@ -34,18 +33,14 @@ public class SelectNotIn extends AbstractOperator {
     public String getName() {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT").append(attributes).append(" NOT IN (\n");
-        for (IAlgebraOperator selectionOperator : selectionOperators) {
-            sb.append(selectionOperator.toString(SpeedyConstants.INDENT + SpeedyConstants.INDENT)).append("\n");
-        }
+        sb.append(selectionOperator.toString(SpeedyConstants.INDENT + SpeedyConstants.INDENT)).append("\n");
         sb.append(")");
         return sb.toString();
     }
 
     public ITupleIterator execute(IDatabase source, IDatabase target) {
-        for (IAlgebraOperator selectionOperator : selectionOperators) {
-            if (attributes.size() != selectionOperator.getAttributes(source, target).size()) {
-                throw new IllegalArgumentException("Attribute sizes are different: " + attributes + " - " + selectionOperator.getAttributes(source, target));
-            }
+        if (attributes.size() != selectionOperator.getAttributes(source, target).size()) {
+            throw new IllegalArgumentException("Attribute sizes are different: " + attributes + " - " + selectionOperator.getAttributes(source, target));
         }
         List<List<String>> valueMap = materializeInnerOperator(source, target);
         SelectNotInTupleIterator tupleIterator = new SelectNotInTupleIterator(children.get(0).execute(source, target), valueMap);
@@ -57,14 +52,12 @@ public class SelectNotIn extends AbstractOperator {
 
     private List<List<String>> materializeInnerOperator(IDatabase source, IDatabase target) {
         List<List<String>> result = new ArrayList<List<String>>();
-        for (IAlgebraOperator selectionOperator : selectionOperators) {
-            List<String> tuplesForOperator = new ArrayList<String>();
-            result.add(tuplesForOperator);
-            ITupleIterator tuples = selectionOperator.execute(source, target);
-            while (tuples.hasNext()) {
-                Tuple tuple = tuples.next();
-                tuplesForOperator.add(buildTupleSignature(tuple, selectionOperator.getAttributes(source, target)));
-            }
+        List<String> tuplesForOperator = new ArrayList<String>();
+        result.add(tuplesForOperator);
+        ITupleIterator tuples = selectionOperator.execute(source, target);
+        while (tuples.hasNext()) {
+            Tuple tuple = tuples.next();
+            tuplesForOperator.add(buildTupleSignature(tuple, selectionOperator.getAttributes(source, target)));
         }
         return result;
     }
@@ -82,17 +75,14 @@ public class SelectNotIn extends AbstractOperator {
         return attributes;
     }
 
-    public List<IAlgebraOperator> getSelectionOperators() {
-        return selectionOperators;
+    public IAlgebraOperator getSelectionOperator() {
+        return selectionOperator;
     }
 
     @Override
     public IAlgebraOperator clone() {
         SelectNotIn clone = (SelectNotIn) super.clone();
-        clone.selectionOperators = new ArrayList<IAlgebraOperator>();
-        for (IAlgebraOperator selectionOperator : selectionOperators) {
-            clone.selectionOperators.add((Scan) selectionOperator.clone());
-        }
+        clone.selectionOperator = selectionOperator.clone();
         return clone;
     }
 

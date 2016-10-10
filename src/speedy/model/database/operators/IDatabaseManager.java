@@ -11,10 +11,10 @@ public interface IDatabaseManager {
 
     public void removeClone(IDatabase target, String suffix);
 
-    public void analyzeDatabase(IDatabase database);
-
     public void removeTable(String tableName, IDatabase deltaDB);
     
     public void addUniqueConstraints(IDatabase db);
+
+    public void initDatabase(IDatabase source, IDatabase target, boolean cleanTarget, boolean preventInsertDuplicateTuples);
 
 }

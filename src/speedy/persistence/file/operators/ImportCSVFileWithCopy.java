@@ -151,36 +151,11 @@ public class ImportCSVFileWithCopy {
         }
         script.append("DELIMITER '").append(csvFile.getSeparator()).append("'");
         script.append(" );\n");
-        script.append("ANALYZE ").append(DBMSUtility.getSchemaNameAndDot(accessConfiguration)).append(tableName).append(";");
+//        script.append("ANALYZE ").append(DBMSUtility.getSchemaNameAndDot(accessConfiguration)).append(tableName).append(";");
         if (logger.isDebugEnabled()) logger.debug("--- Import file script:\n" + script.toString());
         QueryManager.executeScript(script.toString(), accessConfiguration, true, true, true, false);
     }
 
-//    private void encodeCSVFile(CSVFile fileToImport, MappingIterator<String[]> it) {
-//        String homeDir = System.getProperty("user.home");
-//        File encodedFile = new File(homeDir + File.separator + SpeedyConstants.WORK_DIR + File.separator + "Encoding" + File.separator + "ENC_" + FilenameUtils.getName(fileToImport.getFileName()));
-//        encodedFile.getParentFile().mkdirs();
-//        if (logger.isDebugEnabled()) logger.debug("*** Encoded file: " + encodedFile);
-//        PrintWriter out = null;
-//        try {
-//            out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(encodedFile), Charset.forName("UTF-8")));
-//            while (it.hasNext()) {
-//                String[] record = it.next();
-//                StringBuilder row = new StringBuilder();
-//                for (String value : record) {
-//                    row.append(valueEncoder.encode(value)).append(fileToImport.getSeparator());
-//                }
-//                SpeedyUtility.removeChars(1, row);
-//                out.append(row.toString()).append("\n");
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            throw new DAOException(e);
-//        } finally {
-//            if (out != null) out.close();
-//        }
-//        fileToImport.setFileName(encodedFile.getAbsolutePath());
-//    }
     private void encodeAndInsertCSVTuples(String tableName, List<Attribute> attributes, DBMSDB database, MappingIterator<String[]> it, CSVFile csvFile) {
         Connection con = null;
         try {

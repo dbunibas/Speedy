@@ -38,7 +38,7 @@ public class SQLAnalyzeDatabase implements IAnalyzeDatabase {
         public void execute() {
             AccessConfiguration accessConfiguration = dbmsDB.getAccessConfiguration();
             StringBuilder sb = new StringBuilder();
-            sb.append("ANALYZE ").append(DBMSUtility.getSchemaNameAndDot(accessConfiguration)).append(tableName).append(";\n");
+            sb.append("VACUUM ANALYZE ").append(DBMSUtility.getSchemaNameAndDot(accessConfiguration)).append(tableName).append(";\n");
             QueryManager.executeScript(sb.toString(), accessConfiguration, true, true, true, false);
         }
 
