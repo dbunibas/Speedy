@@ -35,11 +35,13 @@ public class TranslateGroupBy {
         List<NestedOperator> nestedTables = findNestedTablesForGroupBy(operator, visitor);
         List<IAggregateFunction> aggregateFunctions = operator.getAggregateFunctions();
         List<String> havingFunctions = extractHavingFunctions(operator);
-//            this.currentProjectionAttribute = new ArrayList<AttributeRef>();
         for (IAggregateFunction aggregateFunction : aggregateFunctions) {
             AttributeRef attributeRef = aggregateFunction.getAttributeRef();
             if (attributeRef.toString().contains(SpeedyConstants.AGGR + "." + SpeedyConstants.COUNT)) {
                 continue;
+            }
+            if (visitor.getCurrentProjectionAttribute() == null) {
+                visitor.setCurrentProjectionAttribute(new ArrayList<AttributeRef>());
             }
             visitor.getCurrentProjectionAttribute().add(aggregateFunction.getAttributeRef());
             result.append(visitor.aggregateFunctionToString(aggregateFunction, aggregateFunction.getAttributeRef(), nestedTables)).append(", ");

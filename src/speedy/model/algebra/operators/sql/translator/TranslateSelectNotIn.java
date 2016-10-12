@@ -12,8 +12,6 @@ import speedy.utility.SpeedyUtility;
 
 public class TranslateSelectNotIn {
 
-    private final static Logger logger = LoggerFactory.getLogger(TranslateSelectNotIn.class);
-
     public void translate(SelectNotIn operator, AlgebraTreeToSQLVisitor visitor) {
         if (visitor.getCurrentSelectNotIn() == null) {
             visitor.setCurrentSelectNotIn(operator);
