@@ -314,6 +314,7 @@ public class AlgebraTreeToSQLVisitor implements IAlgebraTreeVisitor {
             }
             newAttributes = project.getNewAttributes();
         }
+        if (logger.isDebugEnabled()) logger.debug("Setting current projection attribute for operator " + operator + "\n: *** " + currentProjectionAttribute);
         this.currentProjectionAttribute = attributes;
         sqlQueryBuilder.append("\n").append(this.indentString());
         if (this.addOIDColumn) {
