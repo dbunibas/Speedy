@@ -473,7 +473,7 @@ public class DBMSUtility {
                 || columnType.equalsIgnoreCase("longtext")) {
             return Types.STRING;
         }
-        if (columnType.equalsIgnoreCase("serial") || columnType.equalsIgnoreCase("enum")) {
+        if (columnType.equalsIgnoreCase("enum")) {
             return Types.STRING;
         }
         if (columnType.equalsIgnoreCase("date")) {
@@ -482,7 +482,7 @@ public class DBMSUtility {
         if (columnType.equalsIgnoreCase("datetime") || columnType.equalsIgnoreCase("timestamp")) {
             return Types.DATETIME;
         }
-        if (columnType.toLowerCase().equals("int8") || columnType.toLowerCase().startsWith("bigint")) {
+        if (columnType.equalsIgnoreCase("bigserial") || columnType.equalsIgnoreCase("serial8") ||columnType.toLowerCase().equals("int8") || columnType.toLowerCase().startsWith("bigint")) {
             return Types.LONG;
         }
         if (columnType.toLowerCase().equals("float8") || columnType.toLowerCase().startsWith("double precision")) {
