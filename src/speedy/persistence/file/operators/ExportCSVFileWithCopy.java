@@ -87,18 +87,17 @@ public class ExportCSVFileWithCopy {
 
         public void execute() {
             AccessConfiguration ac = getAccessConfiguration(table);
+            String script = getCopyToScript(table, withHeader, ac);
             if (valueEncoder == null) {
-                String script = getCopyToScript(table, fileName, withHeader, ac, true);
-                QueryManager.executeScript(script, ac, true, true, true, false);
+                executeCopy(script, fileName, ac);
             } else {
-                String script = getCopyToScript(table, fileName, withHeader, ac, false);
                 executeCopy(script, fileName, valueEncoder, withHeader, ac);
             }
         }
 
     }
 
-    private String getCopyToScript(ITable table, String file, boolean withHeader, AccessConfiguration accessConfiguration, boolean useFile) {
+    private String getCopyToScript(ITable table, boolean withHeader, AccessConfiguration accessConfiguration) {
         StringBuilder script = new StringBuilder();
         String tableName = getTableName(table);
         script.append("COPY (SELECT ");
@@ -110,11 +109,11 @@ public class ExportCSVFileWithCopy {
         script.append(" FROM ");
         script.append(DBMSUtility.getSchemaNameAndDot(accessConfiguration)).append(tableName).append(" ");
         script.append(") ");
-        if (useFile) {
-            script.append("TO '").append(file).append("' ");
-        } else {
-            script.append("TO STDOUT ");
-        }
+//        if (useFile) {
+//            script.append("TO '").append(file).append("' ");
+//        } else {
+        script.append("TO STDOUT ");
+//        }
         script.append(" (");
         script.append("FORMAT CSV, ");
         if (withHeader) {
@@ -166,6 +165,30 @@ public class ExportCSVFileWithCopy {
             result.add(attribute);
         }
         return result;
+    }
+
+    private long executeCopy(String script, String file, AccessConfiguration ac) {
+        Connection con = null;
+        PrintWriter writer = null;
+        try {
+            File parentDir = new File(file).getParentFile();
+            parentDir.mkdirs();
+            writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file), Charset.forName("UTF-8")));
+            con = DriverManager.getConnection(ac.getUri(), ac.getLogin(), ac.getPassword());
+            CopyManager copyManager = new CopyManager((BaseConnection) con);
+            return copyManager.copyOut(script, new FileOutputStream(file));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new DAOException(ex);
+        } finally {
+            if (writer != null) writer.close();
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException ex) {
+                }
+            }
+        }
     }
 
     private long executeCopy(String script, String file, IValueEncoder valueEncoder, boolean withHeader, AccessConfiguration ac) {

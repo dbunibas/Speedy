@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.sql.Connection;
@@ -135,25 +136,44 @@ public class ImportCSVFileWithCopy {
 
     private void insertCSVTuples(String tableName, List<Attribute> attributes, DBMSDB database, CSVFile csvFile) {
         if (logger.isDebugEnabled()) logger.debug("Starting to insert csv tuples...");
-        AccessConfiguration accessConfiguration = database.getAccessConfiguration();
-        StringBuilder script = new StringBuilder();
-        script.append("COPY ").append(DBMSUtility.getSchemaNameAndDot(accessConfiguration)).append(tableName).append(" (");
-        for (Attribute attribute : attributes) {
-            script.append(attribute.getName()).append(", ");
+        Connection con = null;
+        try {
+            AccessConfiguration ac = database.getAccessConfiguration();
+            con = DriverManager.getConnection(ac.getUri(), ac.getLogin(), ac.getPassword());
+            CopyManager copyManager = new CopyManager((BaseConnection) con);
+            StringBuilder copyScript = new StringBuilder();
+            copyScript.append("COPY ").append(DBMSUtility.getSchemaNameAndDot(ac)).append(tableName).append(" (");
+            for (Attribute attribute : attributes) {
+                copyScript.append(attribute.getName()).append(", ");
+            }
+            SpeedyUtility.removeChars(", ".length(), copyScript);
+//          script.append(") FROM '").append(csvFile.getFileName()).append("' (");
+            copyScript.append(") FROM STDIN (");
+            copyScript.append("FORMAT CSV, HEADER ").append(csvFile.isHasHeader() ? "true" : "false");
+            copyScript.append(", ");
+            if (csvFile.getQuoteCharacter() != null) {
+                copyScript.append("QUOTE '").append(csvFile.getQuoteCharacter()).append("'");
+                copyScript.append(", ");
+            }
+            copyScript.append("DELIMITER '").append(csvFile.getSeparator()).append("'");
+            copyScript.append(" );\n");
+            long insertedRows = copyManager.copyIn(copyScript.toString(), new FileInputStream(csvFile.getFileName()));
+            if (logger.isDebugEnabled()) logger.debug("Inserted rows: " + insertedRows);
+            StringBuilder script = new StringBuilder();
+            script.append("ANALYZE ").append(DBMSUtility.getSchemaNameAndDot(ac)).append(tableName).append(";");
+            if (logger.isDebugEnabled()) logger.debug("--- Import file script:\n" + script.toString());
+            QueryManager.executeScript(script.toString(), ac, true, true, true, false);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new DAOException(ex);
+        } finally {
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException ex) {
+                }
+            }
         }
-        SpeedyUtility.removeChars(", ".length(), script);
-        script.append(") FROM '").append(csvFile.getFileName()).append("' (");
-        script.append("FORMAT CSV, HEADER ").append(csvFile.isHasHeader() ? "true" : "false");
-        script.append(", ");
-        if (csvFile.getQuoteCharacter() != null) {
-            script.append("QUOTE '").append(csvFile.getQuoteCharacter()).append("'");
-            script.append(", ");
-        }
-        script.append("DELIMITER '").append(csvFile.getSeparator()).append("'");
-        script.append(" );\n");
-        script.append("ANALYZE ").append(DBMSUtility.getSchemaNameAndDot(accessConfiguration)).append(tableName).append(";");
-        if (logger.isDebugEnabled()) logger.debug("--- Import file script:\n" + script.toString());
-        QueryManager.executeScript(script.toString(), accessConfiguration, true, true, true, false);
     }
 
     private void encodeAndInsertCSVTuples(String tableName, List<Attribute> attributes, DBMSDB database, MappingIterator<String[]> it, CSVFile csvFile) {
