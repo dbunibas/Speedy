@@ -29,7 +29,6 @@ public class ForeignKey {
         return keyAttributes;
     }
     
-
     public String toString() {
         return this.refAttributes + " references " + this.keyAttributes;
     }

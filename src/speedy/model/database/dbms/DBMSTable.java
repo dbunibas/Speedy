@@ -177,15 +177,16 @@ public class DBMSTable implements ITable {
     }
 
     private void initConnection() {
-        ResultSet resultSet = null;
-        try {
-            resultSet = DBMSUtility.getTableResultSetForSchema(tableName, accessConfiguration);
-            this.attributes = DBMSUtility.getTableAttributes(resultSet, tableName);
-        } catch (SQLException ex) {
-            throw new DBMSException("Unable to load table " + tableName + ".\n" + ex);
-        } finally {
-            QueryManager.closeResultSet(resultSet);
-        }
+//        ResultSet resultSet = null;
+//        try {
+//            resultSet = DBMSUtility.getTableResultSetForSchema(tableName, accessConfiguration);
+//            this.attributes = DBMSUtility.getTableAttributes(resultSet, tableName);
+//        } catch (SQLException ex) {
+//            throw new DBMSException("Unable to load table " + tableName + ".\n" + ex);
+//        } finally {
+//            QueryManager.closeResultSet(resultSet);
+//        }
+        this.attributes = DBMSUtility.loadAttributesFromTable(tableName, accessConfiguration);
     }
 
     public void reset() {

@@ -5,6 +5,7 @@ public class Attribute {
     private String tableName;
     private String name;
     private String type;
+    private Boolean nullable;
 
     public Attribute(String tableName, String name, String type) {
         this.tableName = tableName;
@@ -22,6 +23,14 @@ public class Attribute {
 
     public String getType() {
         return type;
+    }
+
+    public Boolean getNullable() {
+        return nullable;
+    }
+
+    public void setNullable(Boolean nullable) {
+        this.nullable = nullable;
     }
 
     @Override
