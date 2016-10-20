@@ -285,7 +285,7 @@ public class DBMSUtility {
     }
 
     public static String createTablePaginationQuery(String tableName, AccessConfiguration accessConfiguration, int offset, int limit) {
-        return "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchemaNameAndDot(accessConfiguration) + "\"" + tableName + "\"" + " LIMIT " + limit + " OFFSET " + offset + " ORDER BY " + SpeedyConstants.OID;
+        return "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchemaNameAndDot(accessConfiguration) + "\"" + tableName + "\"" + " ORDER BY " + SpeedyConstants.OID + " LIMIT " + limit + " OFFSET " + offset;
     }
 
     public static ResultSet getTableOidsResultSet(String tableName, AccessConfiguration accessConfiguration) {

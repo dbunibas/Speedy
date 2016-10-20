@@ -27,6 +27,7 @@ import speedy.model.database.operators.IRunQuery;
 import speedy.model.expressions.Expression;
 import speedy.persistence.DAODBMSDatabase;
 import speedy.persistence.file.CSVFile;
+import speedy.persistence.file.operators.ExportCSVFileWithCopy;
 import speedy.utility.test.UtilityForTests;
 import speedy.utility.SpeedyUtility;
 
@@ -51,8 +52,8 @@ public class TestDBMSCSV {
         CSVFile fileToImport = new CSVFile(UtilityForTests.getAbsoluteFileName("/resources/employees/csv/50_emp.csv"));
         fileToImport.setSeparator(',');
         database.getInitDBConfiguration().addFileToImportForTable("emp", fileToImport);
+        UtilityForTests.deleteDB(database.getAccessConfiguration());
         database.initDBMS();
-//        UtilityForTests.deleteDB(database.getAccessConfiguration());
         queryRunner = OperatorFactory.getInstance().getQueryRunner(database);
     }
 
@@ -62,6 +63,14 @@ public class TestDBMSCSV {
     }
 
     @Test
+    public void testImport() {
+        Assert.assertEquals(1, database.getTableNames().size());
+        Assert.assertEquals(50, database.getTable("emp").getSize());
+        ExportCSVFileWithCopy exporter = new ExportCSVFileWithCopy();
+        exporter.exportDatabase(database, null, true, "/Temp/Speedy/Export", 1);
+    }
+
+//    @Test
     public void xtestOrderByGroupBySelect() {
         TableAlias tableAlias = new TableAlias("part");
         Scan scan = new Scan(tableAlias);
@@ -93,12 +102,13 @@ public class TestDBMSCSV {
         result.close();
         Assert.assertTrue(stringResult.startsWith("Number of tuples: 10\n"));
     }
-    @Test
+
+//    @Test
     public void testOrderByGroupBy() {
         TableAlias tableAlias = new TableAlias("part");
         Scan scan = new Scan(tableAlias);
         AttributeRef attributeRef = new AttributeRef(tableAlias, "p_name");
-        
+
         List<AttributeRef> groupingAttribute = new ArrayList<AttributeRef>();
         groupingAttribute.add(attributeRef);
         List<IAggregateFunction> aggregateFunctions = new ArrayList<IAggregateFunction>();
@@ -122,7 +132,8 @@ public class TestDBMSCSV {
         result.close();
         Assert.assertTrue(stringResult.startsWith("Number of tuples: 10\n"));
     }
-    @Test
+
+//    @Test
     public void xtestOrderByGroupByWithJoinSelect() {
         TableAlias tableAliasPart = new TableAlias("part");
         TableAlias tableAliasPartSupp = new TableAlias("partsupp");
