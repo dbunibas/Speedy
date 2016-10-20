@@ -11,8 +11,6 @@ import speedy.utility.DBMSUtility;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class DBMSDB implements IDatabase {
     private static ExecuteInitDB initDBExecutor = new ExecuteInitDB();

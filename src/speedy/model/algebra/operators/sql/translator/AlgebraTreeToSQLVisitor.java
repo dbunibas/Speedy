@@ -406,6 +406,11 @@ public class AlgebraTreeToSQLVisitor implements IAlgebraTreeVisitor {
     private boolean isCastNeeded(Attribute leftAttribute, Attribute rightAttribute) {
         logger.debug("leftAttribute:" + leftAttribute.getName() + "- " + leftAttribute.getType());
         logger.debug("rightAttribute:" + rightAttribute.getName() + "- " + rightAttribute.getType());
+        String leftType = leftAttribute.getType();
+        String rightType = rightAttribute.getType();
+        if(SpeedyUtility.isNumeric(leftType) && SpeedyUtility.isNumeric(rightType)){
+            return false;
+        }
         return !leftAttribute.getType().equals(rightAttribute.getType());
     }
 
