@@ -99,7 +99,14 @@ public class TranslateGroupBy {
         SQLQueryBuilder result = visitor.getSQLQueryBuilder();
         IDatabase source = visitor.getSource();
         IDatabase target = visitor.getTarget();
+        List<Expression> expressionsToSelect = new ArrayList<Expression>();
+        expressionsToSelect.addAll(operator.getSelections());
         IAlgebraOperator child = operator.getChildren().get(0);
+        while(child instanceof Select){
+            Select selectChild = (Select) child;
+            expressionsToSelect.addAll(selectChild.getSelections());
+            child = selectChild.getChildren().get(0);
+        }
         if (child instanceof Scan) {
             TableAlias tableAlias = ((Scan) child).getTableAlias();
             result.append(visitor.tableAliasToSQL(tableAlias));
@@ -110,7 +117,7 @@ public class TranslateGroupBy {
         result.append(" WHERE  ");
         visitor.incrementIndentLevel();
         result.append("\n").append(visitor.indentString());
-        for (Expression condition : operator.getSelections()) {
+        for (Expression condition : expressionsToSelect) {
             result.append(sqlGenerator.expressionToSQL(condition, source, target));
             result.append(" AND ");
         }
