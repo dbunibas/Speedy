@@ -61,7 +61,7 @@ public class AlgebraTreeToSQLVisitor implements IAlgebraTreeVisitor {
     private List<AttributeRef> currentProjectionAttribute;
     private SelectNotIn currentSelectNotIn;
     private StringBuilder selectNotInBufferWhere = new StringBuilder();
-    
+
     // TRANSLATOR
     private TranslateScan scanTranslator = new TranslateScan();
     private TranslateJoin joinTranslator = new TranslateJoin();
@@ -234,7 +234,7 @@ public class AlgebraTreeToSQLVisitor implements IAlgebraTreeVisitor {
     }
 
     protected void setSQLQueryBuilder(SQLQueryBuilder sqlQueryBuilder) {
-         this.sqlQueryBuilder = sqlQueryBuilder;
+        this.sqlQueryBuilder = sqlQueryBuilder;
     }
 
     public int getCounter() {
@@ -276,8 +276,6 @@ public class AlgebraTreeToSQLVisitor implements IAlgebraTreeVisitor {
     public void setSelectNotInBufferWhere(StringBuilder selectNotInBufferWhere) {
         this.selectNotInBufferWhere = selectNotInBufferWhere;
     }
-    
-    
 
     protected void generateNestedSelect(IAlgebraOperator operator) {
         this.incrementIndentLevel();
@@ -395,11 +393,13 @@ public class AlgebraTreeToSQLVisitor implements IAlgebraTreeVisitor {
             sqlQueryBuilder.append(" AND ");
         }
         SpeedyUtility.removeChars(" AND ".length(), sqlQueryBuilder.getStringBuilder());
-        if (leftOperator instanceof Select) {
+        while (leftOperator instanceof Select) {
             createWhereClause((Select) leftOperator, true);
+            leftOperator = leftOperator.getChildren().get(0);
         }
-        if (rightOperator instanceof Select) {
+        while (rightOperator instanceof Select) {
             createWhereClause((Select) rightOperator, true);
+            rightOperator = rightOperator.getChildren().get(0);
         }
     }
 
@@ -408,7 +408,7 @@ public class AlgebraTreeToSQLVisitor implements IAlgebraTreeVisitor {
         logger.debug("rightAttribute:" + rightAttribute.getName() + "- " + rightAttribute.getType());
         String leftType = leftAttribute.getType();
         String rightType = rightAttribute.getType();
-        if(SpeedyUtility.isNumeric(leftType) && SpeedyUtility.isNumeric(rightType)){
+        if (SpeedyUtility.isNumeric(leftType) && SpeedyUtility.isNumeric(rightType)) {
             return false;
         }
         return !leftAttribute.getType().equals(rightAttribute.getType());

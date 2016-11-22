@@ -17,8 +17,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -325,7 +327,7 @@ public class DBMSUtility {
                 String isNullable = resultSet.getString("IS_NULLABLE");
                 Attribute attribute = new Attribute(tableName, columnName, DBMSUtility.convertDBTypeToDataSourceType(columnType));
                 attribute.setNullable(!isNullable.equalsIgnoreCase("NO"));
-                result.add(attribute);
+                SpeedyUtility.addIfNotContained(result, attribute);
             }
         } catch (DAOException daoe) {
             throw new DBMSException("Error connecting to database.\n" + accessConfiguration + "\n" + daoe.getLocalizedMessage());
@@ -515,7 +517,7 @@ public class DBMSUtility {
         if (columnType.equalsIgnoreCase("date")) {
             return Types.DATE;
         }
-        if (columnType.equalsIgnoreCase("datetime") || columnType.equalsIgnoreCase("timestamp")) {
+        if (columnType.equalsIgnoreCase("datetime") || columnType.equalsIgnoreCase("timestamp") || columnType.equalsIgnoreCase("time")) {
             return Types.DATETIME;
         }
         if (columnType.equalsIgnoreCase("bigserial") || columnType.equalsIgnoreCase("serial8") || columnType.toLowerCase().equals("int8") || columnType.toLowerCase().startsWith("bigint")) {

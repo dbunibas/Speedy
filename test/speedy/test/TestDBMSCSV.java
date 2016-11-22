@@ -179,6 +179,37 @@ public class TestDBMSCSV {
         Assert.assertTrue(stringResult.startsWith("Number of tuples: 10\n"));
     }
 
+    @Test
+    public void testDoubleSelect() {
+        TableAlias tableAliasPart = new TableAlias("part");
+        TableAlias tableAliasPartSupp = new TableAlias("partsupp");
+        Scan scanPart = new Scan(tableAliasPart);
+        Scan scanPartSupp = new Scan(tableAliasPartSupp);
+        Expression expression = new Expression("p_size > 20"); //
+        expression.changeVariableDescription("p_size", new AttributeRef(tableAliasPart, "p_size")); //
+        Select select = new Select(expression); //
+        select.addChild(scanPart); //
+        Expression expression2 = new Expression("p_container == \"JUMBO BOX\""); //
+        expression2.changeVariableDescription("p_container", new AttributeRef(tableAliasPart, "p_container")); //
+        Select select2 = new Select(expression2); //
+        select2.addChild(select); //
+        List<AttributeRef> leftAttributes = new ArrayList<AttributeRef>();
+        leftAttributes.add(new AttributeRef(tableAliasPart, "p_partkey"));
+        List<AttributeRef> rightAttributes = new ArrayList<AttributeRef>();
+        rightAttributes.add(new AttributeRef(tableAliasPartSupp, "ps_partkey"));
+        Join join = new Join(leftAttributes, rightAttributes);
+        join.addChild(select2);
+        join.addChild(scanPartSupp);
+
+        if(logger.isInfoEnabled())logger.info(join.toString());
+        ITupleIterator result = queryRunner.run(join, null, database);
+        String stringResult = SpeedyUtility.printTupleIterator(result);
+        if(logger.isInfoEnabled())logger.info(stringResult);
+        result.close();
+        Assert.assertTrue(stringResult.startsWith("Number of tuples: 16\n"));
+
+    }
+
 //    @Test
 //    public void testScan() {
 //        TableAlias tableAlias = new TableAlias("emp");
