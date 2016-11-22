@@ -53,16 +53,12 @@ public class DBMSUtility {
         ResultSet tableResultSet = null;
         Connection connection = null;
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Loading table names: " + accessConfiguration);
-            }
+            if (logger.isDebugEnabled()) logger.debug("Loading table names: " + accessConfiguration);
             connection = QueryManager.getConnection(accessConfiguration);
             String catalog = connection.getCatalog();
             if (catalog == null) {
                 catalog = accessConfiguration.getUri();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Catalog is null. Catalog name will be: " + catalog);
-                }
+                if (logger.isDebugEnabled()) logger.debug("Catalog is null. Catalog name will be: " + catalog);
             }
             DatabaseMetaData databaseMetaData = connection.getMetaData();
             tableResultSet = databaseMetaData.getTables(catalog, schemaName, null, new String[]{"TABLE"});
@@ -87,35 +83,25 @@ public class DBMSUtility {
         Connection connection = null;
         ResultSet tableResultSet = null;
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Loading keys: " + accessConfiguration);
-            }
+            if (logger.isDebugEnabled()) logger.debug("Loading keys: " + accessConfiguration);
             connection = QueryManager.getConnection(accessConfiguration);
             String catalog = connection.getCatalog();
             if (catalog == null) {
                 catalog = accessConfiguration.getUri();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Catalog is null. Catalog name will be: " + catalog);
-                }
+                if (logger.isDebugEnabled()) logger.debug("Catalog is null. Catalog name will be: " + catalog);
             }
             DatabaseMetaData databaseMetaData = connection.getMetaData();
             tableResultSet = databaseMetaData.getTables(catalog, schemaName, null, new String[]{"TABLE"});
             while (tableResultSet.next()) {
                 List<AttributeRef> attributes = new ArrayList<AttributeRef>();
                 String tableName = tableResultSet.getString("TABLE_NAME");
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Searching unique. ANALYZING TABLE  = " + tableName);
-                }
+                if (logger.isDebugEnabled()) logger.debug("Searching unique. ANALYZING TABLE  = " + tableName);
                 boolean unique = true;
                 ResultSet resultSet = databaseMetaData.getIndexInfo(catalog, null, tableName, unique, true);
                 while (resultSet.next()) {
                     String columnName = resultSet.getString("COLUMN_NAME");
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Analyzing unique: " + columnName);
-                    }
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Found a unique: " + columnName);
-                    }
+                    if (logger.isDebugEnabled()) logger.debug("Analyzing unique: " + columnName);
+                    if (logger.isDebugEnabled()) logger.debug("Found a unique: " + columnName);
                     AttributeRef attributeRef = new AttributeRef(tableName, columnName);
                     if (!attributes.contains(attributeRef)) {
                         Key key = new Key(attributeRef);
@@ -141,24 +127,18 @@ public class DBMSUtility {
         Connection connection = null;
         ResultSet tableResultSet = null;
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Loading foreign keys: " + accessConfiguration);
-            }
+            if (logger.isDebugEnabled()) logger.debug("Loading foreign keys: " + accessConfiguration);
             connection = QueryManager.getConnection(accessConfiguration);
             String catalog = connection.getCatalog();
             if (catalog == null) {
                 catalog = accessConfiguration.getUri();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Catalog is null. Catalog name will be: " + catalog);
-                }
+                if (logger.isDebugEnabled()) logger.debug("Catalog is null. Catalog name will be: " + catalog);
             }
             DatabaseMetaData databaseMetaData = connection.getMetaData();
             tableResultSet = databaseMetaData.getTables(catalog, schemaName, null, new String[]{"TABLE"});
             while (tableResultSet.next()) {
                 String tableName = tableResultSet.getString("TABLE_NAME");
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Searching foreign keys. ANALYZING TABLE  = " + tableName);
-                }
+                if (logger.isDebugEnabled()) logger.debug("Searching foreign keys. ANALYZING TABLE  = " + tableName);
                 ResultSet resultSet = databaseMetaData.getImportedKeys(catalog, null, tableName);
                 while (resultSet.next()) {
                     String fkeyName = resultSet.getString("FK_NAME");
@@ -221,9 +201,7 @@ public class DBMSUtility {
         Connection connection = null;
         ResultSet schemaResultSet = null;
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Checking if schema exists: " + accessConfiguration);
-            }
+            if (logger.isDebugEnabled()) logger.debug("Checking if schema exists: " + accessConfiguration);
             connection = simpleDataSourceDB.getConnection(accessConfiguration);
             DatabaseMetaData databaseMetaData = connection.getMetaData();
             schemaResultSet = databaseMetaData.getSchemas();
@@ -256,9 +234,7 @@ public class DBMSUtility {
         AccessConfiguration tempAccessConfiguration = getTempAccessConfiguration(accessConfiguration);
         Connection connection = null;
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Creating db: " + accessConfiguration);
-            }
+            if (logger.isDebugEnabled()) logger.debug("Creating db: " + accessConfiguration);
             connection = simpleDataSourceDB.getConnection(tempAccessConfiguration);
             String createQuery = "create database " + accessConfiguration.getDatabaseName() + ";";
             ScriptRunner scriptRunner = getScriptRunner(connection);
@@ -277,9 +253,7 @@ public class DBMSUtility {
         AccessConfiguration tempAccessConfiguration = getTempAccessConfiguration(accessConfiguration);
         Connection connection = null;
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Deleting db: " + accessConfiguration);
-            }
+            if (logger.isDebugEnabled()) logger.debug("Deleting db: " + accessConfiguration);
             connection = simpleDataSourceDB.getConnection(tempAccessConfiguration);
             ScriptRunner scriptRunner = getScriptRunner(connection);
             scriptRunner.setAutoCommit(true);
@@ -335,24 +309,24 @@ public class DBMSUtility {
         Connection connection = null;
         ResultSet tableResultSet = null;
         try {
-            if (logger.isDebugEnabled())logger.debug("Loading keys: " + accessConfiguration);
+            if (logger.isDebugEnabled()) logger.debug("Loading keys: " + accessConfiguration);
             connection = QueryManager.getConnection(accessConfiguration);
             String catalog = connection.getCatalog();
             if (catalog == null) {
                 catalog = accessConfiguration.getUri();
-                if (logger.isDebugEnabled())  logger.debug("Catalog is null. Catalog name will be: " + catalog);
+                if (logger.isDebugEnabled()) logger.debug("Catalog is null. Catalog name will be: " + catalog);
             }
             DatabaseMetaData databaseMetaData = connection.getMetaData();
-                if (logger.isDebugEnabled())      logger.debug("Searching primary keys. ANALYZING TABLE  = " + tableName);
-                ResultSet resultSet = databaseMetaData.getColumns(catalog, null, tableName, null);
-                while (resultSet.next()) {
-                    String columnName = resultSet.getString("COLUMN_NAME");
-                    String columnType = resultSet.getString("TYPE_NAME");
-                    String isNullable = resultSet.getString("IS_NULLABLE");
-                    Attribute attribute = new Attribute(tableName, columnName, DBMSUtility.convertDBTypeToDataSourceType(columnType));
-                    attribute.setNullable(!isNullable.equalsIgnoreCase("NO"));
-                    result.add(attribute);
-                }
+            if (logger.isDebugEnabled()) logger.debug("Searching primary keys. ANALYZING TABLE  = " + tableName);
+            ResultSet resultSet = databaseMetaData.getColumns(catalog, null, tableName, null);
+            while (resultSet.next()) {
+                String columnName = resultSet.getString("COLUMN_NAME");
+                String columnType = resultSet.getString("TYPE_NAME");
+                String isNullable = resultSet.getString("IS_NULLABLE");
+                Attribute attribute = new Attribute(tableName, columnName, DBMSUtility.convertDBTypeToDataSourceType(columnType));
+                attribute.setNullable(!isNullable.equalsIgnoreCase("NO"));
+                result.add(attribute);
+            }
         } catch (DAOException daoe) {
             throw new DBMSException("Error connecting to database.\n" + accessConfiguration + "\n" + daoe.getLocalizedMessage());
         } catch (SQLException sqle) {
