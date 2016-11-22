@@ -17,8 +17,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -335,24 +337,24 @@ public class DBMSUtility {
         Connection connection = null;
         ResultSet tableResultSet = null;
         try {
-            if (logger.isDebugEnabled())logger.debug("Loading keys: " + accessConfiguration);
+            if (logger.isDebugEnabled()) logger.debug("Loading keys: " + accessConfiguration);
             connection = QueryManager.getConnection(accessConfiguration);
             String catalog = connection.getCatalog();
             if (catalog == null) {
                 catalog = accessConfiguration.getUri();
-                if (logger.isDebugEnabled())  logger.debug("Catalog is null. Catalog name will be: " + catalog);
+                if (logger.isDebugEnabled()) logger.debug("Catalog is null. Catalog name will be: " + catalog);
             }
             DatabaseMetaData databaseMetaData = connection.getMetaData();
-                if (logger.isDebugEnabled())      logger.debug("Searching primary keys. ANALYZING TABLE  = " + tableName);
-                ResultSet resultSet = databaseMetaData.getColumns(catalog, null, tableName, null);
-                while (resultSet.next()) {
-                    String columnName = resultSet.getString("COLUMN_NAME");
-                    String columnType = resultSet.getString("TYPE_NAME");
-                    String isNullable = resultSet.getString("IS_NULLABLE");
-                    Attribute attribute = new Attribute(tableName, columnName, DBMSUtility.convertDBTypeToDataSourceType(columnType));
-                    attribute.setNullable(!isNullable.equalsIgnoreCase("NO"));
-                    result.add(attribute);
-                }
+            if (logger.isDebugEnabled()) logger.debug("Searching primary keys. ANALYZING TABLE  = " + tableName);
+            ResultSet resultSet = databaseMetaData.getColumns(catalog, null, tableName, null);
+            while (resultSet.next()) {
+                String columnName = resultSet.getString("COLUMN_NAME");
+                String columnType = resultSet.getString("TYPE_NAME");
+                String isNullable = resultSet.getString("IS_NULLABLE");
+                Attribute attribute = new Attribute(tableName, columnName, DBMSUtility.convertDBTypeToDataSourceType(columnType));
+                attribute.setNullable(!isNullable.equalsIgnoreCase("NO"));
+                SpeedyUtility.addIfNotContained(result, attribute);
+            }
         } catch (DAOException daoe) {
             throw new DBMSException("Error connecting to database.\n" + accessConfiguration + "\n" + daoe.getLocalizedMessage());
         } catch (SQLException sqle) {
@@ -541,7 +543,7 @@ public class DBMSUtility {
         if (columnType.equalsIgnoreCase("date")) {
             return Types.DATE;
         }
-        if (columnType.equalsIgnoreCase("datetime") || columnType.equalsIgnoreCase("timestamp")) {
+        if (columnType.equalsIgnoreCase("datetime") || columnType.equalsIgnoreCase("timestamp") || columnType.equalsIgnoreCase("time")) {
             return Types.DATETIME;
         }
         if (columnType.equalsIgnoreCase("bigserial") || columnType.equalsIgnoreCase("serial8") || columnType.toLowerCase().equals("int8") || columnType.toLowerCase().startsWith("bigint")) {
