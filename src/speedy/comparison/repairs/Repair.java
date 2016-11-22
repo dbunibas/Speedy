@@ -40,7 +40,7 @@ public class Repair {
     public String toComparisonString() {
         return cellId + " " + groundValue;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -61,7 +61,16 @@ public class Repair {
         }
         return true;
     }
-    
+
+    public boolean equalsVariables(Repair expectedRepair, String[] variablePrefixes) {
+        for (String variablePrefix : variablePrefixes) {
+            if (equalsVariable(expectedRepair, variablePrefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean equalsVariable(Object obj, String prefix) {
         if (obj == null) {
             return false;
@@ -90,6 +99,5 @@ public class Repair {
         hash = 19 * hash + (this.groundValue != null ? this.groundValue.hashCode() : 0);
         return hash;
     }
-
 
 }

@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -13,15 +14,17 @@ public class ComputeQualityOfRepairs {
 
     private static Logger logger = LoggerFactory.getLogger(ComputeQualityOfRepairs.class);
 
-    private static String prefixRivals = "V_";
-    private static String prefixLunatic = "_L";
-    private static String prefixHolistic = "FV";
+    private static String[] defaultVariablePrefixes = "V_,_L,FV".split(",");
 
     public List<PrecisionAndRecall> calculatePrecisionAndRecallValue(String repairsFile, String expectedFile, double precisionForVariable) {
+        return calculatePrecisionAndRecallValue(repairsFile, expectedFile, precisionForVariable, defaultVariablePrefixes);
+    }
+
+    public List<PrecisionAndRecall> calculatePrecisionAndRecallValue(String repairsFile, String expectedFile, double precisionForVariable, String[] variablePrefixes) {
         if (isMultiple(repairsFile)) {
-            return checkExpectedAndCalculatedRepairsMultiple(expectedFile, repairsFile, precisionForVariable);
+            return checkExpectedAndCalculatedRepairsMultiple(expectedFile, repairsFile, precisionForVariable, variablePrefixes);
         } else {
-            return checkExpectedAndCalculatedRepairs(expectedFile, repairsFile, precisionForVariable);
+            return checkExpectedAndCalculatedRepairs(expectedFile, repairsFile, precisionForVariable, variablePrefixes);
         }
     }
 
@@ -41,11 +44,11 @@ public class ComputeQualityOfRepairs {
         return result;
     }
 
-    private List<PrecisionAndRecall> checkExpectedAndCalculatedRepairs(String expectectedAbsolutePath, String calculatedAbsolutePath, double precisionForVariable) {
+    private List<PrecisionAndRecall> checkExpectedAndCalculatedRepairs(String expectectedAbsolutePath, String calculatedAbsolutePath, double precisionForVariable, String[] variablePrefixes) {
         Map<String, Repair> calculatedRepair = new DAOCSVRepair().loadRepairMap(calculatedAbsolutePath);
         Map<String, Repair> expectedRepair = new DAOCSVRepair().loadRepairMap(expectectedAbsolutePath);
         List<PrecisionAndRecall> result = new ArrayList<PrecisionAndRecall>();
-        result.add(calcutaorOnExactValue(expectedRepair, calculatedRepair, precisionForVariable));
+        result.add(calcutaorOnExactValue(expectedRepair, calculatedRepair, precisionForVariable, variablePrefixes));
         return result;
     }
 
@@ -61,14 +64,14 @@ public class ComputeQualityOfRepairs {
         return result;
     }
 
-    private List<PrecisionAndRecall> checkExpectedAndCalculatedRepairsMultiple(String expectectedAbsolutePath, String calculatedAbsolutePath, double precisionForVariable) {
+    private List<PrecisionAndRecall> checkExpectedAndCalculatedRepairsMultiple(String expectectedAbsolutePath, String calculatedAbsolutePath, double precisionForVariable, String[] variablePrefixes) {
         List<Map<String, Repair>> calculatedRepairs = new DAOCSVRepair().loadMultipleRepair(calculatedAbsolutePath);
         Map<String, Repair> expectedRepair = new DAOCSVRepair().loadRepairMap(expectectedAbsolutePath);
 
         List<PrecisionAndRecall> result = new ArrayList<PrecisionAndRecall>();
         int solutionNumber = 1;
         for (Map<String, Repair> calculatedRepair : calculatedRepairs) {
-            PrecisionAndRecall precisionAndRecall = calcutaorOnExactValue(expectedRepair, calculatedRepair, precisionForVariable);
+            PrecisionAndRecall precisionAndRecall = calcutaorOnExactValue(expectedRepair, calculatedRepair, precisionForVariable, variablePrefixes);
             if (logger.isDebugEnabled()) logger.debug("Solution " + solutionNumber + "\t Quality: " + precisionAndRecall.getfMeasure());
             result.add(precisionAndRecall);
             solutionNumber++;
@@ -76,7 +79,7 @@ public class ComputeQualityOfRepairs {
         return result;
     }
 
-    private PrecisionAndRecall calcutaorOnExactValue(Map<String, Repair> expectedRepairs, Map<String, Repair> calculatedRepairs, double precisionForVariable) {
+    private PrecisionAndRecall calcutaorOnExactValue(Map<String, Repair> expectedRepairs, Map<String, Repair> calculatedRepairs, double precisionForVariable, String[] variablePrefixes) {
         double intersected = 0;
         for (String key : expectedRepairs.keySet()) {
             Repair expectedRepair = expectedRepairs.get(key);
@@ -84,11 +87,7 @@ public class ComputeQualityOfRepairs {
             double result = 0;
             if (calculatedRepair != null && areEqual(calculatedRepair, expectedRepair)) {
                 result = 1.0;
-            } else if (calculatedRepair != null && calculatedRepair.equalsVariable(expectedRepair, prefixLunatic)) {
-                result = precisionForVariable;
-            } else if (calculatedRepair != null && calculatedRepair.equalsVariable(expectedRepair, prefixRivals)) {
-                result = precisionForVariable;
-            } else if (calculatedRepair != null && calculatedRepair.equalsVariable(expectedRepair, prefixHolistic)) {
+            } else if (calculatedRepair != null && calculatedRepair.equalsVariables(expectedRepair, variablePrefixes)) {
                 result = precisionForVariable;
             }
             intersected += result;
