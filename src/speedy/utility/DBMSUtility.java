@@ -554,6 +554,12 @@ public class DBMSUtility {
         if (columnType.equals(Types.BOOLEAN)) {
             return "bool";
         }
+        if (columnType.equals(Types.LONG)) {
+            return "int8";
+        }
+        if (columnType.equals(Types.DOUBLE_PRECISION)) {
+            return "float8";
+        }
         return "text";
     }
 

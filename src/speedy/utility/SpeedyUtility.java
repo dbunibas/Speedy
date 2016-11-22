@@ -165,6 +165,12 @@ public class SpeedyUtility {
         return unaliasedTable;
     }
 
+    public static Cell unAlias(Cell alias) {
+        Cell clone = alias.clone();
+        clone.setAttributeRef(unAlias(clone.getAttributeRef()));
+        return clone;
+    }
+
     @SuppressWarnings("unchecked")
     public static String printMap(Map m) {
         if (m == null) {
@@ -475,6 +481,11 @@ public class SpeedyUtility {
     public static boolean pickRandom(double probability) {
         double random = new Random().nextDouble();
         return random < probability;
+    }
+
+    // DATE METHOD
+    public static boolean isDate(String type) {
+        return (type.equals(Types.DATE) || type.equals(Types.DATETIME));
     }
 
     public static boolean isNumericalValue(String string) {
