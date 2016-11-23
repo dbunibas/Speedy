@@ -14,13 +14,12 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -311,27 +310,30 @@ public class DBMSUtility {
         Connection connection = null;
         ResultSet tableResultSet = null;
         try {
-            if (logger.isDebugEnabled()) logger.debug("Loading keys: " + accessConfiguration);
+            if (logger.isDebugEnabled()) logger.debug("Loading attributes: " + accessConfiguration);
             connection = QueryManager.getConnection(accessConfiguration);
-            String catalog = connection.getCatalog();
-            if (catalog == null) {
-                catalog = accessConfiguration.getUri();
-                if (logger.isDebugEnabled()) logger.debug("Catalog is null. Catalog name will be: " + catalog);
-            }
-            DatabaseMetaData databaseMetaData = connection.getMetaData();
-            if (logger.isDebugEnabled()) logger.debug("Searching primary keys. ANALYZING TABLE  = " + tableName);
-            ResultSet resultSet = databaseMetaData.getColumns(catalog, null, tableName, null);
-            while (resultSet.next()) {
-                String columnName = resultSet.getString("COLUMN_NAME");
-                String columnType = resultSet.getString("TYPE_NAME");
-                String isNullable = resultSet.getString("IS_NULLABLE");
+
+            Statement stmt = connection.createStatement();
+            String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchemaNameAndDot(accessConfiguration) + tableName;
+            if (logger.isDebugEnabled()) logger.debug(query);
+            ResultSet rs = stmt.executeQuery(query);
+            ResultSetMetaData rsmd = rs.getMetaData();
+            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                String columnName = rsmd.getColumnName(i);
+                String columnType = rsmd.getColumnTypeName(i);
+                int isNullable = rsmd.isNullable(i);
+                if (logger.isDebugEnabled()) logger.debug("Column name: " + columnName);
+                if (logger.isDebugEnabled()) logger.debug("Column type: " + columnType);
+                if (logger.isDebugEnabled()) logger.debug("Nullable: " + isNullable);
                 Attribute attribute = new Attribute(tableName, columnName, DBMSUtility.convertDBTypeToDataSourceType(columnType));
-                attribute.setNullable(!isNullable.equalsIgnoreCase("NO"));
+                attribute.setNullable(isNullable == 0);
+                if (logger.isDebugEnabled()) logger.debug("Attribute: " + attribute);
                 SpeedyUtility.addIfNotContained(result, attribute);
             }
         } catch (DAOException daoe) {
             throw new DBMSException("Error connecting to database.\n" + accessConfiguration + "\n" + daoe.getLocalizedMessage());
         } catch (SQLException sqle) {
+            sqle.printStackTrace();
             throw new DBMSException("Error connecting to database.\n" + accessConfiguration + "\n" + sqle.getLocalizedMessage());
         } finally {
             QueryManager.closeResultSet(tableResultSet);
