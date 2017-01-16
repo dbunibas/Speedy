@@ -24,7 +24,7 @@ public class TestHomomorphisms extends TestCase {
         IDatabase rightDb = loadDatabase("01/right");
         InstanceMatchTask result = homomorphismFinder.findHomomorphism(leftDb, rightDb);
         logger.info(result.toString());
-        assert (result.getTupleMapping().getNonMatchingTuples() == null);
+        assert (result.getTupleMapping().getLeftNonMatchingTuples() == null);
     }
 
     public void test2() {
@@ -32,7 +32,7 @@ public class TestHomomorphisms extends TestCase {
         IDatabase rightDb = loadDatabase("02/right");
         InstanceMatchTask result = homomorphismFinder.findHomomorphism(leftDb, rightDb);
         logger.info(result.toString());
-        assert (result.getTupleMapping().getNonMatchingTuples() == null);
+        assert (result.getTupleMapping().getLeftNonMatchingTuples() == null);
     }
 
     public void test3() {
@@ -40,7 +40,7 @@ public class TestHomomorphisms extends TestCase {
         IDatabase rightDb = loadDatabase("03/right");
         InstanceMatchTask result = homomorphismFinder.findHomomorphism(leftDb, rightDb);
         logger.info(result.toString());
-        assert (result.getTupleMapping().getNonMatchingTuples() == null);
+        assert (result.getTupleMapping().getLeftNonMatchingTuples() == null);
     }
 
     public void test4Isomorphism() {
@@ -48,7 +48,7 @@ public class TestHomomorphisms extends TestCase {
         IDatabase rightDb = loadDatabase("04/right");
         InstanceMatchTask result = homomorphismFinder.findHomomorphism(leftDb, rightDb);
         logger.info(result.toString());
-        assert (result.getTupleMapping().getNonMatchingTuples() == null);
+        assert (result.getTupleMapping().getLeftNonMatchingTuples() == null);
         assert (result.isIsomorphism());
     }
 

@@ -461,6 +461,10 @@ public class SpeedyUtility {
         return false;
     }
 
+    public static boolean isPlaceholder(Object o) {
+        return isSkolem(o) || isVariable(o);
+    }
+
     // NUMERICAL METHODS
     public static boolean isNumeric(String type) {
         return (type.equals(Types.DOUBLE_PRECISION) || type.equals(Types.LONG) || type.equals(Types.REAL) || type.equals(Types.INTEGER));

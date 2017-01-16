@@ -29,7 +29,7 @@ public class TestSimilarityScalability extends TestCase {
             InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
             if (logger.isDebugEnabled()) logger.debug(result.toString());
             if (logger.isInfoEnabled()) logger.info("Score: " + result.getTupleMapping().getScore());
-            if (logger.isInfoEnabled()) logger.info("Non matching tuples: " + result.getTupleMapping().getNonMatchingTuples().size());
+            if (logger.isInfoEnabled()) logger.info("Non matching tuples: " + result.getTupleMapping().getLeftNonMatchingTuples().size());
             if (logger.isInfoEnabled()) logger.info(ComparisonStats.getInstance().toString());
         }
     }

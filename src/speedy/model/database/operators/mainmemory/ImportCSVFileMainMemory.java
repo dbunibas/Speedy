@@ -35,7 +35,7 @@ public class ImportCSVFileMainMemory {
 
     private static final String CSV_EXTENSION = ".csv";
     private static final Logger logger = LoggerFactory.getLogger(ImportCSVFileMainMemory.class);
-    
+
     public DataSource loadSchema(String instancePath, char separator, Character quoteCharacter) {
         return loadSchema(instancePath, separator, quoteCharacter, true);
     }
@@ -50,10 +50,10 @@ public class ImportCSVFileMainMemory {
         if (logger.isDebugEnabled()) logger.debug(dataSource.getSchema().toString());
         return dataSource;
     }
-    
+
     public void loadInstance(DataSource dataSource, String instancePath, char separator, Character quoteCharacter, boolean convertSkolemInHash) {
         loadInstance(dataSource, instancePath, separator, quoteCharacter, convertSkolemInHash, true);
-    } 
+    }
 
     public void loadInstance(DataSource dataSource, String instancePath, char separator, Character quoteCharacter, boolean convertSkolemInHash, boolean header) {
         List<File> filesTable = getFileInFolder(instancePath, CSV_EXTENSION);
@@ -71,8 +71,10 @@ public class ImportCSVFileMainMemory {
                 CsvMapper mapper = new CsvMapper();
                 mapper.enable(CsvParser.Feature.WRAP_AS_ARRAY);
                 CsvSchema schema = CsvSchema.emptySchema().
-                        withColumnSeparator(separator).
-                        withQuoteChar(quoteCharacter);
+                        withColumnSeparator(separator);
+                if (quoteCharacter != null) {
+                    schema = schema.withQuoteChar(quoteCharacter);
+                }
                 String[] headers = null;
                 if (header) {
                     MappingIterator<String[]> it = mapper.readerFor(String[].class).with(schema).readValues(file);
@@ -98,6 +100,7 @@ public class ImportCSVFileMainMemory {
                 }
                 mapFileToTable.put(file, table);
             } catch (Exception ex) {
+                ex.printStackTrace();
                 throw new DAOException(ex.getMessage());
             }
         }
@@ -143,8 +146,10 @@ public class ImportCSVFileMainMemory {
             CsvMapper mapper = new CsvMapper();
             mapper.enable(CsvParser.Feature.WRAP_AS_ARRAY);
             CsvSchema schema = CsvSchema.emptySchema().
-                    withColumnSeparator(separator).
-                    withQuoteChar(quoteCharacter);
+                    withColumnSeparator(separator);
+            if (quoteCharacter != null) {
+                schema = schema.withQuoteChar(quoteCharacter);
+            }
             MappingIterator<String[]> it = mapper.readerFor(String[].class).with(schema).readValues(file);
             if (!it.hasNext()) {
                 throw new DAOException("Empty file " + file);
@@ -154,6 +159,7 @@ public class ImportCSVFileMainMemory {
             }
             insertDataInTable(setNodeTable, csvTable, it, convertSkolemInHash);
         } catch (Exception ex) {
+            ex.printStackTrace();
             throw new DAOException("Unable to load csv file " + file.toString() + "\n" + ex.getLocalizedMessage());
         }
     }
@@ -177,6 +183,9 @@ public class ImportCSVFileMainMemory {
             for (int i = 0; i < csvTable.getAttributes().size(); i++) {
                 String attributeName = csvTable.getAttributes().get(i);
                 String value = record[i];
+                if (value != null) {
+                    value = value.trim();
+                }
                 AttributeNode attributeNode = createAttributeInstance(attributeName, value, convertSkolemInHash);
                 tupleNodeInstance.addChild(attributeNode);
             }

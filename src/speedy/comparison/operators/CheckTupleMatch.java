@@ -32,7 +32,7 @@ public class CheckTupleMatch {
         if (!leftTuple.getTable().equals(rightTuple.getTable())) {
             return null;
         }
-        int score = 0;
+        double score = 0.0;
         for (int i = 0; i < leftTuple.getTuple().getCells().size(); i++) {
             if (leftTuple.getTuple().getCells().get(i).getAttribute().equals(SpeedyConstants.OID)) {
                 continue;
@@ -50,11 +50,14 @@ public class CheckTupleMatch {
                 if (logger.isTraceEnabled()) logger.trace("Conflicting mapping for values...");
                 return null;
             }
-            score += score(matchResult);
+            double matchScore = score(matchResult);
+            if (logger.isTraceEnabled()) logger.trace("Match score " + matchScore);
+            score += matchScore;
         }
         if (!ComparisonUtility.valueMappingsAreCompatible(leftToRightValueMapping, rightToLeftValueMapping)) {
             return null;
         }
+        if (logger.isTraceEnabled()) logger.trace("Total score: " + score);
         TupleMatch tupleMatch = new TupleMatch(leftTuple, rightTuple, leftToRightValueMapping, rightToLeftValueMapping, score);
         return tupleMatch;
     }

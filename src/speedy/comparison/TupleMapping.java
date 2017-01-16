@@ -10,9 +10,10 @@ import speedy.utility.SpeedyUtility;
 public class TupleMapping {
 
     private final Map<TupleWithTable, TupleWithTable> tupleMapping = new HashMap<TupleWithTable, TupleWithTable>();
-    private final ValueMapping leftToRightValueMapping = new ValueMapping();
-    private final ValueMapping rightToLeftValueMapping = new ValueMapping();
-    private List<TupleWithTable> nonMatchingTuples = new ArrayList<TupleWithTable>();
+    private ValueMapping leftToRightValueMapping = new ValueMapping();
+    private ValueMapping rightToLeftValueMapping = new ValueMapping();
+    private List<TupleWithTable> leftNonMatchingTuples = new ArrayList<TupleWithTable>();
+    private List<TupleWithTable> rightNonMatchingTuples = new ArrayList<TupleWithTable>();
     private Double score;
 
     public void putTupleMapping(TupleWithTable sourceTuple, TupleWithTable destinationTuple) {
@@ -47,14 +48,29 @@ public class TupleMapping {
         this.rightToLeftValueMapping.putValueMapping(sourceValue, destinationValue);
     }
 
-    public List<TupleWithTable> getNonMatchingTuples() {
-        return nonMatchingTuples;
+    public List<TupleWithTable> getLeftNonMatchingTuples() {
+        return leftNonMatchingTuples;
     }
 
-    public void setNonMatchingTuples(List<TupleWithTable> nonMatchingTuples) {
-        this.nonMatchingTuples = nonMatchingTuples;
+    public void setLeftNonMatchingTuples(List<TupleWithTable> leftNonMatchingTuples) {
+        this.leftNonMatchingTuples = leftNonMatchingTuples;
     }
-    
+
+    public List<TupleWithTable> getRightNonMatchingTuples() {
+        return rightNonMatchingTuples;
+    }
+
+    public void setRightNonMatchingTuples(List<TupleWithTable> rightNonMatchingTuples) {
+        this.rightNonMatchingTuples = rightNonMatchingTuples;
+    }
+
+    public void setLeftToRightValueMapping(ValueMapping leftToRightValueMapping) {
+        this.leftToRightValueMapping = leftToRightValueMapping;
+    }
+
+    public void setRightToLeftValueMapping(ValueMapping rightToLeftValueMapping) {
+        this.rightToLeftValueMapping = rightToLeftValueMapping;
+    }
 
     public Map<TupleWithTable, TupleWithTable> getTupleMapping() {
         return tupleMapping;
@@ -86,7 +102,8 @@ public class TupleMapping {
                 + (leftToRightValueMapping.isEmpty() ? "" : "\nValue mapping: " + leftToRightValueMapping)
                 + (rightToLeftValueMapping.isEmpty() ? "" : "\nRight to left value mapping: " + rightToLeftValueMapping)
                 + (score != null ? "\nScore: " + score + "\n" : "")
-                + (!nonMatchingTuples.isEmpty() ? "Non matching tuples=" + SpeedyUtility.printCollection(nonMatchingTuples) : "");
+                + (!leftNonMatchingTuples.isEmpty() ? "Non matching left tuples=" + SpeedyUtility.printCollection(leftNonMatchingTuples) : "")
+                + (!rightNonMatchingTuples.isEmpty() ? "Non matching right tuples=" + SpeedyUtility.printCollection(rightNonMatchingTuples) : "");
     }
 
 }

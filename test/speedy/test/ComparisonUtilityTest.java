@@ -23,7 +23,7 @@ public class ComparisonUtilityTest {
     public static IDatabase loadDatabase(String absoluteFolder) {
         long start = System.currentTimeMillis();
         boolean convertSkolemInHash = ComparisonConfiguration.isConvertSkolemInHash();
-        MainMemoryDB database = dao.loadCSVDatabase(absoluteFolder, ',', null, convertSkolemInHash);
+        MainMemoryDB database = dao.loadCSVDatabase(absoluteFolder, ',', null, convertSkolemInHash, true);
         if (logger.isDebugEnabled()) logger.debug(database.printInstances(true));
         ComparisonStats.getInstance().addStat(ComparisonStats.LOAD_INSTANCE_TIME, System.currentTimeMillis() - start);
         return database;

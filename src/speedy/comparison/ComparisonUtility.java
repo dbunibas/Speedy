@@ -1,8 +1,8 @@
 package speedy.comparison;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 import speedy.SpeedyConstants;
 import speedy.model.database.AttributeRef;
@@ -10,6 +10,7 @@ import speedy.model.database.Cell;
 import speedy.model.database.ConstantValue;
 import speedy.model.database.IValue;
 import speedy.model.database.Tuple;
+import speedy.utility.comparator.TupleMatchComparatorScore;
 
 public class ComparisonUtility {
 
@@ -38,44 +39,6 @@ public class ComparisonUtility {
         return true;
     }
 
-    public static boolean isTupleMatchCompatibleWithTupleMapping(TupleMapping tupleMapping, TupleMatch tupleMatch) {
-        long start = System.currentTimeMillis();
-        ValueMapping leftToRightValueMapping = tupleMapping.getLeftToRightValueMapping();
-        ValueMapping rightToLeftValueMapping = tupleMapping.getRightToLeftValueMapping();
-//        ValueMapping leftToRightValueMapping = tupleMapping.getLeftToRightValueMapping().clone();
-//        ValueMapping rightToLeftValueMapping = tupleMapping.getRightToLeftValueMapping().clone();
-        Map<IValue, IValue> currentLeftToRightValueMapping = new HashMap<IValue, IValue>();
-        Map<IValue, IValue> currentRightToLeftValueMapping = new HashMap<IValue, IValue>();
-        for (IValue leftValue : tupleMatch.getLeftToRightValueMapping().getKeys()) {
-            IValue rightValue = tupleMatch.getLeftToRightValueMapping().getValueMapping(leftValue);
-            IValue valueForLeftValueInMapping = currentLeftToRightValueMapping.get(leftValue);
-            if (valueForLeftValueInMapping == null) {
-                valueForLeftValueInMapping = leftToRightValueMapping.getValueMapping(leftValue);
-            }
-            if (valueForLeftValueInMapping != null && !valueForLeftValueInMapping.equals(rightValue)) {
-                ComparisonStats.getInstance().addStat(ComparisonStats.CHECK_TUPLE_MATCH_COMPATIBILITY_TIME, System.currentTimeMillis() - start);
-                return false;
-            }
-//            leftToRightValueMapping.putValueMapping(leftValue, rightValue);
-            currentLeftToRightValueMapping.put(leftValue, rightValue);
-        }
-        for (IValue rightValue : tupleMatch.getRightToLeftValueMapping().getKeys()) {
-            IValue leftValue = tupleMatch.getRightToLeftValueMapping().getValueMapping(rightValue);
-            IValue valueForRightValueInMapping = currentRightToLeftValueMapping.get(rightValue);
-            if (valueForRightValueInMapping == null) {
-                valueForRightValueInMapping = rightToLeftValueMapping.getValueMapping(rightValue);
-            }
-            if (valueForRightValueInMapping != null && !valueForRightValueInMapping.equals(leftValue)) {
-                ComparisonStats.getInstance().addStat(ComparisonStats.CHECK_TUPLE_MATCH_COMPATIBILITY_TIME, System.currentTimeMillis() - start);
-                return false;
-            }
-//            rightToLeftValueMapping.putValueMapping(rightValue, leftValue);
-            currentRightToLeftValueMapping.put(leftValue, rightValue);
-        }
-        ComparisonStats.getInstance().addStat(ComparisonStats.CHECK_TUPLE_MATCH_COMPATIBILITY_TIME, System.currentTimeMillis() - start);
-        return true;
-    }
-
     public static void updateTupleMapping(TupleMapping tupleMapping, TupleMatch tupleMatch) {
         for (IValue leftValue : tupleMatch.getLeftToRightValueMapping().getKeys()) {
             IValue rightValue = tupleMatch.getLeftToRightValueMapping().getValueMapping(leftValue);
@@ -87,4 +50,24 @@ public class ComparisonUtility {
         }
     }
 
+    public static void sortTupleMatches(TupleMatches tupleMatches) {
+        for (TupleWithTable tuple : tupleMatches.getTuples()) {
+            List<TupleMatch> matchesForTuple = tupleMatches.getMatchesForTuple(tuple);
+            Collections.sort(matchesForTuple, new TupleMatchComparatorScore());
+        }
+    }
+
+    public static TupleMapping invertMapping(TupleMapping mapping) {
+        TupleMapping invertedMapping = new TupleMapping();
+        for (TupleWithTable rightTuple : mapping.getTupleMapping().keySet()) {
+            TupleWithTable leftTuple = mapping.getTupleMapping().get(rightTuple);
+            invertedMapping.getTupleMapping().put(leftTuple, rightTuple);
+        }
+        invertedMapping.setLeftToRightValueMapping(mapping.getRightToLeftValueMapping());
+        invertedMapping.setRightToLeftValueMapping(mapping.getLeftToRightValueMapping());
+        invertedMapping.setLeftNonMatchingTuples(mapping.getRightNonMatchingTuples());
+        invertedMapping.setRightNonMatchingTuples(mapping.getLeftNonMatchingTuples());
+        invertedMapping.setScore(mapping.getScore()); //TODO: R->L score is different wrt L->R
+        return invertedMapping;
+    }
 }

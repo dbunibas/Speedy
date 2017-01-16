@@ -101,6 +101,9 @@ public class SpeedyConstants {
     public static String CSV = "CSV";
     public static String XML = "XML";
     public static String WORK_DIR = ".temp";
+    
+    /////////////////////// INSTANCE COMPARISON
+    public static IValue WILDCARD = new ConstantValue("*");
 
     public enum ValueMatchResult {
         EQUAL_CONSTANTS, BOTH_NULLS, NULL_TO_CONSTANT, CONSTANT_TO_NULL, NOT_MATCHING
