@@ -1,31 +1,23 @@
 package speedy.comparison;
 
-import java.text.DecimalFormat;
-
 public class TupleMatch {
 
-    private final static DecimalFormat df = new DecimalFormat("#0.00");
     private TupleWithTable leftTuple;
     private TupleWithTable rightTuple;
-    private ValueMapping leftToRightValueMapping;
-    private ValueMapping rightToLeftValueMapping;
-    private Double similarity;
+    private ValueMappings valueMappings;
+    private Double scoreEstimate;
 
-    public TupleMatch(TupleWithTable leftTuple, TupleWithTable rightTuple, Double similarity) {
+    public TupleMatch(TupleWithTable leftTuple, TupleWithTable rightTuple, ValueMapping leftValueMapping) {
         this.leftTuple = leftTuple;
         this.rightTuple = rightTuple;
-        this.similarity = similarity;
+        this.valueMappings = new ValueMappings(leftValueMapping);
     }
 
-    public TupleMatch(TupleWithTable leftTuple, TupleWithTable rightTuple, ValueMapping valueMapping, double similarity) {
-        this(leftTuple, rightTuple, similarity);
-        this.leftToRightValueMapping = valueMapping;
-    }
-
-    public TupleMatch(TupleWithTable leftTuple, TupleWithTable rightTuple, ValueMapping leftToRightValueMapping, ValueMapping rightToLeftValueMapping, double similarity) {
-        this(leftTuple, rightTuple, similarity);
-        this.leftToRightValueMapping = leftToRightValueMapping;
-        this.rightToLeftValueMapping = rightToLeftValueMapping;
+    public TupleMatch(TupleWithTable leftTuple, TupleWithTable rightTuple, ValueMappings valueMappings, double scoreEstimate) {
+        this.leftTuple = leftTuple;
+        this.rightTuple = rightTuple;
+        this.valueMappings = valueMappings;
+        this.scoreEstimate = scoreEstimate;
     }
 
     public TupleWithTable getLeftTuple() {
@@ -36,22 +28,30 @@ public class TupleMatch {
         return rightTuple;
     }
 
-    public Double getSimilarity() {
-        return similarity;
-    }
-
     public ValueMapping getLeftToRightValueMapping() {
-        return leftToRightValueMapping;
+        return valueMappings.getLeftToRightValueMapping();
     }
 
     public ValueMapping getRightToLeftValueMapping() {
-        return rightToLeftValueMapping;
+        return valueMappings.getRightToLeftValueMapping();
+    }
+
+    public ValueMappings getValueMappings() {
+        return valueMappings;
+    }
+
+    public void setValueMappings(ValueMappings valueMappings) {
+        this.valueMappings = valueMappings;
+    }
+
+    public Double getScoreEstimate() {
+        return scoreEstimate;
     }
 
     @Override
     public String toString() {
-        return "Match: (" + df.format(similarity) + ") " + leftTuple.toString() + " <-> " + rightTuple.toString() +
-                (this.leftToRightValueMapping != null && !this.leftToRightValueMapping.isEmpty() ? "\nLeft to right value mapping:" + leftToRightValueMapping : "") +
-                (this.rightToLeftValueMapping != null &&!this.rightToLeftValueMapping.isEmpty() ? "\nRight to left value mapping:" + rightToLeftValueMapping : "");
+        return "Match: " + (scoreEstimate != null ? " (score estimate: " + scoreEstimate + ") " : "") + "" + leftTuple.toString() + " <-> " + rightTuple.toString()
+                + (this.getLeftToRightValueMapping() != null && !this.getLeftToRightValueMapping().isEmpty() ? "\nLeft to right value mapping:" + this.getLeftToRightValueMapping() : "")
+                + (this.getRightToLeftValueMapping() != null && !this.getRightToLeftValueMapping().isEmpty() ? "\nRight to left value mapping:" + this.getRightToLeftValueMapping() : "");
     }
 }

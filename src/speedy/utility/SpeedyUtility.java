@@ -465,6 +465,10 @@ public class SpeedyUtility {
         return isSkolem(o) || isVariable(o);
     }
 
+    public static boolean isConstant(Object o) {
+        return (o instanceof ConstantValue);
+    }
+
     // NUMERICAL METHODS
     public static boolean isNumeric(String type) {
         return (type.equals(Types.DOUBLE_PRECISION) || type.equals(Types.LONG) || type.equals(Types.REAL) || type.equals(Types.INTEGER));

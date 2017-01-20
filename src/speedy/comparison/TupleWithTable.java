@@ -35,7 +35,7 @@ public class TupleWithTable {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         final TupleWithTable other = (TupleWithTable) obj;
-        return other.hashString().equals(this.hashCode());
+        return other.hashString().equals(this.hashString());
     }
 
     @Override

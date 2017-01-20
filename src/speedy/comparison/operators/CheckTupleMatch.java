@@ -8,14 +8,15 @@ import speedy.comparison.ComparisonStats;
 import speedy.comparison.ComparisonUtility;
 import speedy.comparison.TupleMatch;
 import speedy.comparison.TupleWithTable;
-import speedy.comparison.ValueMapping;
+import speedy.comparison.ValueMappings;
 import speedy.model.database.ConstantValue;
 import speedy.model.database.IValue;
-import speedy.model.database.NullValue;
+import speedy.utility.SpeedyUtility;
 
 public class CheckTupleMatch {
 
     private final static Logger logger = LoggerFactory.getLogger(CheckTupleMatch.class);
+    private final CheckTupleMatchCompatibility compatibilityChecker = new CheckTupleMatchCompatibility();
 
     public TupleMatch checkMatch(TupleWithTable leftTuple, TupleWithTable rightTuple) {
         long start = System.currentTimeMillis();
@@ -27,12 +28,11 @@ public class CheckTupleMatch {
 
     private TupleMatch check(TupleWithTable leftTuple, TupleWithTable rightTuple) {
         if (logger.isDebugEnabled()) logger.debug("Comparing tuple: " + leftTuple + " to tuple " + rightTuple);
-        ValueMapping leftToRightValueMapping = new ValueMapping();
-        ValueMapping rightToLeftValueMapping = new ValueMapping();
         if (!leftTuple.getTable().equals(rightTuple.getTable())) {
             return null;
         }
-        double score = 0.0;
+        ValueMappings valueMappings = new ValueMappings();
+        double scoreEstimate = 0.0;
         for (int i = 0; i < leftTuple.getTuple().getCells().size(); i++) {
             if (leftTuple.getTuple().getCells().get(i).getAttribute().equals(SpeedyConstants.OID)) {
                 continue;
@@ -45,71 +45,74 @@ public class CheckTupleMatch {
                 if (logger.isTraceEnabled()) logger.trace("Values not match...");
                 return null;
             }
-            boolean consistent = updateValueMappings(leftToRightValueMapping, rightToLeftValueMapping, leftValue, rightValue, matchResult);
+            boolean consistent = updateValueMappings(valueMappings, leftValue, rightValue, matchResult);
             if (!consistent) {
                 if (logger.isTraceEnabled()) logger.trace("Conflicting mapping for values...");
                 return null;
             }
-            double matchScore = score(matchResult);
+            double matchScore = scoreEstimate(matchResult);
             if (logger.isTraceEnabled()) logger.trace("Match score " + matchScore);
-            score += matchScore;
+            scoreEstimate += matchScore;
         }
-        if (!ComparisonUtility.valueMappingsAreCompatible(leftToRightValueMapping, rightToLeftValueMapping)) {
+        TupleMatch tupleMatch = new TupleMatch(leftTuple, rightTuple, valueMappings, scoreEstimate);
+        boolean compatible = compatibilityChecker.checkCompatibilityAndMerge(ComparisonUtility.getEmptyValueMappings(), tupleMatch);
+        if (!compatible) {
+            if (logger.isDebugEnabled()) logger.debug("Inconsistent value mappings, discarding...");
             return null;
         }
-        if (logger.isTraceEnabled()) logger.trace("Total score: " + score);
-        TupleMatch tupleMatch = new TupleMatch(leftTuple, rightTuple, leftToRightValueMapping, rightToLeftValueMapping, score);
+        tupleMatch.setValueMappings(valueMappings);
+        if (logger.isDebugEnabled()) logger.debug("** Corrected tuple match: " + tupleMatch);
         return tupleMatch;
     }
 
-    private SpeedyConstants.ValueMatchResult match(IValue sourceValue, IValue destinationValue) {
+    public SpeedyConstants.ValueMatchResult match(IValue sourceValue, IValue destinationValue) {
         if (sourceValue instanceof ConstantValue && destinationValue instanceof ConstantValue) {
             if (sourceValue.equals(destinationValue)) {
                 return SpeedyConstants.ValueMatchResult.EQUAL_CONSTANTS;
             }
         }
-        if (sourceValue instanceof NullValue && destinationValue instanceof ConstantValue) {
-            return SpeedyConstants.ValueMatchResult.NULL_TO_CONSTANT;
+        if (SpeedyUtility.isPlaceholder(sourceValue) && destinationValue instanceof ConstantValue) {
+            return SpeedyConstants.ValueMatchResult.PLACEHOLDER_TO_CONSTANT;
         }
-        if (sourceValue instanceof NullValue && destinationValue instanceof NullValue) {
-            return SpeedyConstants.ValueMatchResult.BOTH_NULLS;
+        if (SpeedyUtility.isPlaceholder(sourceValue) && SpeedyUtility.isPlaceholder(destinationValue)) {
+            return SpeedyConstants.ValueMatchResult.BOTH_PLACEHOLDER;
         }
-        if (ComparisonConfiguration.isTwoWayValueMapping() && sourceValue instanceof ConstantValue && destinationValue instanceof NullValue) {
-            return SpeedyConstants.ValueMatchResult.CONSTANT_TO_NULL;
+        if (ComparisonConfiguration.isTwoWayValueMapping() && sourceValue instanceof ConstantValue && SpeedyUtility.isPlaceholder(destinationValue)) {
+            return SpeedyConstants.ValueMatchResult.CONSTANT_TO_PLACEHOLDER;
         }
         return SpeedyConstants.ValueMatchResult.NOT_MATCHING;
     }
 
-    private double score(SpeedyConstants.ValueMatchResult matchResult) {
+    public double scoreEstimate(SpeedyConstants.ValueMatchResult matchResult) {
         if (matchResult == SpeedyConstants.ValueMatchResult.EQUAL_CONSTANTS) {
             return 1;
         }
-        if (matchResult == SpeedyConstants.ValueMatchResult.BOTH_NULLS) {
+        if (matchResult == SpeedyConstants.ValueMatchResult.BOTH_PLACEHOLDER) {
             return 1;
         }
-        if (matchResult == SpeedyConstants.ValueMatchResult.NULL_TO_CONSTANT) {
+        if (matchResult == SpeedyConstants.ValueMatchResult.PLACEHOLDER_TO_CONSTANT) {
             return ComparisonConfiguration.getK();
         }
-        if (matchResult == SpeedyConstants.ValueMatchResult.CONSTANT_TO_NULL) {
+        if (matchResult == SpeedyConstants.ValueMatchResult.CONSTANT_TO_PLACEHOLDER) {
             return ComparisonConfiguration.getK();
         }
         return 0;
     }
 
-    private boolean updateValueMappings(ValueMapping leftToRightValueMapping, ValueMapping rightToLeftValueMapping, IValue leftValue, IValue rightValue, SpeedyConstants.ValueMatchResult matchResult) {
-        if (matchResult == SpeedyConstants.ValueMatchResult.BOTH_NULLS || matchResult == SpeedyConstants.ValueMatchResult.NULL_TO_CONSTANT) {
-            IValue valueForSourceValue = leftToRightValueMapping.getValueMapping(leftValue);
+    private boolean updateValueMappings(ValueMappings valueMappings, IValue leftValue, IValue rightValue, SpeedyConstants.ValueMatchResult matchResult) {
+        if (matchResult == SpeedyConstants.ValueMatchResult.BOTH_PLACEHOLDER || matchResult == SpeedyConstants.ValueMatchResult.PLACEHOLDER_TO_CONSTANT) {
+            IValue valueForSourceValue = valueMappings.getLeftToRightValueMapping().getValueMapping(leftValue);
             if (valueForSourceValue != null && !valueForSourceValue.equals(rightValue)) {
                 return false;
             }
-            leftToRightValueMapping.putValueMapping(leftValue, rightValue);
+            valueMappings.getLeftToRightValueMapping().putValueMapping(leftValue, rightValue);
         }
-        if (matchResult == SpeedyConstants.ValueMatchResult.CONSTANT_TO_NULL) {
-            IValue valueForDestinationValue = rightToLeftValueMapping.getValueMapping(rightValue);
+        if (matchResult == SpeedyConstants.ValueMatchResult.CONSTANT_TO_PLACEHOLDER) {
+            IValue valueForDestinationValue = valueMappings.getRightToLeftValueMapping().getValueMapping(rightValue);
             if (valueForDestinationValue != null && !valueForDestinationValue.equals(leftValue)) {
                 return false;
             }
-            rightToLeftValueMapping.putValueMapping(rightValue, leftValue);
+            valueMappings.getRightToLeftValueMapping().putValueMapping(rightValue, leftValue);
         }
         return true;
     }

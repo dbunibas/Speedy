@@ -106,7 +106,7 @@ public class SpeedyConstants {
     public static IValue WILDCARD = new ConstantValue("*");
 
     public enum ValueMatchResult {
-        EQUAL_CONSTANTS, BOTH_NULLS, NULL_TO_CONSTANT, CONSTANT_TO_NULL, NOT_MATCHING
+        EQUAL_CONSTANTS, BOTH_PLACEHOLDER, PLACEHOLDER_TO_CONSTANT, CONSTANT_TO_PLACEHOLDER, NOT_MATCHING
     }
     ///////////////    DEBUG MODE     ///////////////////
 //    public static final boolean DBMS_DEBUG = true;

@@ -28,28 +28,16 @@ public class ComparisonUtility {
         return attributes;
     }
 
-    public static boolean valueMappingsAreCompatible(ValueMapping leftToRightValueMapping, ValueMapping rightToLeftValueMapping) {
-        for (IValue leftValue : leftToRightValueMapping.getKeys()) {
-            IValue rightValue = leftToRightValueMapping.getValueMapping(leftValue);
-            IValue leftValueInRightToLeft = rightToLeftValueMapping.getValueMapping(rightValue);
-            if (leftValueInRightToLeft != null) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public static void updateTupleMapping(TupleMapping tupleMapping, TupleMatch tupleMatch) {
-        for (IValue leftValue : tupleMatch.getLeftToRightValueMapping().getKeys()) {
-            IValue rightValue = tupleMatch.getLeftToRightValueMapping().getValueMapping(leftValue);
-            tupleMapping.addLeftToRightMappingForValue(leftValue, rightValue);
-        }
-        for (IValue rightValue : tupleMatch.getRightToLeftValueMapping().getKeys()) {
-            IValue leftValue = tupleMatch.getRightToLeftValueMapping().getValueMapping(rightValue);
-            tupleMapping.addRightToLeftMappingForValue(rightValue, leftValue);
-        }
-    }
-
+//    public static boolean valueMappingsAreCompatible(ValueMapping leftToRightValueMapping, ValueMapping rightToLeftValueMapping) {
+//        for (IValue leftValue : leftToRightValueMapping.getKeys()) {
+//            IValue rightValue = leftToRightValueMapping.getValueMapping(leftValue);
+//            IValue leftValueInRightToLeft = rightToLeftValueMapping.getValueMapping(rightValue);
+//            if (leftValueInRightToLeft != null) {
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
     public static void sortTupleMatches(TupleMatches tupleMatches) {
         for (TupleWithTable tuple : tupleMatches.getTuples()) {
             List<TupleMatch> matchesForTuple = tupleMatches.getMatchesForTuple(tuple);
@@ -57,17 +45,34 @@ public class ComparisonUtility {
         }
     }
 
-    public static TupleMapping invertMapping(TupleMapping mapping) {
-        TupleMapping invertedMapping = new TupleMapping();
-        for (TupleWithTable rightTuple : mapping.getTupleMapping().keySet()) {
-            TupleWithTable leftTuple = mapping.getTupleMapping().get(rightTuple);
-            invertedMapping.getTupleMapping().put(leftTuple, rightTuple);
+//    public static void addTupleMapping(TupleMapping tupleMapping, TupleMatch tupleMatch) {
+//        for (IValue leftValue : tupleMatch.getLeftToRightValueMapping().getKeys()) {
+//            IValue rightValue = tupleMatch.getLeftToRightValueMapping().getValueMapping(leftValue);
+//            tupleMapping.addLeftToRightMappingForValue(leftValue, rightValue);
+//        }
+//        for (IValue rightValue : tupleMatch.getRightToLeftValueMapping().getKeys()) {
+//            IValue leftValue = tupleMatch.getRightToLeftValueMapping().getValueMapping(rightValue);
+//            tupleMapping.addRightToLeftMappingForValue(rightValue, leftValue);
+//        }
+//    }
+//    public static void mergeValueMappings(TupleMapping tupleMapping, ValueMappings newValueMappings) {
+//        updateValueMapping(tupleMapping.getLeftToRightValueMapping(), newValueMappings.getLeftToRightValueMapping());
+//        updateValueMapping(tupleMapping.getRightToLeftValueMapping(), newValueMappings.getRightToLeftValueMapping());
+//    }
+//    public static void mergeValueMappings(ValueMappings tupleMapping, ValueMappings newValueMappings) {
+//        updateValueMapping(tupleMapping.getLeftToRightValueMapping(), newValueMappings.getLeftToRightValueMapping());
+//        updateValueMapping(tupleMapping.getRightToLeftValueMapping(), newValueMappings.getRightToLeftValueMapping());
+//    }
+
+    private static void updateValueMapping(ValueMapping src, ValueMapping dst) {
+        for (IValue key : src.getKeys()) {
+            IValue value = src.getValueMapping(key);
+            dst.putValueMapping(key, value);
         }
-        invertedMapping.setLeftToRightValueMapping(mapping.getRightToLeftValueMapping());
-        invertedMapping.setRightToLeftValueMapping(mapping.getLeftToRightValueMapping());
-        invertedMapping.setLeftNonMatchingTuples(mapping.getRightNonMatchingTuples());
-        invertedMapping.setRightNonMatchingTuples(mapping.getLeftNonMatchingTuples());
-        invertedMapping.setScore(mapping.getScore()); //TODO: R->L score is different wrt L->R
-        return invertedMapping;
     }
+
+    public static ValueMappings getEmptyValueMappings() {
+        return new ValueMappings();
+    }
+
 }

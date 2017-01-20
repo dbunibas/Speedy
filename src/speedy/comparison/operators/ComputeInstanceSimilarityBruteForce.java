@@ -17,6 +17,7 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
     private final static Logger logger = LoggerFactory.getLogger(ComputeInstanceSimilarityBruteForce.class);
     private final CheckTupleMatch tupleMatcher = new CheckTupleMatch();
     private final FindBestTupleMapping bestTupleMappingFinder = new FindBestTupleMapping();
+    private final FindNonMatchingTuples nonMatchingTuplesFinder = new FindNonMatchingTuples();
 
     public InstanceMatchTask compare(IDatabase leftDb, IDatabase rightDb) {
         InstanceMatchTask instanceMatch = new InstanceMatchTask(leftDb, rightDb);
@@ -25,7 +26,8 @@ public class ComputeInstanceSimilarityBruteForce implements IComputeInstanceSimi
         TupleMatches tupleMatches = findTupleMatches(sourceTuples, destinationTuples);
         ComparisonUtility.sortTupleMatches(tupleMatches);
         if (logger.isTraceEnabled()) logger.trace(tupleMatches.toString());
-        TupleMapping bestTupleMapping = bestTupleMappingFinder.findBestTupleMapping(sourceTuples, tupleMatches);
+        TupleMapping bestTupleMapping = bestTupleMappingFinder.findBestTupleMapping(sourceTuples, destinationTuples, tupleMatches);
+        nonMatchingTuplesFinder.find(sourceTuples, destinationTuples, bestTupleMapping);
         instanceMatch.setTupleMapping(bestTupleMapping);
         return instanceMatch;
     }

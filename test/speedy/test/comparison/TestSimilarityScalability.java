@@ -6,7 +6,9 @@ import org.slf4j.LoggerFactory;
 import speedy.comparison.ComparisonConfiguration;
 import speedy.comparison.ComparisonStats;
 import speedy.comparison.InstanceMatchTask;
+import speedy.comparison.operators.CompareInstancesCompatibility;
 import speedy.comparison.operators.CompareInstancesHashing;
+import speedy.comparison.operators.ComputeInstanceSimilarityBruteForce;
 import speedy.comparison.operators.IComputeInstanceSimilarity;
 import speedy.model.database.IDatabase;
 import speedy.test.ComparisonUtilityTest;
@@ -15,7 +17,9 @@ public class TestSimilarityScalability extends TestCase {
 
     private final static Logger logger = LoggerFactory.getLogger(TestSimilarityScalability.class);
 
-    private IComputeInstanceSimilarity similarityChecker = new CompareInstancesHashing();
+    private IComputeInstanceSimilarity similarityCheckerBruteForce = new ComputeInstanceSimilarityBruteForce();
+    private IComputeInstanceSimilarity similarityCheckerCompatibility = new CompareInstancesCompatibility();
+    private IComputeInstanceSimilarity similarityCheckerHashing = new CompareInstancesHashing();
 
     public void testDoctors() {
         String baseFolder = "/Users/donatello/Dropbox (Informatica)/Shared Folders/Enzo/Omomorfismi/";
@@ -26,11 +30,20 @@ public class TestSimilarityScalability extends TestCase {
             if (logger.isInfoEnabled()) logger.info("Size: " + size);
             IDatabase leftDb = ComparisonUtilityTest.loadDatabase(baseFolder + "Llunatic-" + size);
             IDatabase rightDb = ComparisonUtilityTest.loadDatabase(baseFolder + "RDFox-" + size);
-            InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
-            if (logger.isDebugEnabled()) logger.debug(result.toString());
-            if (logger.isInfoEnabled()) logger.info("Score: " + result.getTupleMapping().getScore());
-            if (logger.isInfoEnabled()) logger.info("Non matching tuples: " + result.getTupleMapping().getLeftNonMatchingTuples().size());
-            if (logger.isInfoEnabled()) logger.info(ComparisonStats.getInstance().toString());
+            execute(leftDb, rightDb, similarityCheckerBruteForce);
+            execute(leftDb, rightDb, similarityCheckerCompatibility);
+            execute(leftDb, rightDb, similarityCheckerHashing);
         }
+    }
+
+    private void execute(IDatabase leftDb, IDatabase rightDb, IComputeInstanceSimilarity similarityChecker) {
+        ComparisonStats.getInstance().resetStatistics();
+        InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
+        if (logger.isTraceEnabled()) logger.trace(result.toString());
+        if (logger.isInfoEnabled()) logger.info("----------- " + similarityChecker.getClass().getName() + " -----------------");
+        if (logger.isInfoEnabled()) logger.info("Score: " + result.getTupleMapping().getScore());
+        if (logger.isInfoEnabled()) logger.info("Non matching tuples: " + result.getTupleMapping().getLeftNonMatchingTuples().size());
+        if (logger.isInfoEnabled()) logger.info(ComparisonStats.getInstance().toString());
+        if (logger.isInfoEnabled()) logger.info("--------------------------------------------------");
     }
 }

@@ -9,6 +9,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -178,6 +179,12 @@ public class ImportCSVFileMainMemory {
     private void insertDataInTable(INode setNodeTable, CSVTable csvTable, MappingIterator<String[]> it, boolean convertSkolemInHash) {
         while (it.hasNext()) {
             String[] record = it.next();
+            if (record.length == 0 || areAllEmpty(record)) {
+                continue;
+            }
+            if (record.length != csvTable.getAttributes().size()) {
+                throw new DAOException("Line " + Arrays.toString(record) + " doesn't contains " + csvTable.getAttributes().size() + " values. but " + record.length);
+            }
             TupleNode tupleNodeInstance = new TupleNode(csvTable.getName() + "Tuple", IntegerOIDGenerator.getNextOID());
             setNodeTable.addChild(tupleNodeInstance);
             for (int i = 0; i < csvTable.getAttributes().size(); i++) {
@@ -206,6 +213,15 @@ public class ImportCSVFileMainMemory {
         }
         return files;
 
+    }
+
+    private boolean areAllEmpty(String[] record) {
+        for (int i = 0; i < record.length; i++) {
+            if (!record[i].isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private class CSVTable {

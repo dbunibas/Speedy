@@ -10,7 +10,7 @@ public class ComparisonConfiguration {
         SpeedyConstants.BIGINT_SKOLEM_PREFIX,
         SpeedyConstants.DOUBLE_SKOLEM_PREFIX};
 
-    private static String[] stringLlunPrefixes = {SpeedyConstants.LLUN_PREFIX};
+    private static String[] stringLlunPrefixes = {SpeedyConstants.LLUN_PREFIX, "_V"};
 
     private static String[] numericLlunPrefixes = {
         SpeedyConstants.BIGINT_LLUN_PREFIX,
@@ -18,6 +18,7 @@ public class ComparisonConfiguration {
 
     private static boolean twoWayValueMapping = true;
     private static boolean injective = false;
+    private static boolean functional = true;
     private static boolean stopIfNonMatchingTuples = false;
     private static double K = 0.5;
     private static boolean convertSkolemInHash = false;
@@ -36,6 +37,14 @@ public class ComparisonConfiguration {
 
     public static void setInjective(boolean injective) {
         ComparisonConfiguration.injective = injective;
+    }
+
+    public static boolean isFunctional() {
+        return functional;
+    }
+
+    public static void setFunctional(boolean functional) {
+        ComparisonConfiguration.functional = functional;
     }
 
     public static double getK() {

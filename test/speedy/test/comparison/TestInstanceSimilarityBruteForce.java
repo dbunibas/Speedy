@@ -9,7 +9,6 @@ import speedy.comparison.TupleWithTable;
 import speedy.comparison.operators.ComputeInstanceSimilarityBruteForce;
 import speedy.comparison.operators.IComputeInstanceSimilarity;
 import speedy.model.database.AttributeRef;
-import speedy.model.database.ConstantValue;
 import speedy.model.database.IDatabase;
 import speedy.model.database.NullValue;
 import speedy.test.ComparisonUtilityTest;
@@ -21,84 +20,153 @@ public class TestInstanceSimilarityBruteForce extends TestCase {
     private IComputeInstanceSimilarity similarityChecker = new ComputeInstanceSimilarityBruteForce();
     private static String BASE_FOLDER = "/resources/similarity/";
 
-//    public void test1() {
-//        IDatabase leftDb = ComparisonUtilityTest.loadDatabase("01/left", BASE_FOLDER);
-//        IDatabase rightDb = ComparisonUtilityTest.loadDatabase("01/right", BASE_FOLDER);
-//        InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
-//        logger.info(result.toString());
-//        assertEquals(0, result.getTupleMapping().getLeftNonMatchingTuples().size());
-//        assertEquals(15.5, result.getTupleMapping().getScore());
-//    }
-//
-//    public void test2() {
-//        IDatabase leftDb = ComparisonUtilityTest.loadDatabase("02/left", BASE_FOLDER);
-//        IDatabase rightDb = ComparisonUtilityTest.loadDatabase("02/right", BASE_FOLDER);
-//        InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
-//        logger.info(result.toString());
-//        assertEquals(1, result.getTupleMapping().getLeftNonMatchingTuples().size());
-//        assertEquals(10.0, result.getTupleMapping().getScore());
-//    }
-//
-//    public void test3() {
-//        IDatabase leftDb = ComparisonUtilityTest.loadDatabase("03/left", BASE_FOLDER);
-//        IDatabase rightDb = ComparisonUtilityTest.loadDatabase("03/right", BASE_FOLDER);
-//        InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
-//        logger.info(result.toString());
-//        assertEquals(3, result.getTupleMapping().getLeftNonMatchingTuples().size());
+    public void test0() {
+        ComparisonConfiguration.setFunctional(true);
+        ComparisonConfiguration.setInjective(true);
+        IDatabase leftDb = ComparisonUtilityTest.loadDatabase("00/left", BASE_FOLDER);
+        IDatabase rightDb = ComparisonUtilityTest.loadDatabase("00/right", BASE_FOLDER);
+        InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
+        logger.info(result.toString());
+        assertEquals("_N15", result.getTupleMapping().getLeftToRightMappingForValue(new NullValue("_N5")).toString());
+        assertEquals("_N16", result.getTupleMapping().getLeftToRightMappingForValue(new NullValue("_N6")).toString());
+        assertEquals("_N17", result.getTupleMapping().getLeftToRightMappingForValue(new NullValue("_N7")).toString());
+        assertEquals("_N18", result.getTupleMapping().getLeftToRightMappingForValue(new NullValue("_N8")).toString());
+        assertEquals(0, result.getTupleMapping().getLeftNonMatchingTuples().size());
+        assertEquals(0, result.getTupleMapping().getRightNonMatchingTuples().size());
+        assertEquals(1.0, result.getTupleMapping().getScore());
+    }
+
+    public void test1() {
+        ComparisonConfiguration.setFunctional(true);
+        ComparisonConfiguration.setInjective(false);
+        IDatabase leftDb = ComparisonUtilityTest.loadDatabase("01/left", BASE_FOLDER);
+        IDatabase rightDb = ComparisonUtilityTest.loadDatabase("01/right", BASE_FOLDER);
+        InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
+        logger.info(result.toString());
+        assertEquals(0, result.getTupleMapping().getLeftNonMatchingTuples().size());
+        assertEquals(0.91, result.getTupleMapping().getScore(), 0.01);
+    }
+
+    public void test2() {
+        ComparisonConfiguration.setFunctional(true);
+        IDatabase leftDb = ComparisonUtilityTest.loadDatabase("02/left", BASE_FOLDER);
+        IDatabase rightDb = ComparisonUtilityTest.loadDatabase("02/right", BASE_FOLDER);
+        InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
+        logger.info(result.toString());
+        assertEquals(1, result.getTupleMapping().getLeftNonMatchingTuples().size());
+        assertEquals(0.71, result.getTupleMapping().getScore(), 0.01);
+    }
+
+    public void test3() {
+        ComparisonConfiguration.setFunctional(true);
+        IDatabase leftDb = ComparisonUtilityTest.loadDatabase("03/left", BASE_FOLDER);
+        IDatabase rightDb = ComparisonUtilityTest.loadDatabase("03/right", BASE_FOLDER);
+        InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
+        logger.info(result.toString());
+        assertEquals(3, result.getTupleMapping().getLeftNonMatchingTuples().size());
 //        assertEquals(14.5, result.getTupleMapping().getScore());
-//        for (TupleWithTable nonMatchingTuple : result.getTupleMapping().getLeftNonMatchingTuples()) {
-//            if (nonMatchingTuple.getTable().equals("s")) {
-//                assertEquals("_N11", nonMatchingTuple.getTuple().getCell(new AttributeRef("s", "A")).getValue().toString());
-//            }
-//        }
-//    }
+        for (TupleWithTable nonMatchingTuple : result.getTupleMapping().getLeftNonMatchingTuples()) {
+            if (nonMatchingTuple.getTable().equals("s")) {
+                assertEquals("_N11", nonMatchingTuple.getTuple().getCell(new AttributeRef("s", "A")).getValue().toString());
+            }
+        }
+        assertEquals(0.5, result.getTupleMapping().getScore(), 0.01);
+    }
+
+    public void test4() {
+        ComparisonConfiguration.setFunctional(true);
+        IDatabase leftDb = ComparisonUtilityTest.loadDatabase("04/left", BASE_FOLDER);
+        IDatabase rightDb = ComparisonUtilityTest.loadDatabase("04/right", BASE_FOLDER);
+        InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
+        logger.info(result.toString());
+        assertNotNull(result.getTupleMapping());
+        assertEquals(0, result.getTupleMapping().getLeftNonMatchingTuples().size());
+        assertEquals(0.75, result.getTupleMapping().getScore(), 0.01);
+    }
+
+    public void test5() {
+        ComparisonConfiguration.setFunctional(true);
+        IDatabase leftDb = ComparisonUtilityTest.loadDatabase("05/left", BASE_FOLDER);
+        IDatabase rightDb = ComparisonUtilityTest.loadDatabase("05/right", BASE_FOLDER);
+        InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
+        logger.info(result.toString());
+        assertNotNull(result.getTupleMapping());
+        assertEquals(0, result.getTupleMapping().getLeftNonMatchingTuples().size());
+        assertEquals(0, result.getTupleMapping().getRightNonMatchingTuples().size());
+        assertEquals((4 + 4 * ComparisonConfiguration.getK()) / 8.0, result.getTupleMapping().getScore());
+    }
 //
-//    public void test4() {
-//        IDatabase leftDb = ComparisonUtilityTest.loadDatabase("04/left", BASE_FOLDER);
-//        IDatabase rightDb = ComparisonUtilityTest.loadDatabase("04/right", BASE_FOLDER);
-//        InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
-//        logger.info(result.toString());
-//        assertNotNull(result.getTupleMapping());
-//        assertEquals(0, result.getTupleMapping().getLeftNonMatchingTuples().size());
-//        assertEquals(3.0, result.getTupleMapping().getScore());
-//    }
-//
-//    public void test5() {
-//        IDatabase leftDb = ComparisonUtilityTest.loadDatabase("05/left", BASE_FOLDER);
-//        IDatabase rightDb = ComparisonUtilityTest.loadDatabase("05/right", BASE_FOLDER);
-//        InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
-//        logger.info(result.toString());
-//        assertNotNull(result.getTupleMapping());
-//        assertEquals(0, result.getTupleMapping().getLeftNonMatchingTuples().size());
-//        assertEquals(6.0, result.getTupleMapping().getScore());
-//    }
-//    public void test6() {
-//        IDatabase leftDb = ComparisonUtilityTest.loadDatabase("06/left", BASE_FOLDER);
-//        IDatabase rightDb = ComparisonUtilityTest.loadDatabase("06/right", BASE_FOLDER);
-//        InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
-//        logger.info(result.toString());
-//        assertNotNull(result.getTupleMapping());
-//        assertEquals("3", result.getTupleMapping().getLeftToRightMappingForValue(new NullValue("_N1")).toString());
-//        assertEquals("_N3", result.getTupleMapping().getLeftToRightMappingForValue(new NullValue("_N4")).toString());
-//        assertEquals("2", result.getTupleMapping().getRightToLeftMappingForValue(new NullValue("_N3")).toString());
-//        assertEquals("3", result.getTupleMapping().getLeftToRightMappingForValue(new NullValue("_N5")).toString());
-//        assertEquals(1, result.getTupleMapping().getLeftNonMatchingTuples().size());
-////        assertEquals(6.0, result.getTupleMapping().getScore());
-//    }
+
+    public void test6() {
+        ComparisonConfiguration.setFunctional(true);
+        ComparisonConfiguration.setInjective(true);
+        IDatabase leftDb = ComparisonUtilityTest.loadDatabase("06/left", BASE_FOLDER);
+        IDatabase rightDb = ComparisonUtilityTest.loadDatabase("06/right", BASE_FOLDER);
+        InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
+        logger.info(result.toString());
+        assertNotNull(result.getTupleMapping());
+        assertEquals(1, result.getTupleMapping().getTupleMapping().size());
+        assertEquals("_N3", result.getTupleMapping().getLeftToRightMappingForValue(new NullValue("_N4")).toString());
+        assertEquals("1", result.getTupleMapping().getRightToLeftMappingForValue(new NullValue("_N2")).toString());
+        assertEquals("3", result.getTupleMapping().getLeftToRightMappingForValue(new NullValue("_N5")).toString());
+        assertEquals(2, result.getTupleMapping().getLeftNonMatchingTuples().size());
+        assertEquals(0.33, result.getTupleMapping().getScore(), 0.01);
+    }
 
     public void test7() {
+        ComparisonConfiguration.setFunctional(false);
+        ComparisonConfiguration.setInjective(false);
         IDatabase leftDb = ComparisonUtilityTest.loadDatabase("07/left", BASE_FOLDER);
         IDatabase rightDb = ComparisonUtilityTest.loadDatabase("07/right", BASE_FOLDER);
         InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
         logger.info(result.toString());
         assertNotNull(result.getTupleMapping());
-        assertEquals(2, result.getTupleMapping().getTupleMapping().size());
+        assertEquals(1, result.getTupleMapping().getTupleMapping().size());
+        assertEquals(2, result.getTupleMapping().getTupleMapping().values().iterator().next().size());
         assertEquals("1", result.getTupleMapping().getLeftToRightMappingForValue(new NullValue("_N2")).toString());
-//        assertEquals("_N3", result.getTupleMapping().getLeftToRightMappingForValue(new NullValue("_N4")).toString());
-//        assertEquals("2", result.getTupleMapping().getRightToLeftMappingForValue(new NullValue("_N3")).toString());
-//        assertEquals("3", result.getTupleMapping().getLeftToRightMappingForValue(new NullValue("_N5")).toString());
-//        assertEquals(1, result.getTupleMapping().getLeftNonMatchingTuples().size());
-//        assertEquals(6.0, result.getTupleMapping().getScore());
+        assertEquals("2", result.getTupleMapping().getLeftToRightMappingForValue(new NullValue("_N3")).toString());
+        assertEquals("3", result.getTupleMapping().getRightToLeftMappingForValue(new NullValue("_N1")).toString());
+        assertEquals(0, result.getTupleMapping().getLeftNonMatchingTuples().size());
+        assertEquals(1, result.getTupleMapping().getRightNonMatchingTuples().size());
+        assertEquals(0.43, result.getTupleMapping().getScore(), 0.01);
     }
 
+    public void test8() {
+        ComparisonConfiguration.setFunctional(true);
+        ComparisonConfiguration.setInjective(true);
+        IDatabase leftDb = ComparisonUtilityTest.loadDatabase("08/left", BASE_FOLDER);
+        IDatabase rightDb = ComparisonUtilityTest.loadDatabase("08/right", BASE_FOLDER);
+        InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
+        logger.info(result.toString());
+        assertNotNull(result.getTupleMapping());
+        assertEquals(7, result.getTupleMapping().getTupleMapping().size());
+        assertEquals("3", result.getTupleMapping().getLeftToRightMappingForValue(new NullValue("_N1")).toString());
+        assertEquals("3", result.getTupleMapping().getRightToLeftMappingForValue(new NullValue("_N4")).toString());
+        assertEquals("_N2", result.getTupleMapping().getRightToLeftMappingForValue(new NullValue("_N5")).toString());
+        assertEquals("_N2", result.getTupleMapping().getRightToLeftMappingForValue(new NullValue("_N5")).toString());
+        assertEquals("9", result.getTupleMapping().getLeftToRightMappingForValue(new NullValue("_N3")).toString());
+        assertEquals("9", result.getTupleMapping().getRightToLeftMappingForValue(new NullValue("_N7")).toString());
+        assertEquals("9", result.getTupleMapping().getRightToLeftMappingForValue(new NullValue("_N8")).toString());
+        assertEquals(0, result.getTupleMapping().getLeftNonMatchingTuples().size());
+        assertEquals(0, result.getTupleMapping().getRightNonMatchingTuples().size());
+        assertEquals(0.89, result.getTupleMapping().getScore(), 0.01);
+    }
+
+    public void test9() {
+        ComparisonConfiguration.setFunctional(true);
+        ComparisonConfiguration.setInjective(true);
+        IDatabase leftDb = ComparisonUtilityTest.loadDatabase("09/left", BASE_FOLDER);
+        IDatabase rightDb = ComparisonUtilityTest.loadDatabase("09/right", BASE_FOLDER);
+        InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
+        logger.info(result.toString());
+        assertNotNull(result.getTupleMapping());
+        assertEquals(3, result.getTupleMapping().getTupleMapping().size());
+        assertEquals("3", result.getTupleMapping().getLeftToRightMappingForValue(new NullValue("_N3")).toString());
+        assertEquals("3", result.getTupleMapping().getRightToLeftMappingForValue(new NullValue("_N4")).toString());
+        assertEquals("3", result.getTupleMapping().getRightToLeftMappingForValue(new NullValue("_N9")).toString());
+        assertEquals("3", result.getTupleMapping().getRightToLeftMappingForValue(new NullValue("_N0")).toString());
+        assertEquals(0, result.getTupleMapping().getLeftNonMatchingTuples().size());
+        assertEquals(0, result.getTupleMapping().getRightNonMatchingTuples().size());
+        assertEquals(0.77, result.getTupleMapping().getScore(), 0.01);
+    }
 }

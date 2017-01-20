@@ -21,11 +21,8 @@ public class FindCompatibleTuples {
     private final static Logger logger = LoggerFactory.getLogger(FindCompatibleTuples.class);
     private ComputeSetIntersection intersector = new ComputeSetIntersection<TupleWithTable>();
 
-    //For each tuple in the seconddb, we associate a set of compatible tuples from the first db
+    //For each tuple in the second-db, we associate a set of compatible tuples from the first db
     public CompatibilityMap find(List<TupleWithTable> firstDB, List<TupleWithTable> secondDB) {
-        if (firstDB.size() > secondDB.size()) {
-            throw new IllegalArgumentException("First db must be smaller than the second one");
-        }
         Set<TupleWithTable> allFirstDBTuples = new HashSet<TupleWithTable>(firstDB);
         AttributeValueMap firstDBValueMap = buildAttributeValueMap(firstDB);
         CompatibilityMap compatibilityMap = new CompatibilityMap();

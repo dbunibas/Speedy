@@ -84,7 +84,6 @@ public class FindHomomorphism {
         }
         if (logger.isDebugEnabled()) logger.debug("Comparing tuple: " + sourceTuple + " to tuple " + destinationTuple);
         ValueMapping valueMapping = new ValueMapping();
-        int score = 0;
         for (int i = 0; i < sourceTuple.getTuple().getCells().size(); i++) {
             if (sourceTuple.getTuple().getCells().get(i).getAttribute().equals(SpeedyConstants.OID)) {
                 continue;
@@ -102,9 +101,8 @@ public class FindHomomorphism {
                 if (logger.isTraceEnabled()) logger.trace("Conflicting mapping for values...");
                 return null;
             }
-            score += score(matchResult);
         }
-        TupleMatch tupleMatch = new TupleMatch(sourceTuple, destinationTuple, valueMapping, score);
+        TupleMatch tupleMatch = new TupleMatch(sourceTuple, destinationTuple, valueMapping);
         return tupleMatch;
     }
 
@@ -115,29 +113,29 @@ public class FindHomomorphism {
             }
         }
         if (sourceValue instanceof NullValue && destinationValue instanceof ConstantValue) {
-            return ValueMatchResult.NULL_TO_CONSTANT;
+            return ValueMatchResult.PLACEHOLDER_TO_CONSTANT;
         }
         if (sourceValue instanceof NullValue && destinationValue instanceof NullValue) {
-            return ValueMatchResult.BOTH_NULLS;
+            return ValueMatchResult.BOTH_PLACEHOLDER;
         }
         return ValueMatchResult.NOT_MATCHING;
     }
 
-    private int score(ValueMatchResult matchResult) {
-        if (matchResult == ValueMatchResult.EQUAL_CONSTANTS) {
-            return 1;
-        }
-        if (matchResult == ValueMatchResult.BOTH_NULLS) {
-            return 1;
-        }
-        if (matchResult == ValueMatchResult.NULL_TO_CONSTANT) {
-            return 0;
-        }
-        return 0;
-    }
+//    private int score(ValueMatchResult matchResult) {
+//        if (matchResult == ValueMatchResult.EQUAL_CONSTANTS) {
+//            return 1;
+//        }
+//        if (matchResult == ValueMatchResult.BOTH_PLACEHOLDER) {
+//            return 1;
+//        }
+//        if (matchResult == ValueMatchResult.PLACEHOLDER_TO_CONSTANT) {
+//            return 0;
+//        }
+//        return 0;
+//    }
 
     private ValueMapping updateValueMapping(ValueMapping valueMapping, IValue sourceValue, IValue destinationValue, ValueMatchResult matchResult) {
-        if (matchResult == ValueMatchResult.BOTH_NULLS || matchResult == ValueMatchResult.NULL_TO_CONSTANT) {
+        if (matchResult == ValueMatchResult.BOTH_PLACEHOLDER || matchResult == ValueMatchResult.PLACEHOLDER_TO_CONSTANT) {
             IValue valueForSourceValue = valueMapping.getValueMapping(sourceValue);
             if (valueForSourceValue != null && !valueForSourceValue.equals(destinationValue)) {
                 return null;
@@ -200,7 +198,7 @@ public class FindHomomorphism {
     }
 
     private boolean injective(InstanceMatchTask instanceMatch) {
-        Collection<TupleWithTable> rightMatchedTuples = instanceMatch.getTupleMapping().getTupleMapping().values();
+        List<TupleWithTable> rightMatchedTuples = instanceMatch.getTupleMapping().getRightValues();
         Set<TupleWithTable> distinctMatchedTuples = new HashSet<TupleWithTable>(rightMatchedTuples);
         if (rightMatchedTuples.size() != distinctMatchedTuples.size()) {
             return false;

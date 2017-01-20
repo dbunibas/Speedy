@@ -17,7 +17,9 @@ public class ComparisonStats {
     public static final String GENERATE_SIGNATURE_MAP_COLLECTION_TIME = "Generating Signature Map Collection Time";
     public static final String GENERATE_TUPLE_SIGNATURE_TIME = "Generating Tuple Signature Time";
     public static final String CHECK_TUPLE_MATCH_TIME = "Checking Tuple Match Time";
+    public static final String FIND_REMAINING_MATCHES_TIME = "Finding Remaining Matches Time";
     public static final String CHECK_TUPLE_MATCH_COMPATIBILITY_TIME = "Checking Tuple Match Compatibility Time";
+    public static final String COMPUTE_SCORE_TIME = "Compute Mapping Score Time";
     /////
     public static final String TEMP_1 = "TEMP_1";
     public static final String TEMP_2 = "TEMP_2";

@@ -23,8 +23,13 @@
     <!--     COMPARISON     -->
     <!--<logger name="speedy.comparison" level="INFO"/>-->
     <!--<logger name="speedy.comparison.ComparisonStats" level="DEBUG"/>-->
-    <logger name="speedy.comparison.operators.CompareInstancesHashing" level="DEBUG"/>
-    <logger name="speedy.comparison.operators.CompareInstancesCompatibility" level="DEBUG"/>
+    <!--<logger name="speedy.comparison.operators.CompareInstancesHashing" level="DEBUG"/>-->
+    <!--<logger name="speedy.comparison.operators.CompareInstancesCompatibility" level="DEBUG"/>-->
+    <!--<logger name="speedy.comparison.operators.ComputeInstanceSimilarityBruteForce" level="DEBUG"/>-->
+    <!--<logger name="speedy.comparison.operators.FindBestTupleMapping" level="DEBUG"/>-->
+    <!--<logger name="speedy.comparison.operators.CheckTupleMatchCompatibility" level="DEBUG"/>-->
+    <!--<logger name="speedy.comparison.operators.CheckTupleMatch" level="DEBUG"/>-->
+    <!--<logger name="speedy.comparison.operators.ComputeScore" level="TRACE"/>-->
     <!--<logger name="speedy.comparison.operators.SignatureMapCollectionGenerator" level="INFO"/>-->
     <!--     TEST     -->
     <logger name="speedy.test" level="DEBUG"/>

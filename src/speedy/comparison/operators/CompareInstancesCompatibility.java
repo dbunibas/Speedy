@@ -20,28 +20,19 @@ public class CompareInstancesCompatibility implements IComputeInstanceSimilarity
     private final FindCompatibleTuples compatibleTupleFinder = new FindCompatibleTuples();
     private final CheckTupleMatch tupleMatcher = new CheckTupleMatch();
     private final FindBestTupleMapping bestTupleMappingFinder = new FindBestTupleMapping();
+    private final FindNonMatchingTuples nonMatchingTuplesFinder = new FindNonMatchingTuples();
 
     public InstanceMatchTask compare(IDatabase leftDb, IDatabase rightDb) {
         InstanceMatchTask instanceMatch = new InstanceMatchTask(leftDb, rightDb);
         List<TupleWithTable> sourceTuples = SpeedyUtility.extractAllTuplesFromDatabase(leftDb);
         List<TupleWithTable> destinationTuples = SpeedyUtility.extractAllTuplesFromDatabase(rightDb);
-        List<TupleWithTable> firstDB = sourceTuples;
-        List<TupleWithTable> secondDB = destinationTuples;
-        boolean inverse = false;
-        if (sourceTuples.size() > destinationTuples.size()) {
-            firstDB = destinationTuples;
-            secondDB = sourceTuples;
-            inverse = true;
-        }
-        CompatibilityMap compatibilityMap = compatibleTupleFinder.find(firstDB, secondDB);
+        CompatibilityMap compatibilityMap = compatibleTupleFinder.find(sourceTuples, destinationTuples);
         if (logger.isDebugEnabled()) logger.debug("Compatibility map:\n" + compatibilityMap);
-        TupleMatches tupleMatches = findTupleMatches(secondDB, compatibilityMap);
+        TupleMatches tupleMatches = findTupleMatches(destinationTuples, compatibilityMap);
         ComparisonUtility.sortTupleMatches(tupleMatches);
         if (logger.isDebugEnabled()) logger.debug("TupleMatches: " + tupleMatches);
-        TupleMapping bestTupleMapping = bestTupleMappingFinder.findBestTupleMapping(firstDB, tupleMatches);
-        if (inverse) {
-            bestTupleMapping = ComparisonUtility.invertMapping(bestTupleMapping); //TODO: Check score
-        }
+        TupleMapping bestTupleMapping = bestTupleMappingFinder.findBestTupleMapping(sourceTuples, destinationTuples, tupleMatches);
+        nonMatchingTuplesFinder.find(sourceTuples, destinationTuples, bestTupleMapping);
         instanceMatch.setTupleMapping(bestTupleMapping);
         return instanceMatch;
     }
@@ -57,12 +48,6 @@ public class CompareInstancesCompatibility implements IComputeInstanceSimilarity
                     tupleMatches.addTupleMatch(destinationTuple, match);
                 }
             }
-            //TODO: Add non matching tuples
-//            List<TupleMatch> matchesForTuple = tupleMatches.getMatchesForTuple(secondTuple);
-//            if (matchesForTuple == null) {
-//                if (logger.isDebugEnabled()) logger.debug("Non matching tuple: " + secondTuple);
-//                tupleMatches.addNonMatchingTuple(secondTuple);
-//            }
         }
         return tupleMatches;
     }
