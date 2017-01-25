@@ -3,6 +3,7 @@ package speedy.comparison.operators;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import speedy.comparison.ComparisonStats;
 import speedy.comparison.ComparisonUtility;
 import speedy.comparison.CompatibilityMap;
 import speedy.comparison.InstanceMatchTask;
@@ -23,9 +24,11 @@ public class CompareInstancesCompatibility implements IComputeInstanceSimilarity
     private final FindNonMatchingTuples nonMatchingTuplesFinder = new FindNonMatchingTuples();
 
     public InstanceMatchTask compare(IDatabase leftDb, IDatabase rightDb) {
+        long start = System.currentTimeMillis();
         InstanceMatchTask instanceMatch = new InstanceMatchTask(leftDb, rightDb);
         List<TupleWithTable> sourceTuples = SpeedyUtility.extractAllTuplesFromDatabase(leftDb);
         List<TupleWithTable> destinationTuples = SpeedyUtility.extractAllTuplesFromDatabase(rightDb);
+        ComparisonStats.getInstance().addStat(ComparisonStats.PROCESS_INSTANCE_TIME, System.currentTimeMillis() - start);
         CompatibilityMap compatibilityMap = compatibleTupleFinder.find(sourceTuples, destinationTuples);
         if (logger.isDebugEnabled()) logger.debug("Compatibility map:\n" + compatibilityMap);
         TupleMatches tupleMatches = findTupleMatches(destinationTuples, compatibilityMap);
@@ -38,6 +41,7 @@ public class CompareInstancesCompatibility implements IComputeInstanceSimilarity
     }
 
     private TupleMatches findTupleMatches(List<TupleWithTable> secondDB, CompatibilityMap compatibilityMap) {
+        long start = System.currentTimeMillis();
         TupleMatches tupleMatches = new TupleMatches();
         for (TupleWithTable secondTuple : secondDB) {
             //We associate, for each tuple, a list of compatible destination tuples (i.e. they don't have different constants)
@@ -49,6 +53,7 @@ public class CompareInstancesCompatibility implements IComputeInstanceSimilarity
                 }
             }
         }
+        ComparisonStats.getInstance().addStat(ComparisonStats.FIND_TUPLE_MATCHES, System.currentTimeMillis() - start);
         return tupleMatches;
     }
 

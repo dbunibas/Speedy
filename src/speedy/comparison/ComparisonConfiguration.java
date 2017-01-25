@@ -21,6 +21,7 @@ public class ComparisonConfiguration {
     private static boolean functional = true;
     private static boolean stopIfNonMatchingTuples = false;
     private static double K = 0.5;
+    private static double bestScoreThreshold = 0.99;
     private static boolean convertSkolemInHash = false;
 
     public static boolean isTwoWayValueMapping() {
@@ -101,6 +102,10 @@ public class ComparisonConfiguration {
 
     public static void setConvertSkolemInHash(boolean convertSkolemInHash) {
         ComparisonConfiguration.convertSkolemInHash = convertSkolemInHash;
+    }
+
+    public static double getBestScoreThreshold() {
+        return bestScoreThreshold;
     }
 
     @Override

@@ -206,6 +206,9 @@ public class ImportCSVFileMainMemory {
         }
         List<File> files = new ArrayList<File>();
         File[] listFiles = folder.listFiles();
+        if(listFiles == null){
+            throw new DAOException("No files in folder " + folder.toString());
+        }
         for (File file : listFiles) {
             if (file.isFile() && (extension == null || file.getName().endsWith(extension))) {
                 files.add(file);

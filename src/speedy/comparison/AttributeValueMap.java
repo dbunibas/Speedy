@@ -1,5 +1,6 @@
 package speedy.comparison;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -21,10 +22,11 @@ public class AttributeValueMap {
         valueMap.addTuple(value, tuple);
     }
 
+    @SuppressWarnings("unchecked")
     public Set<TupleWithTable> getTuplesWithValue(AttributeRef attribute, IValue value) {
         ValueTupleMap valueMap = attributeValueMap.get(attribute);
         if (valueMap == null) {
-            return null;
+            return Collections.EMPTY_SET;
         }
         Set<TupleWithTable> result = valueMap.getTuples(value);
         if (result == null) {

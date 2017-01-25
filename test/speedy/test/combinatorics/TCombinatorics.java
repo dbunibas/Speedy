@@ -6,7 +6,6 @@ import java.util.List;
 import junit.framework.TestCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import speedy.utility.SpeedyUtility;
 import speedy.utility.combinatorics.GenericListGeneratorIterator;
 
 public class TCombinatorics extends TestCase {
@@ -32,10 +31,13 @@ public class TCombinatorics extends TestCase {
         List<Integer> list1 = Arrays.asList(new Integer[]{1, 2, 3});
         List<Integer> list2 = Arrays.asList(new Integer[]{1});
         List<Integer> list3 = Arrays.asList(new Integer[]{1, 2});
+        List<Integer> list4 = Arrays.asList(new Integer[]{1, 2});
         lists.add(list1);
         lists.add(list2);
         lists.add(list3);
+        lists.add(list4);
         GenericListGeneratorIterator<Integer> iterator = new GenericListGeneratorIterator<Integer>(lists);
+        if (logger.isInfoEnabled()) logger.info("Number of combination to evaluate: " + iterator.numberOfCombination());
         while(iterator.hasNext()) {
             logger.info(iterator.next().toString());
         }

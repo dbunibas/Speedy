@@ -15,9 +15,7 @@ import speedy.comparison.TupleWithTable;
 import speedy.comparison.ValueMapping;
 import speedy.comparison.ValueMappings;
 import speedy.model.database.Cell;
-import speedy.model.database.ConstantValue;
 import speedy.model.database.IValue;
-import speedy.model.database.NullValue;
 import speedy.utility.SpeedyUtility;
 
 public class ComputeScore {

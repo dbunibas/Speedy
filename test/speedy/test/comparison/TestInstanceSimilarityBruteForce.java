@@ -49,6 +49,7 @@ public class TestInstanceSimilarityBruteForce extends TestCase {
 
     public void test2() {
         ComparisonConfiguration.setFunctional(true);
+        ComparisonConfiguration.setInjective(false);
         IDatabase leftDb = ComparisonUtilityTest.loadDatabase("02/left", BASE_FOLDER);
         IDatabase rightDb = ComparisonUtilityTest.loadDatabase("02/right", BASE_FOLDER);
         InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
@@ -58,13 +59,14 @@ public class TestInstanceSimilarityBruteForce extends TestCase {
     }
 
     public void test3() {
+        ComparisonConfiguration.setInjective(false);
         ComparisonConfiguration.setFunctional(true);
         IDatabase leftDb = ComparisonUtilityTest.loadDatabase("03/left", BASE_FOLDER);
         IDatabase rightDb = ComparisonUtilityTest.loadDatabase("03/right", BASE_FOLDER);
         InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
         logger.info(result.toString());
         assertEquals(3, result.getTupleMapping().getLeftNonMatchingTuples().size());
-//        assertEquals(14.5, result.getTupleMapping().getScore());
+        assertEquals("1", result.getTupleMapping().getLeftToRightMappingForValue(new NullValue("_N12")).toString());
         for (TupleWithTable nonMatchingTuple : result.getTupleMapping().getLeftNonMatchingTuples()) {
             if (nonMatchingTuple.getTable().equals("s")) {
                 assertEquals("_N11", nonMatchingTuple.getTuple().getCell(new AttributeRef("s", "A")).getValue().toString());
@@ -75,6 +77,7 @@ public class TestInstanceSimilarityBruteForce extends TestCase {
 
     public void test4() {
         ComparisonConfiguration.setFunctional(true);
+        ComparisonConfiguration.setInjective(false);
         IDatabase leftDb = ComparisonUtilityTest.loadDatabase("04/left", BASE_FOLDER);
         IDatabase rightDb = ComparisonUtilityTest.loadDatabase("04/right", BASE_FOLDER);
         InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
@@ -86,6 +89,7 @@ public class TestInstanceSimilarityBruteForce extends TestCase {
 
     public void test5() {
         ComparisonConfiguration.setFunctional(true);
+        ComparisonConfiguration.setInjective(false);
         IDatabase leftDb = ComparisonUtilityTest.loadDatabase("05/left", BASE_FOLDER);
         IDatabase rightDb = ComparisonUtilityTest.loadDatabase("05/right", BASE_FOLDER);
         InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
@@ -169,4 +173,19 @@ public class TestInstanceSimilarityBruteForce extends TestCase {
         assertEquals(0, result.getTupleMapping().getRightNonMatchingTuples().size());
         assertEquals(0.77, result.getTupleMapping().getScore(), 0.01);
     }
+
+//    public void test10() {
+//        ComparisonConfiguration.setFunctional(true);
+//        ComparisonConfiguration.setInjective(true);
+//        IDatabase leftDb = ComparisonUtilityTest.loadDatabase("10/left", BASE_FOLDER);
+//        IDatabase rightDb = ComparisonUtilityTest.loadDatabase("10/right", BASE_FOLDER);
+//        InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
+//        logger.info(result.toString());
+//        assertNotNull(result.getTupleMapping());
+//        assertEquals(2, result.getTupleMapping().getTupleMapping().size());
+//        assertEquals("_N0", result.getTupleMapping().getLeftToRightMappingForValue(new NullValue("_N2")).toString());
+//        assertEquals(0, result.getTupleMapping().getLeftNonMatchingTuples().size());
+//        assertEquals(0, result.getTupleMapping().getRightNonMatchingTuples().size());
+//        assertEquals(0.7, result.getTupleMapping().getScore(), 0.01);
+//    }
 }

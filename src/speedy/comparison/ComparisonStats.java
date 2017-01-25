@@ -14,12 +14,16 @@ public class ComparisonStats {
 
     public static final String TOTAL_TIME = "Chasing Time";
     public static final String LOAD_INSTANCE_TIME = "Loading Instance Time";
+    public static final String PROCESS_INSTANCE_TIME = "Processing Instance Time";
     public static final String GENERATE_SIGNATURE_MAP_COLLECTION_TIME = "Generating Signature Map Collection Time";
     public static final String GENERATE_TUPLE_SIGNATURE_TIME = "Generating Tuple Signature Time";
     public static final String CHECK_TUPLE_MATCH_TIME = "Checking Tuple Match Time";
     public static final String FIND_REMAINING_MATCHES_TIME = "Finding Remaining Matches Time";
     public static final String CHECK_TUPLE_MATCH_COMPATIBILITY_TIME = "Checking Tuple Match Compatibility Time";
     public static final String COMPUTE_SCORE_TIME = "Compute Mapping Score Time";
+    public static final String FIND_TUPLE_MATCHES = "Find Tuple Matches Time";
+    public static final String FIND_BEST_TUPLE_MAPPING_TIME = "Find Best Tuple Mapping Time";
+    public static final String FIND_COMPATIBLE_TUPLES_TIMES = "Find Compatible Tuple Time";
     /////
     public static final String TEMP_1 = "TEMP_1";
     public static final String TEMP_2 = "TEMP_2";
@@ -72,7 +76,7 @@ public class ComparisonStats {
         sb.append("------ COMPARISON STATS ------").append("\n");
         Set<String> printedStats = new HashSet<String>();
         appendStat(TOTAL_TIME, "ms", sb, printedStats);
-        appendStat(LOAD_INSTANCE_TIME, "ms", sb, printedStats);
+        appendStat(PROCESS_INSTANCE_TIME, "ms", sb, printedStats);
         appendStat(GENERATE_SIGNATURE_MAP_COLLECTION_TIME, "ms", sb, printedStats);
         appendStat(GENERATE_TUPLE_SIGNATURE_TIME, "ms", sb, printedStats);
         appendStat(CHECK_TUPLE_MATCH_TIME, "ms", sb, printedStats);

@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GenericListGeneratorIterator<T> {
-    
+
     private final static Logger logger = LoggerFactory.getLogger(GenericListGeneratorIterator.class);
 
     private final List<List<T>> inputLists;
@@ -22,11 +22,11 @@ public class GenericListGeneratorIterator<T> {
         this.currentIndexes = new int[numberOfLists];
         this.sizes = new int[numberOfLists];
         for (int i = 0; i < sizes.length; i++) {
-            sizes[i] = inputLists.get(i).size() - 1;            
+            sizes[i] = inputLists.get(i).size() - 1;
         }
         this.starting = true;
     }
-           
+
     public boolean hasNext() {
         if (starting) {
             return true;
@@ -38,7 +38,7 @@ public class GenericListGeneratorIterator<T> {
         }
         return false;
     }
-    
+
     public List<T> next() {
         if (starting) {
             starting = false;
@@ -59,7 +59,7 @@ public class GenericListGeneratorIterator<T> {
     private List<T> generateListFromCurrentIndexes() {
         List<T> result = new ArrayList<T>();
         for (int i = 0; i < numberOfLists; i++) {
-            result.add(inputLists.get(i).get(currentIndexes[i]));            
+            result.add(inputLists.get(i).get(currentIndexes[i]));
         }
         return result;
     }
@@ -71,8 +71,16 @@ public class GenericListGeneratorIterator<T> {
                 currentIndexes[i] = 0;
             } else {
                 break;
-            }            
+            }
         }
     }
-    
+
+    public long numberOfCombination() {
+        long sum = 1;
+        for (List<T> inputList : inputLists) {
+            sum *= inputList.size();
+        }
+        return sum;
+    }
+
 }

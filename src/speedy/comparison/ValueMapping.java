@@ -9,13 +9,13 @@ import speedy.model.database.IValue;
 import speedy.utility.SpeedyUtility;
 
 public class ValueMapping implements Cloneable {
-
+    
     private Map<IValue, IValue> map = new HashMap<IValue, IValue>();
     private Map<IValue, Set<IValue>> invertedMap = new HashMap<IValue, Set<IValue>>();
-
+    
     public void putValueMapping(IValue fromValue, IValue toValue) {
         IValue oldValue = this.map.get(fromValue);
-        if (oldValue != null) {
+        if (oldValue != null && SpeedyUtility.isPlaceholder(oldValue)) {
             invertedMap.get(oldValue).remove(fromValue);
         }
         this.map.put(fromValue, toValue);
@@ -29,7 +29,7 @@ public class ValueMapping implements Cloneable {
         }
         invertedSet.add(fromValue);
     }
-
+    
     public void removeValueMapping(IValue fromValue, IValue toValue) {
         this.map.remove(fromValue);
         if (SpeedyUtility.isConstant(toValue)) {
@@ -43,40 +43,40 @@ public class ValueMapping implements Cloneable {
             }
         }
     }
-
+    
     public IValue getValueMapping(IValue fromValue) {
         return this.map.get(fromValue);
     }
-
+    
     public Set<IValue> getInvertedValueMapping(IValue toValue) {
         return this.invertedMap.get(toValue);
     }
-
+    
     public Set<IValue> getKeys() {
         return this.map.keySet();
     }
-
+    
     public Set<IValue> getInvertedKeys() {
         return this.invertedMap.keySet();
     }
-
+    
     public Collection<IValue> getValues() {
         return this.map.values();
     }
-
+    
     public int size() {
         return map.size();
     }
-
+    
     public boolean isEmpty() {
         return map.isEmpty();
     }
-
+    
     @Override
     public String toString() {
         return SpeedyUtility.printMap(map);
     }
-
+    
     public String toLongString() {
         return SpeedyUtility.printMap(map) + "\n Inverse: \n" + SpeedyUtility.printMap(invertedMap);
     }

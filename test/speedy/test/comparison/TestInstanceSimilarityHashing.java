@@ -51,6 +51,7 @@ public class TestInstanceSimilarityHashing extends TestCase {
 
     public void test2() {
         ComparisonConfiguration.setFunctional(true);
+        ComparisonConfiguration.setInjective(false);
         IDatabase leftDb = ComparisonUtilityTest.loadDatabase("02/left", BASE_FOLDER);
         IDatabase rightDb = ComparisonUtilityTest.loadDatabase("02/right", BASE_FOLDER);
         InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
@@ -61,6 +62,7 @@ public class TestInstanceSimilarityHashing extends TestCase {
 
     public void test3() {
         ComparisonConfiguration.setFunctional(true);
+        ComparisonConfiguration.setInjective(false);
         IDatabase leftDb = ComparisonUtilityTest.loadDatabase("03/left", BASE_FOLDER);
         IDatabase rightDb = ComparisonUtilityTest.loadDatabase("03/right", BASE_FOLDER);
         InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
@@ -77,6 +79,7 @@ public class TestInstanceSimilarityHashing extends TestCase {
 
     public void test4() {
         ComparisonConfiguration.setFunctional(true);
+        ComparisonConfiguration.setInjective(false);
         IDatabase leftDb = ComparisonUtilityTest.loadDatabase("04/left", BASE_FOLDER);
         IDatabase rightDb = ComparisonUtilityTest.loadDatabase("04/right", BASE_FOLDER);
         InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);
@@ -116,6 +119,7 @@ public class TestInstanceSimilarityHashing extends TestCase {
 
     public void test7() {
         ComparisonConfiguration.setFunctional(false);
+        ComparisonConfiguration.setInjective(false);
         IDatabase leftDb = ComparisonUtilityTest.loadDatabase("07/left", BASE_FOLDER);
         IDatabase rightDb = ComparisonUtilityTest.loadDatabase("07/right", BASE_FOLDER);
         InstanceMatchTask result = similarityChecker.compare(leftDb, rightDb);

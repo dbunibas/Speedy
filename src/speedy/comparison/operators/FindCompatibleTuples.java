@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.SpeedyConstants;
 import speedy.comparison.AttributeValueMap;
+import speedy.comparison.ComparisonStats;
 import speedy.comparison.CompatibilityCache;
 import speedy.comparison.CompatibilityMap;
 import speedy.comparison.TupleWithTable;
@@ -23,6 +24,7 @@ public class FindCompatibleTuples {
 
     //For each tuple in the second-db, we associate a set of compatible tuples from the first db
     public CompatibilityMap find(List<TupleWithTable> firstDB, List<TupleWithTable> secondDB) {
+        long start = System.currentTimeMillis();
         Set<TupleWithTable> allFirstDBTuples = new HashSet<TupleWithTable>(firstDB);
         AttributeValueMap firstDBValueMap = buildAttributeValueMap(firstDB);
         CompatibilityMap compatibilityMap = new CompatibilityMap();
@@ -32,6 +34,7 @@ public class FindCompatibleTuples {
             if (logger.isDebugEnabled()) logger.debug("Tuples compatible with " + secondTuple + ":\n" + SpeedyUtility.printCollection(compatibilesSourceTuples, "\t"));
             compatibilityMap.setCompatibilityForTuple(secondTuple, compatibilesSourceTuples);
         }
+        ComparisonStats.getInstance().addStat(ComparisonStats.FIND_COMPATIBLE_TUPLES_TIMES, System.currentTimeMillis() - start);
         return compatibilityMap;
     }
 
@@ -90,6 +93,7 @@ public class FindCompatibleTuples {
             return null; //All tuples are compatible
         }
         compatibileTuples = new HashSet<TupleWithTable>();
+        firstDBValueMap.getTuplesWithValue(attribute, value);
         compatibileTuples.addAll(firstDBValueMap.getTuplesWithValue(attribute, value));
         compatibileTuples.addAll(firstDBValueMap.getTuplesWithValue(attribute, SpeedyConstants.WILDCARD));
         compatibilityCache.addCompatibilitiesForValue(attribute, value, compatibileTuples);

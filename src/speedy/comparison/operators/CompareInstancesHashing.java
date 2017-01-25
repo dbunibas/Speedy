@@ -25,7 +25,6 @@ import speedy.comparison.TupleWithTable;
 import speedy.comparison.ValueMapping;
 import speedy.model.database.AttributeRef;
 import speedy.model.database.Cell;
-import speedy.model.database.ConstantValue;
 import speedy.model.database.IDatabase;
 import speedy.model.database.IValue;
 import speedy.model.database.Tuple;
@@ -46,6 +45,7 @@ public class CompareInstancesHashing implements IComputeInstanceSimilarity {
         long start = System.currentTimeMillis();
         List<TupleWithTable> leftTuples = SpeedyUtility.extractAllTuplesFromDatabase(leftDb);
         List<TupleWithTable> rightTuples = SpeedyUtility.extractAllTuplesFromDatabase(rightDb);
+        ComparisonStats.getInstance().addStat(ComparisonStats.PROCESS_INSTANCE_TIME, System.currentTimeMillis() - start);
         SignatureMapCollection leftSignatureMapCollection = signatureGenerator.generateIndexForTuples(leftTuples);
         if (logger.isDebugEnabled()) logger.debug("Left Signature Map Collection:\n" + leftSignatureMapCollection);
         List<TupleWithTable> remainingRightTuples = new ArrayList<TupleWithTable>();

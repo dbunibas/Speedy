@@ -115,7 +115,7 @@ public class CheckTupleMatchCompatibility {
     private void generateChangesForRenaming(IValue fromValue, IValue toValue, boolean leftToRight, ValueMappings valueMappings, Set<ValueCorrespondenceCommand> valueCorrespondences) {
         ValueMapping inverseMapping = getValueMapping(valueMappings, !leftToRight);
         Set<IValue> mappedValues = inverseMapping.getInvertedValueMapping(fromValue);
-        if(mappedValues == null){
+        if (mappedValues == null) {
             return;
         }
         for (IValue mappedValue : mappedValues) {
@@ -166,7 +166,7 @@ public class CheckTupleMatchCompatibility {
     private boolean isMappedByDifferentValues(IValue toValue, IValue fromValue, boolean leftToRight, ValueMappings valueMappings) {
         ValueMapping inverseMapping = getValueMapping(valueMappings, leftToRight);
         Set<IValue> mappedValues = inverseMapping.getInvertedValueMapping(toValue);
-        if(mappedValues == null){
+        if (mappedValues == null) {
             return false;
         }
         int size = mappedValues.size();
