@@ -13,6 +13,7 @@ public class SignatureMapCollection {
 
     private Map<SignatureAttributes, SignatureMap> signatures = new HashMap<SignatureAttributes, SignatureMap>();
     private Map<String, List<SignatureAttributes>> signatureAttributesForTable = new HashMap<String, List<SignatureAttributes>>();
+    private List<TupleWithTable> tuplesWithoutGroundValues = new ArrayList<TupleWithTable>();
 
     public SignatureMap getSignatureForAttributes(SignatureAttributes signatureAttributes) {
         return signatures.get(signatureAttributes);
@@ -49,6 +50,14 @@ public class SignatureMapCollection {
 
     public Map<String, List<SignatureAttributes>> getSignatureAttributesForTable() {
         return signatureAttributesForTable;
+    }
+
+    public List<TupleWithTable> getTuplesWithoutGroundValues() {
+        return tuplesWithoutGroundValues;
+    }
+
+    public void addTupleWithoutGroundValues(TupleWithTable tuple) {
+        this.tuplesWithoutGroundValues.add(tuple);
     }
 
     @SuppressWarnings("unchecked")

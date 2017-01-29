@@ -2,110 +2,139 @@ package speedy.comparison;
 
 import speedy.SpeedyConstants;
 
-public class ComparisonConfiguration {
+public class ComparisonConfiguration implements Cloneable {
 
-    private static String[] stringSkolemPrefixes = {SpeedyConstants.SKOLEM_PREFIX, "_N"};
+    private static ComparisonConfiguration singleton = new ComparisonConfiguration();
+    private static final ComparisonConfiguration defaultSingleton = new ComparisonConfiguration();
 
-    private static String[] numericSkolemPrefixes = {
+    public static ComparisonConfiguration getInstance() {
+        return singleton;
+    }
+
+    public static void reset() {
+        singleton = defaultSingleton.clone();
+    }
+
+    private String[] stringSkolemPrefixes = {SpeedyConstants.SKOLEM_PREFIX, "_N"};
+
+    private String[] numericSkolemPrefixes = {
         SpeedyConstants.BIGINT_SKOLEM_PREFIX,
         SpeedyConstants.DOUBLE_SKOLEM_PREFIX};
 
-    private static String[] stringLlunPrefixes = {SpeedyConstants.LLUN_PREFIX, "_V"};
+    private String[] stringLlunPrefixes = {SpeedyConstants.LLUN_PREFIX, "_V"};
 
-    private static String[] numericLlunPrefixes = {
+    private String[] numericLlunPrefixes = {
         SpeedyConstants.BIGINT_LLUN_PREFIX,
         SpeedyConstants.REAL_LLUN_PREFIX};
 
-    private static boolean twoWayValueMapping = true;
-    private static boolean injective = false;
-    private static boolean functional = true;
-    private static boolean stopIfNonMatchingTuples = false;
-    private static double K = 0.5;
-    private static double bestScoreThreshold = 0.99;
-    private static boolean convertSkolemInHash = false;
+    private boolean twoWayValueMapping = true;
+    private boolean injective = false;
+    private boolean functional = true;
+    private boolean stopIfNonMatchingTuples = false;
+    private double K = 0.5;
+    private double bestScoreThreshold = 0.99;
+    private boolean convertSkolemInHash = false;
+    private boolean forceExaustiveSearch = false;
 
     public static boolean isTwoWayValueMapping() {
-        return twoWayValueMapping;
+        return getInstance().twoWayValueMapping;
     }
 
     public static void setTwoWayValueMapping(boolean twoWayValueMapping) {
-        ComparisonConfiguration.twoWayValueMapping = twoWayValueMapping;
+        getInstance().twoWayValueMapping = twoWayValueMapping;
     }
 
     public static boolean isInjective() {
-        return injective;
+        return getInstance().injective;
     }
 
     public static void setInjective(boolean injective) {
-        ComparisonConfiguration.injective = injective;
+        getInstance().injective = injective;
     }
 
     public static boolean isFunctional() {
-        return functional;
+        return getInstance().functional;
     }
 
     public static void setFunctional(boolean functional) {
-        ComparisonConfiguration.functional = functional;
+        getInstance().functional = functional;
     }
 
     public static double getK() {
-        return K;
+        return getInstance().K;
     }
 
     public static void setK(double K) {
-        ComparisonConfiguration.K = K;
+        getInstance().K = K;
     }
 
     public static String[] getStringSkolemPrefixes() {
-        return stringSkolemPrefixes;
+        return getInstance().stringSkolemPrefixes;
     }
 
     public static void setStringSkolemPrefixes(String[] stringSkolemPrefixes) {
-        ComparisonConfiguration.stringSkolemPrefixes = stringSkolemPrefixes;
+        getInstance().stringSkolemPrefixes = stringSkolemPrefixes;
     }
 
     public static String[] getStringLlunPrefixes() {
-        return stringLlunPrefixes;
+        return getInstance().stringLlunPrefixes;
     }
 
     public static void setStringLlunPrefixes(String[] stringLlunPrefixes) {
-        ComparisonConfiguration.stringLlunPrefixes = stringLlunPrefixes;
+        getInstance().stringLlunPrefixes = stringLlunPrefixes;
     }
 
     public static String[] getNumericSkolemPrefixes() {
-        return numericSkolemPrefixes;
+        return getInstance().numericSkolemPrefixes;
     }
 
     public static void setNumericSkolemPrefixes(String[] numericSkolemPrefixes) {
-        ComparisonConfiguration.numericSkolemPrefixes = numericSkolemPrefixes;
+        getInstance().numericSkolemPrefixes = numericSkolemPrefixes;
     }
 
     public static String[] getNumericLlunPrefixes() {
-        return numericLlunPrefixes;
+        return getInstance().numericLlunPrefixes;
     }
 
     public static void setNumericLlunPrefixes(String[] numericLlunPrefixes) {
-        ComparisonConfiguration.numericLlunPrefixes = numericLlunPrefixes;
+        getInstance().numericLlunPrefixes = numericLlunPrefixes;
     }
 
     public static boolean isStopIfNonMatchingTuples() {
-        return stopIfNonMatchingTuples;
+        return getInstance().stopIfNonMatchingTuples;
     }
 
     public static void setStopIfNonMatchingTuples(boolean stopIfNonMatchingTuples) {
-        ComparisonConfiguration.stopIfNonMatchingTuples = stopIfNonMatchingTuples;
+        getInstance().stopIfNonMatchingTuples = stopIfNonMatchingTuples;
     }
 
     public static boolean isConvertSkolemInHash() {
-        return convertSkolemInHash;
+        return getInstance().convertSkolemInHash;
     }
 
     public static void setConvertSkolemInHash(boolean convertSkolemInHash) {
-        ComparisonConfiguration.convertSkolemInHash = convertSkolemInHash;
+        getInstance().convertSkolemInHash = convertSkolemInHash;
     }
 
     public static double getBestScoreThreshold() {
-        return bestScoreThreshold;
+        return getInstance().bestScoreThreshold;
+    }
+
+    public static void setForceExaustiveSearch(boolean forceExaustiveSearch) {
+        getInstance().forceExaustiveSearch = forceExaustiveSearch;
+    }
+
+    public static boolean isForceExaustiveSearch() {
+        return getInstance().forceExaustiveSearch;
+    }
+
+    public ComparisonConfiguration clone() {
+        try {
+            return (ComparisonConfiguration) super.clone();
+        } catch (CloneNotSupportedException ex) {
+            ex.printStackTrace();
+            return null;
+        }
     }
 
     @Override

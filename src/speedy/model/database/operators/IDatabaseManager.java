@@ -1,7 +1,6 @@
 package speedy.model.database.operators;
 
 import speedy.model.database.IDatabase;
-import speedy.model.database.dbms.DBMSDB;
 
 public interface IDatabaseManager {
 

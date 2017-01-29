@@ -54,6 +54,7 @@ public class ComparisonStats {
     }
 
     public void addStat(String statName, long newTime) {
+        if (logger.isDebugEnabled()) logger.debug("## Adding stat: " + statName + ": " + newTime);
         long previousTime = 0;
         if (stats.containsKey(statName)) {
             previousTime = stats.get(statName);

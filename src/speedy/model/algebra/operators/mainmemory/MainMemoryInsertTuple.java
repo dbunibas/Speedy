@@ -21,7 +21,7 @@ public class MainMemoryInsertTuple implements IInsertTuple {
     @Override
     public void execute(ITable table, Tuple tuple, IDatabase source, IDatabase target) {
         if (logger.isDebugEnabled()) logger.debug("----Executing insert into table " + table.getName() + " tuple: " + tuple);
-        if(table instanceof MainMemoryVirtualTable){
+        if (table instanceof MainMemoryVirtualTable) {
             throw new IllegalArgumentException("Unable to insert tuple in virtual tables");
         }
         DataSource dataSource = ((MainMemoryTable) table).getDataSource();
@@ -29,9 +29,17 @@ public class MainMemoryInsertTuple implements IInsertTuple {
         INode tupleNode = SpeedyUtility.createNode("TupleNode", tupleLabel, tuple.getOid());
         dataSource.getInstances().get(0).addChild(tupleNode);
         for (Cell cell : tuple.getCells()) {
+            if (cell.isOID()) {
+                continue;
+            }
             INode attributeNode = SpeedyUtility.createNode("AttributeNode", cell.getAttribute(), IntegerOIDGenerator.getNextOID());
             tupleNode.addChild(attributeNode);
-            String leafLabel = dataSource.getSchema().getChild(0).getChild(cell.getAttribute()).getChild(0).getLabel();
+            INode schemaNode = dataSource.getSchema().getChild(0);
+            INode attributeSchemaNode = schemaNode.getChild(cell.getAttribute());
+            if (attributeSchemaNode == null) {
+                throw new IllegalArgumentException("Unable to find attribute " + cell.getAttribute() + " in schema " + schemaNode);
+            }
+            String leafLabel = attributeSchemaNode.getChild(0).getLabel();
             INode leafNode = SpeedyUtility.createNode("LeafNode", leafLabel, cell.getValue());
             attributeNode.addChild(leafNode);
         }

@@ -72,8 +72,11 @@ public class FindBestTupleMapping {
     }
 
     private TupleMapping findBestPowerset(List<TupleWithTable> sourceTuples, List<TupleWithTable> destinationTuples, List<TupleMatch> matches) {
-        return findBestPowersetExaustive(sourceTuples, destinationTuples, matches);
-//        return findBestPowersetGreedy(sourceTuples, destinationTuples, matches);
+        if (ComparisonConfiguration.isForceExaustiveSearch()) {
+            return findBestPowersetExaustive(sourceTuples, destinationTuples, matches);
+        } else {
+            return findBestPowersetGreedy(sourceTuples, destinationTuples, matches);
+        }
     }
 
     private TupleMapping findBestPowersetExaustive(List<TupleWithTable> sourceTuples, List<TupleWithTable> destinationTuples, List<TupleMatch> matches) {
@@ -96,7 +99,6 @@ public class FindBestTupleMapping {
             double similarityScore = scoreCalculator.computeScore(sourceTuples, destinationTuples, nextTupleMapping);
             if (logger.isInfoEnabled()) logger.info("Mapping score: " + similarityScore);
             nextTupleMapping.setScore(similarityScore);
-            logger.error("******\n"+nextTupleMapping);
             if (similarityScore > bestScore) {
                 bestScore = similarityScore;
                 bestTupleMapping = nextTupleMapping;

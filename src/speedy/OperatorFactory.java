@@ -28,6 +28,9 @@ import speedy.model.algebra.operators.sql.SQLCreateTable;
 import speedy.model.algebra.operators.sql.SQLDelete;
 import speedy.model.database.IDatabase;
 import speedy.model.database.mainmemory.MainMemoryDB;
+import speedy.model.database.operators.IOIDGenerator;
+import speedy.model.database.operators.dbms.SQLOIDGenerator;
+import speedy.model.database.operators.mainmemory.MainMemoryOIDGenerator;
 
 public class OperatorFactory {
 
@@ -57,6 +60,9 @@ public class OperatorFactory {
     //
     private IBatchInsert mainMemoryBatchInsertOperator = new MainMemoryBatchInsert();
     private IBatchInsert sqlBatchInsertOperator  = new SQLBatchInsert();
+    //
+    private IOIDGenerator mainMemoryOIDGenerator = new MainMemoryOIDGenerator();
+    private IOIDGenerator sqlOIDGenerator = SQLOIDGenerator.getInstance();
 
     private OperatorFactory() {
     }
@@ -121,8 +127,11 @@ public class OperatorFactory {
         return new SQLBatchInsert();
     }
 
-    private boolean isMainMemory(IDatabase database) {
-        return (database instanceof MainMemoryDB);
+    public IOIDGenerator getOIDGenerator(IDatabase database) {
+        if (this.isMainMemory(database)) {
+            return mainMemoryOIDGenerator;
+        }
+        return sqlOIDGenerator;
     }
 
     public ICreateTable getTableCreator(IDatabase database) {
@@ -130,5 +139,9 @@ public class OperatorFactory {
             return mainMemoryTableCreator;
         }
         return sqlTableCreator;
+    }
+
+    private boolean isMainMemory(IDatabase database) {
+        return (database instanceof MainMemoryDB);
     }
 }

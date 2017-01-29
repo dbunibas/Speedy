@@ -30,6 +30,10 @@ public class SignatureMapCollectionGenerator {
         SignatureMapCollection signatureCollection = new SignatureMapCollection();
         for (TupleWithTable tupleWithTable : tuples) {
             Set<AttributeRef> groundAttributes = ComparisonUtility.findAttributesWithGroundValue(tupleWithTable.getTuple());
+            if (groundAttributes.isEmpty()) {
+                signatureCollection.addTupleWithoutGroundValues(tupleWithTable);
+                continue;
+            }
             TupleSignature maximalSignature = generateSignature(tupleWithTable, groundAttributes);
             if (logger.isDebugEnabled()) logger.debug("Signature: " + maximalSignature);
             SignatureMap signatureMap = signatureCollection.getOrCreateSignatureMap(maximalSignature.getSignatureAttribute());
@@ -37,11 +41,14 @@ public class SignatureMapCollectionGenerator {
         }
         long end = System.currentTimeMillis();
         if (logger.isInfoEnabled()) logger.info("Generating index time:" + (end - start) + " ms");
-        ComparisonStats.getInstance().addStat(ComparisonStats.GENERATE_SIGNATURE_MAP_COLLECTION_TIME, end-start);
+        ComparisonStats.getInstance().addStat(ComparisonStats.GENERATE_SIGNATURE_MAP_COLLECTION_TIME, end - start);
         return signatureCollection;
     }
 
     public TupleSignature generateSignature(TupleWithTable tupleWithTable, Collection<AttributeRef> attributes) {
+        if (attributes.isEmpty()) {
+            throw new IllegalArgumentException("Unable to generate signature for an empty set of attributes");
+        }
         long start = System.currentTimeMillis();
         List<AttributeRef> sortedAttributes = new ArrayList<AttributeRef>(attributes);
         Collections.sort(sortedAttributes, new StringComparator());
@@ -55,7 +62,7 @@ public class SignatureMapCollectionGenerator {
         SpeedyUtility.removeChars(SIGNATURE_SEPARATOR.length(), signature);
         SignatureAttributes signatureAttribute = new SignatureAttributes(tableName, sortedAttributes);
         long end = System.currentTimeMillis();
-        ComparisonStats.getInstance().addStat(ComparisonStats.GENERATE_TUPLE_SIGNATURE_TIME, end-start);
+        ComparisonStats.getInstance().addStat(ComparisonStats.GENERATE_TUPLE_SIGNATURE_TIME, end - start);
         return new TupleSignature(tuple, signatureAttribute, signature.toString());
     }
 }

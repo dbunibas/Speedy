@@ -2,6 +2,7 @@ package speedy.comparison.operators;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,7 @@ import speedy.model.database.Tuple;
 import speedy.utility.SpeedyUtility;
 
 public class CompareInstancesHashing implements IComputeInstanceSimilarity {
-
+    
     private final static Logger logger = LoggerFactory.getLogger(CompareInstancesHashing.class);
     private final SignatureMapCollectionGenerator signatureGenerator = new SignatureMapCollectionGenerator();
     private final CheckTupleMatch tupleMatcher = new CheckTupleMatch();
@@ -61,7 +62,7 @@ public class CompareInstancesHashing implements IComputeInstanceSimilarity {
         if (logger.isInfoEnabled()) logger.info("** Total time:" + (end - start) + " ms");
         return instanceMatch;
     }
-
+    
     private TupleMapping findMapping(SignatureMapCollection srcSignatureMap, List<TupleWithTable> destTuples,
             List<TupleWithTable> extraDestTuples, List<TupleWithTable> extraSrcTuples, boolean maintainSrcTuples) {
         long start = System.currentTimeMillis();
@@ -88,7 +89,7 @@ public class CompareInstancesHashing implements IComputeInstanceSimilarity {
         if (logger.isInfoEnabled()) logger.info("Finding mapping time:" + (end - start) + " ms");
         return tupleMapping;
     }
-
+    
     private List<TupleMatch> findMatchingTuples(TupleWithTable destinationTuple, List<SignatureAttributes> signatureAttributesForTable,
             SignatureMapCollection leftSignatureMaps, TupleMapping tupleMapping) {
         List<TupleMatch> matchingTuples = new ArrayList<TupleMatch>();
@@ -127,7 +128,7 @@ public class CompareInstancesHashing implements IComputeInstanceSimilarity {
         }
         return matchingTuples;
     }
-
+    
     private boolean isCompatible(Set<AttributeRef> attributesWithGroundValues, List<AttributeRef> attributes) {
         return attributesWithGroundValues.containsAll(attributes);
     }
@@ -145,13 +146,14 @@ public class CompareInstancesHashing implements IComputeInstanceSimilarity {
         SignatureMapCollection rightSignatureMapCollection = signatureGenerator.generateIndexForTuples(rightTuplesToMatch);
         if (logger.isDebugEnabled()) logger.debug("Right Signature Map Collection:\n" + leftSignatureMapCollection);
         List<TupleWithTable> remainingLeftTuples = new ArrayList<TupleWithTable>();
+        remainingLeftTuples.addAll(leftSignatureMapCollection.getTuplesWithoutGroundValues());
         TupleMapping rtlMapping = findMapping(rightSignatureMapCollection, leftTuplesToMatch, remainingLeftTuples, remainingRightTuples, true);
         if (logger.isDebugEnabled()) logger.debug("RTL Mapping:\n" + rtlMapping);
         mergeMappings(ltrMapping, rtlMapping, renamedTupleMap);
         ltrMapping.setLeftNonMatchingTuples(remainingLeftTuples);
         ltrMapping.setRightNonMatchingTuples(remainingRightTuples);
     }
-
+    
     private List<TupleWithTable> findLeftTuplesToMatch(TupleMapping tupleMapping, SignatureMapCollection leftSignatureMapCollection,
             Map<TupleWithTable, TupleWithTable> renamedTupleMap) {
         List<TupleWithTable> originalRemainingLeftTuples = collectRemainingTuples(leftSignatureMapCollection);
@@ -163,7 +165,7 @@ public class CompareInstancesHashing implements IComputeInstanceSimilarity {
         }
         return renamedLeftTuples;
     }
-
+    
     private TupleWithTable applyValueMapping(TupleWithTable originalTuple, ValueMapping valueMapping) {
         Tuple tuple = new Tuple(originalTuple.getTuple().getOid());
         TupleWithTable renamedTuple = new TupleWithTable(originalTuple.getTable(), tuple);
@@ -182,7 +184,7 @@ public class CompareInstancesHashing implements IComputeInstanceSimilarity {
         }
         return renamedTuple;
     }
-
+    
     private List<TupleWithTable> findRightTuplesToMatch(List<TupleWithTable> rightTuples, List<TupleWithTable> remainingRightTuples) {
         if (ComparisonConfiguration.isInjective()) {
             return remainingRightTuples;
@@ -190,7 +192,7 @@ public class CompareInstancesHashing implements IComputeInstanceSimilarity {
             return rightTuples;
         }
     }
-
+    
     private List<TupleWithTable> collectRemainingTuples(SignatureMapCollection signatureMapCollection) {
         List<TupleWithTable> result = new ArrayList<TupleWithTable>();
         for (SignatureMap signatureMap : signatureMapCollection.getSignatureMaps()) {
@@ -203,7 +205,7 @@ public class CompareInstancesHashing implements IComputeInstanceSimilarity {
         }
         return result;
     }
-
+    
     private void mergeMappings(TupleMapping ltrMapping, TupleMapping rtlMapping, Map<TupleWithTable, TupleWithTable> renamedTupleMap) {
         for (TupleWithTable rightTuple : rtlMapping.getTupleMapping().keySet()) {
             TupleWithTable leftTuple = rtlMapping.getFirstMappingForTuple(rightTuple);
@@ -215,7 +217,7 @@ public class CompareInstancesHashing implements IComputeInstanceSimilarity {
             ltrMapping.addRightToLeftMappingForValue(rightValue, leftValue);
         }
     }
-
+    
     private void findRemainingMatches(TupleMapping ltrMapping, List<TupleWithTable> leftDB, List<TupleWithTable> rightDB) {
         List<TupleWithTable> leftTuples;
         if (ComparisonConfiguration.isFunctional()) {
@@ -230,6 +232,7 @@ public class CompareInstancesHashing implements IComputeInstanceSimilarity {
             rightTuples = rightDB;
         }
         if (leftTuples.isEmpty() || rightTuples.isEmpty()) {
+            if (logger.isDebugEnabled()) logger.debug("Empty tuples: Left " + leftTuples.size() + " - Right " + rightTuples.size());
             return;
         }
         long start = System.currentTimeMillis();
@@ -242,18 +245,25 @@ public class CompareInstancesHashing implements IComputeInstanceSimilarity {
         addRemainingTupleMatches(rightTuples, remainingTupleMatches, ltrMapping);
         ComparisonStats.getInstance().addStat(ComparisonStats.FIND_REMAINING_MATCHES_TIME, System.currentTimeMillis() - start);
     }
-
+    
     private TupleMatches findTupleMatches(List<TupleWithTable> rightDB, CompatibilityMap compatibilityMap) {
+        Set<TupleWithTable> matchedLeftTuples = new HashSet<TupleWithTable>();
         TupleMatches tupleMatches = new TupleMatches();
         for (TupleWithTable rightTuple : rightDB) {
             //We associate, for each target tuple, a compatible set of source tuples
             for (TupleWithTable leftTuples : compatibilityMap.getCompatibleTuples(rightTuple)) {
+                if (matchedLeftTuples.contains(leftTuples)) {
+                    continue;
+                }
                 TupleMatch match = tupleMatcher.checkMatch(leftTuples, rightTuple);
                 if (match == null) {
                     continue;
                 }
                 if (logger.isDebugEnabled()) logger.debug("Match found: " + match);
                 tupleMatches.addTupleMatch(rightTuple, match);
+                if (ComparisonConfiguration.isFunctional()) {
+                    matchedLeftTuples.add(leftTuples);
+                }
                 if (ComparisonConfiguration.isInjective()) {
                     break;
                 }
@@ -261,7 +271,7 @@ public class CompareInstancesHashing implements IComputeInstanceSimilarity {
         }
         return tupleMatches;
     }
-
+    
     private void addRemainingTupleMatches(List<TupleWithTable> secondDB, TupleMatches remainingTupleMatches, TupleMapping ltrMapping) {
         List<TupleWithTable> tuples = new ArrayList<TupleWithTable>(secondDB);
         for (TupleWithTable secondTuple : tuples) {
@@ -286,5 +296,5 @@ public class CompareInstancesHashing implements IComputeInstanceSimilarity {
             }
         }
     }
-
+    
 }
