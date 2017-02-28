@@ -71,8 +71,4 @@ public class ComparisonUtility {
         }
     }
 
-    public static ValueMappings getEmptyValueMappings() {
-        return new ValueMappings();
-    }
-
 }

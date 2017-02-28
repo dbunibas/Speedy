@@ -55,12 +55,13 @@ public class CheckTupleMatch {
             scoreEstimate += matchScore;
         }
         TupleMatch tupleMatch = new TupleMatch(leftTuple, rightTuple, valueMappings, scoreEstimate);
-        boolean compatible = compatibilityChecker.checkCompatibilityAndMerge(ComparisonUtility.getEmptyValueMappings(), tupleMatch);
+        ValueMappings compatibleMapping = new ValueMappings();
+        boolean compatible = compatibilityChecker.checkCompatibilityAndMerge(compatibleMapping, tupleMatch);
         if (!compatible) {
             if (logger.isDebugEnabled()) logger.debug("Inconsistent value mappings, discarding...");
             return null;
         }
-        tupleMatch.setValueMappings(valueMappings);
+        tupleMatch.setValueMappings(compatibleMapping);
         if (logger.isDebugEnabled()) logger.debug("** Corrected tuple match: " + tupleMatch);
         return tupleMatch;
     }
