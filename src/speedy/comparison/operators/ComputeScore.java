@@ -13,7 +13,6 @@ import speedy.comparison.ComparisonStats;
 import speedy.comparison.TupleMapping;
 import speedy.comparison.TupleWithTable;
 import speedy.comparison.ValueMapping;
-import speedy.comparison.ValueMappings;
 import speedy.model.database.Cell;
 import speedy.model.database.IValue;
 import speedy.utility.SpeedyUtility;
@@ -26,36 +25,33 @@ public class ComputeScore {
     public double computeScore(List<TupleWithTable> leftTuples, List<TupleWithTable> rightTuples, TupleMapping tupleMapping) {
         long start = System.currentTimeMillis();
         if (logger.isDebugEnabled()) logger.debug("Computing score btw source tuples: \n " + SpeedyUtility.printCollection(leftTuples, "\t") + "\nand right tuples: \n " + SpeedyUtility.printCollection(rightTuples, "\t") + "\nwith mapping " + tupleMapping);
-        Map<IValue, Integer> coveredByMap = computeCoveredByMap(tupleMapping.getValueMappings());
-        if (logger.isDebugEnabled()) logger.debug("Covered by map:\n" + SpeedyUtility.printMap(coveredByMap));
+        Map<IValue, Integer> leftCoveredByMap = computeCoveredByMapForValueMapping(tupleMapping.getValueMappings().getLeftToRightValueMapping());
+        if (logger.isDebugEnabled()) logger.debug("Left covered by map:\n" + SpeedyUtility.printMap(leftCoveredByMap));
+        Map<IValue, Integer> rightCoveredByMap = computeCoveredByMapForValueMapping(tupleMapping.getValueMappings().getRightToLeftValueMapping());
+        if (logger.isDebugEnabled()) logger.debug("Right covered by map:\n" + SpeedyUtility.printMap(rightCoveredByMap));
         Map<TupleWithTable, Set<TupleWithTable>> directMapping = tupleMapping.getTupleMapping();
         Map<TupleWithTable, Set<TupleWithTable>> inverseMapping = computeInverseMapping(directMapping);
-        double leftTupleScores = computeScoreForTuples(leftTuples, directMapping, coveredByMap, tupleMapping.getLeftToRightValueMapping());
-        double rightTupleScores = computeScoreForTuples(rightTuples, inverseMapping, coveredByMap, tupleMapping.getRightToLeftValueMapping());
-        if (logger.isDebugEnabled()) logger.debug("Left Tuple Score: " + leftTupleScores);
-        if (logger.isDebugEnabled()) logger.debug("Right Tuple Score: " + rightTupleScores);
-        if (logger.isDebugEnabled()) logger.debug("Number of Left Cells: " + numberOfCells(leftTuples));
-        if (logger.isDebugEnabled()) logger.debug("Number of Right Cells: " + numberOfCells(rightTuples));
+        double leftTupleScores = computeScoreForTuples(leftTuples, directMapping, leftCoveredByMap, rightCoveredByMap, tupleMapping.getLeftToRightValueMapping());
+        double rightTupleScores = computeScoreForTuples(rightTuples, inverseMapping, rightCoveredByMap, leftCoveredByMap, tupleMapping.getRightToLeftValueMapping());
+        if (logger.isDebugEnabled()) logger.debug("* Left Tuples Score: " + leftTupleScores);
+        if (logger.isDebugEnabled()) logger.debug("* Right Tuples Score: " + rightTupleScores);
+        if (logger.isDebugEnabled()) logger.debug("* Number of Left Cells: " + numberOfCells(leftTuples));
+        if (logger.isDebugEnabled()) logger.debug("* Number of Right Cells: " + numberOfCells(rightTuples));
         double score = (leftTupleScores + rightTupleScores) / (numberOfCells(leftTuples) + numberOfCells(rightTuples));
-        if (logger.isDebugEnabled()) logger.debug("Total Score: " + score);
+        if (logger.isDebugEnabled()) logger.debug("* Total Score: " + score);
         ComparisonStats.getInstance().addStat(ComparisonStats.COMPUTE_SCORE_TIME, System.currentTimeMillis() - start);
         return score;
     }
 
-    private Map<IValue, Integer> computeCoveredByMap(ValueMappings valueMappings) {
+    private Map<IValue, Integer> computeCoveredByMapForValueMapping(ValueMapping valueMapping) {
         Map<IValue, Integer> result = new HashMap<IValue, Integer>();
-        computeCoveredByMapForValueMapping(valueMappings.getLeftToRightValueMapping(), result);
-        computeCoveredByMapForValueMapping(valueMappings.getRightToLeftValueMapping(), result);
-        return result;
-    }
-
-    private void computeCoveredByMapForValueMapping(ValueMapping valueMapping, Map<IValue, Integer> result) {
         for (IValue invertedKey : valueMapping.getInvertedKeys()) {
             if (valueMapping.getInvertedValueMapping(invertedKey).isEmpty()) {
                 continue;
             }
             result.put(invertedKey, valueMapping.getInvertedValueMapping(invertedKey).size());
         }
+        return result;
     }
 
     private Map<TupleWithTable, Set<TupleWithTable>> computeInverseMapping(Map<TupleWithTable, Set<TupleWithTable>> tupleMapping) {
@@ -78,15 +74,17 @@ public class ComputeScore {
         mappedTuples.add(leftTuple);
     }
 
-    private double computeScoreForTuples(List<TupleWithTable> tuples, Map<TupleWithTable, Set<TupleWithTable>> mapping, Map<IValue, Integer> coveredByMap, ValueMapping valueMapping) {
+    private double computeScoreForTuples(List<TupleWithTable> tuples, Map<TupleWithTable, Set<TupleWithTable>> mapping, Map<IValue, Integer> srcCoveredByMap, Map<IValue, Integer> dstCoveredByMap, ValueMapping valueMapping) {
         double scoreForTuples = 0.0;
         for (TupleWithTable tuple : tuples) {
-            scoreForTuples += computeScoreForTuple(tuple, mapping, coveredByMap, valueMapping);
+            double scoreForTuple = computeScoreForTuple(tuple, mapping, srcCoveredByMap, dstCoveredByMap, valueMapping);
+            if (logger.isDebugEnabled()) logger.debug("# Score for tuple: " + tuple + ": " + scoreForTuple);
+            scoreForTuples += scoreForTuple;
         }
         return scoreForTuples;
     }
 
-    private double computeScoreForTuple(TupleWithTable tuple, Map<TupleWithTable, Set<TupleWithTable>> mapping, Map<IValue, Integer> coveredByMap, ValueMapping valueMapping) {
+    private double computeScoreForTuple(TupleWithTable tuple, Map<TupleWithTable, Set<TupleWithTable>> mapping, Map<IValue, Integer> srcCoveredByMap, Map<IValue, Integer> dstCoveredByMap, ValueMapping valueMapping) {
         Set<TupleWithTable> mappedTuples = mapping.get(tuple);
         if (mappedTuples == null || mappedTuples.isEmpty()) {
             if (logger.isDebugEnabled()) logger.debug("Tuple " + tuple + " is not mapped in mapping\n " + SpeedyUtility.printMap(mapping));
@@ -94,12 +92,12 @@ public class ComputeScore {
         }
         double sumTuplePair = 0.0;
         for (TupleWithTable mappedTuple : mappedTuples) {
-            sumTuplePair += computeScoreForMapping(tuple, mappedTuple, coveredByMap, valueMapping);
+            sumTuplePair += computeScoreForMapping(tuple, mappedTuple, srcCoveredByMap, dstCoveredByMap, valueMapping);
         }
         return (sumTuplePair / (double) mappedTuples.size());
     }
 
-    private double computeScoreForMapping(TupleWithTable srcTuple, TupleWithTable mappedTuple, Map<IValue, Integer> coveredByMap, ValueMapping valueMapping) {
+    private double computeScoreForMapping(TupleWithTable srcTuple, TupleWithTable mappedTuple, Map<IValue, Integer> leftCoveredByMap, Map<IValue, Integer> rightCoveredByMap, ValueMapping valueMapping) {
         double score = 0.0;
         for (int i = 0; i < srcTuple.getTuple().getCells().size(); i++) {
             if (srcTuple.getTuple().getCells().get(i).getAttribute().equals(SpeedyConstants.OID)) {
@@ -107,14 +105,14 @@ public class ComputeScore {
             }
             IValue srcValue = srcTuple.getTuple().getCells().get(i).getValue();
             IValue dstValue = mappedTuple.getTuple().getCells().get(i).getValue();
-            double scoreForAttribute = scoreForAttribute(srcValue, dstValue, coveredByMap, valueMapping);
+            double scoreForAttribute = scoreForAttribute(srcValue, dstValue, leftCoveredByMap, rightCoveredByMap, valueMapping);
             if (logger.isDebugEnabled()) logger.debug("Score for value mapping: " + srcValue + " -> " + dstValue + ": " + scoreForAttribute);
             score += scoreForAttribute;
         }
         return score;
     }
 
-    private double scoreForAttribute(IValue srcValue, IValue dstValue, Map<IValue, Integer> coveredByMap, ValueMapping valueMapping) {
+    private double scoreForAttribute(IValue srcValue, IValue dstValue, Map<IValue, Integer> leftCoveredByMap, Map<IValue, Integer> rightCoveredByMap, ValueMapping valueMapping) {
         if (logger.isTraceEnabled()) logger.trace("Comparing values: '" + srcValue + "', '" + dstValue + "'");
         SpeedyConstants.ValueMatchResult matchResult = tupleMatcher.match(srcValue, dstValue);
         if (matchResult == SpeedyConstants.ValueMatchResult.NOT_MATCHING) {
@@ -124,20 +122,32 @@ public class ComputeScore {
         if (matchResult == SpeedyConstants.ValueMatchResult.EQUAL_CONSTANTS) {
             return 1.0;
         }
+        IValue mappedValue = valueMapping.getValueMapping(srcValue);
+        if (mappedValue == null) {
+            mappedValue = srcValue;
+        }
+        double leftCoveredByValue = computeCoveredByValue(srcValue, mappedValue, leftCoveredByMap);
+        if (logger.isDebugEnabled()) logger.debug("Value " + mappedValue + " is covered " + leftCoveredByValue + " times by src tuples");
+        double rightCoveredByValue = computeCoveredByValue(dstValue, mappedValue, rightCoveredByMap);
+        if (logger.isDebugEnabled()) logger.debug("Value " + mappedValue + " is covered " + rightCoveredByValue + " times by dst tuples");
+        double coveredByValue = leftCoveredByValue + rightCoveredByValue;
         if (matchResult == SpeedyConstants.ValueMatchResult.PLACEHOLDER_TO_CONSTANT
                 || matchResult == SpeedyConstants.ValueMatchResult.CONSTANT_TO_PLACEHOLDER) {
-            return ComparisonConfiguration.getK();
+            return 2 * ComparisonConfiguration.getK() / (double) coveredByValue;
         }
         //Else Placeholder -> Placeholder
-        if (!SpeedyUtility.isPlaceholder(dstValue)) {
-            throw new IllegalArgumentException("Expecting a placeholder for destination value " + dstValue);
+        return 2 / (double) coveredByValue;
+    }
+
+    private double computeCoveredByValue(IValue value, IValue mappedValue, Map<IValue, Integer> coveredByMap) {
+        if (SpeedyUtility.isConstant(value)) {
+            return 1;
         }
-        Integer coveredByValue = coveredByMap.get(dstValue);
+        Integer coveredByValue = coveredByMap.get(mappedValue);
         if (coveredByValue == null) {
             coveredByValue = 1;
         }
-        if (logger.isDebugEnabled()) logger.debug("Value " + dstValue + " is covered " + coveredByValue + " times");
-        return 1 / (double) coveredByValue;
+        return coveredByValue;
     }
 
     private int numberOfCells(List<TupleWithTable> tuples) {
@@ -168,4 +178,5 @@ public class ComputeScore {
         attributesForTable.put(table, numberOfCells);
         return numberOfCells;
     }
+
 }
