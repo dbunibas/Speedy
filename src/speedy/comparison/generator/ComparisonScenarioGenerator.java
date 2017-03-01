@@ -26,7 +26,6 @@ import speedy.model.database.IValue;
 import speedy.model.database.NullValue;
 import speedy.model.database.Tuple;
 import speedy.model.database.TupleOID;
-import speedy.model.database.mainmemory.datasource.IntegerOIDGenerator;
 import speedy.model.database.operators.IDatabaseManager;
 import speedy.persistence.Types;
 import static speedy.persistence.Types.REAL;
@@ -43,9 +42,9 @@ public class ComparisonScenarioGenerator {
     private IOIDGenerator oidGenerator;
     private long lastPlaceholderId = 0;
     //
-    private int newRedundantTuplesPerc = 50;
-    private int newRandomTuplesPerc = 10;
-    private int cellsToChangePerc = 50;
+    private int newRedundantTuplesPerc = 10;
+    private int newRandomTuplesPerc = 5;
+    private int cellsToChangePerc = 20;
     
     public InstancePair generate(IDatabase originalDB) {
         initOperators(originalDB);

@@ -26,13 +26,14 @@
     <!--<logger name="speedy.comparison.operators.CompareInstancesHashing" level="DEBUG"/>-->
     <!--<logger name="speedy.comparison.operators.CompareInstancesCompatibility" level="DEBUG"/>-->
     <!--<logger name="speedy.comparison.operators.ComputeInstanceSimilarityBruteForce" level="DEBUG"/>-->
-    <!--<logger name="speedy.comparison.operators.FindBestTupleMapping" level="DEBUG"/>-->
+    <!--<logger name="speedy.comparison.operators.FindBestTupleMapping" level="INFO"/>-->
     <!--<logger name="speedy.comparison.operators.CheckTupleMatchCompatibility" level="DEBUG"/>-->
     <!--<logger name="speedy.comparison.operators.CheckTupleMatch" level="DEBUG"/>-->
     <!--<logger name="speedy.comparison.operators.ComputeScore" level="TRACE"/>-->
     <!--<logger name="speedy.comparison.operators.SignatureMapCollectionGenerator" level="INFO"/>-->
+    <!--<logger name="speedy.utility.combinatorics.GenericPowersetGeneratorBinary" level="DEBUG"/>-->
     <!--     TEST     -->
-    <logger name="speedy.test" level="DEBUG"/>
+    <!--<logger name="speedy.test" level="DEBUG"/>-->
     <!--STATS-->     
     <!--<logger name="speedy.persistence.relational.QueryStatManager" level="DEBUG"/>-->
     <!--<logger name="speedy.persistence.relational.QueryManager" level="TRACE"/>-->

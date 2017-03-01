@@ -19,32 +19,39 @@ import speedy.utility.PrintUtility;
 import speedy.utility.SpeedyUtility;
 
 public class TestComparisonScenarioGenerator extends TestCase {
-
+    
     private final static Logger logger = LoggerFactory.getLogger(TestComparisonScenarioGenerator.class);
     private final ComparisonScenarioGenerator generator = new ComparisonScenarioGenerator();
     private final IComputeInstanceSimilarity similarityCheckerBruteForce = new ComputeInstanceSimilarityBruteForce();
     private final IComputeInstanceSimilarity similarityCheckerCompatibility = new CompareInstancesCompatibility();
     private final IComputeInstanceSimilarity similarityCheckerHashing = new CompareInstancesHashing();
-
+    
     public void test() {
+//        execute("conference");
+//        execute("doctors-1k");
+        execute("doctors-100");
+    }
+
+    private void execute(String scenarioName) {
 //        setInjectiveFunctionalMapping();   //no new tuples
         setNonInjectiveFunctionalMapping();//new left tuples (default)
-//        setInjectiveNonFunctionalMapping();//new right tuples
+//        setInjectiveNonFunctionalMapping();//new right tuples * non functional mappings are very slow with brute force and compatibility *
 //        setNonInjectiveNonFunctionalMapping();//new left/right tuples
         ComparisonConfiguration.setTwoWayValueMapping(true); //Change constants in nulls in both instances (default)
         ComparisonConfiguration.setForceExaustiveSearch(false);
-        String sourceFile = "/Temp/comparison/redundancy/conference/";
+        String expPath = "/Temp/comparison/redundancy/" + scenarioName;
+        String sourceFile = expPath + "/initial/";
         IDatabase sourceDB = ComparisonUtilityTest.loadDatabase(sourceFile);
         InstancePair instancePair = generator.generate(sourceDB);
         if (logger.isTraceEnabled()) logger.trace(instancePair.toString());
         ExportCSVFile exporter = new ExportCSVFile();
-        exporter.exportDatabase(instancePair.getLeftDB(), true, false, "/Temp/comparison/redundancy/conference_left/");
-        exporter.exportDatabase(instancePair.getRightDB(), true, false, "/Temp/comparison/redundancy/conference_right/");
+        exporter.exportDatabase(instancePair.getLeftDB(), true, false, expPath + "/left/");
+        exporter.exportDatabase(instancePair.getRightDB(), true, false, expPath + "/right/");
         execute(instancePair.getLeftDB(), instancePair.getRightDB(), similarityCheckerHashing);
         execute(instancePair.getLeftDB(), instancePair.getRightDB(), similarityCheckerCompatibility);
         execute(instancePair.getLeftDB(), instancePair.getRightDB(), similarityCheckerBruteForce);
     }
-
+    
     private void execute(IDatabase leftDb, IDatabase rightDb, IComputeInstanceSimilarity similarityChecker) {
         ComparisonStats.getInstance().resetStatistics();
         PrintUtility.printInformation("----------- " + similarityChecker.getClass().getSimpleName() + " -----------------");
@@ -65,25 +72,25 @@ public class TestComparisonScenarioGenerator extends TestCase {
         PrintUtility.printMessage(ComparisonStats.getInstance().toString());
         PrintUtility.printMessage("--------------------------------------------------");
     }
-
+    
     private void setInjectiveFunctionalMapping() {
         ComparisonConfiguration.setInjective(true);
         ComparisonConfiguration.setFunctional(true);
     }
-
+    
     private void setNonInjectiveFunctionalMapping() {
         ComparisonConfiguration.setInjective(false);
         ComparisonConfiguration.setFunctional(true);
     }
-
+    
     private void setInjectiveNonFunctionalMapping() {
         ComparisonConfiguration.setInjective(true);
         ComparisonConfiguration.setFunctional(false);
     }
-
+    
     private void setNonInjectiveNonFunctionalMapping() {
         ComparisonConfiguration.setInjective(false);
         ComparisonConfiguration.setFunctional(false);
     }
-
+    
 }

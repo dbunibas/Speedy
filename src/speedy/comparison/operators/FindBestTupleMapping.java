@@ -37,7 +37,7 @@ public class FindBestTupleMapping {
     }
 
     private TupleMapping findBestFunctionalTupleMapping(List<TupleWithTable> sourceTuples, List<TupleWithTable> destinationTuples, TupleMatches tupleMatches) {
-        if (logger.isDebugEnabled()) logger.debug("Finding tuple mapping for\n" + SpeedyUtility.printCollection(sourceTuples) + "\n with " + tupleMatches);
+        if (logger.isDebugEnabled()) logger.debug("Finding best functional tuple mapping for\n" + SpeedyUtility.printCollection(sourceTuples) + "\n with " + tupleMatches);
         List<List<TupleMatch>> allTupleMatches = createListOfLists(sourceTuples, tupleMatches);
         if (logger.isDebugEnabled()) logger.debug("All tuple matches:\n" + SpeedyUtility.printCollection(allTupleMatches));
         GenericListGeneratorIterator<TupleMatch> iterator = new GenericListGeneratorIterator<TupleMatch>(allTupleMatches);
@@ -65,9 +65,10 @@ public class FindBestTupleMapping {
     }
 
     private TupleMapping findBestNonFunctionalTupleMapping(List<TupleWithTable> sourceTuples, List<TupleWithTable> destinationTuples, TupleMatches tupleMatches) {
-        if (logger.isDebugEnabled()) logger.debug("Finding tuple mapping for\n" + SpeedyUtility.printCollection(sourceTuples) + "\n with " + tupleMatches);
+        if (logger.isDebugEnabled()) logger.debug("Finding best non functional tuple mapping for\n" + SpeedyUtility.printCollection(sourceTuples) + "\n with " + tupleMatches);
         List<TupleMatch> allTupleMatches = mergeTupleMatches(sourceTuples, tupleMatches);
         if (logger.isDebugEnabled()) logger.debug("All tuple matches:\n" + SpeedyUtility.printCollection(allTupleMatches));
+        if (logger.isInfoEnabled()) logger.info("Finding best non functional tuple mapping for matches\n" + SpeedyUtility.printCollection(allTupleMatches) );
         return findBestPowerset(sourceTuples, destinationTuples, allTupleMatches);
     }
 
@@ -118,7 +119,9 @@ public class FindBestTupleMapping {
             completeTupleMapping.setScore(similarityScore);
             return completeTupleMapping;
         }
+        if (logger.isInfoEnabled()) logger.info("Generating permutations of size one for " + matches.size() + " elements");
         List<List<TupleMatch>> powersets = sizeOnePowersetsGenerator.generatePermutationsOfSizeOne(matches);//Else checking powerset of size one
+        if (logger.isInfoEnabled()) logger.info("## Evaluating " + powersets.size() + " powersets");
         double bestScore = 0;
         TupleMapping bestTupleMapping = null;
         for (List<TupleMatch> powerset : powersets) {
@@ -136,9 +139,11 @@ public class FindBestTupleMapping {
                 if (logger.isDebugEnabled()) logger.debug("Found new best score: " + similarityScore);
             }
             if (bestScore >= ComparisonConfiguration.getBestScoreThreshold()) {
+                if (logger.isInfoEnabled()) logger.info("- Best score: " + bestScore);
                 return bestTupleMapping;
             }
         }
+        if (logger.isInfoEnabled()) logger.info("- Best score: " + bestScore);
         return bestTupleMapping;
     }
 
