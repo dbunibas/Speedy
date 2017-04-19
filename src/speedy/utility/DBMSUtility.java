@@ -314,7 +314,7 @@ public class DBMSUtility {
             connection = QueryManager.getConnection(accessConfiguration);
 
             Statement stmt = connection.createStatement();
-            String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchemaNameAndDot(accessConfiguration) + tableName;
+            String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchemaNameAndDot(accessConfiguration) + tableName + " LIMIT 1";
             if (logger.isDebugEnabled()) logger.debug(query);
             ResultSet rs = stmt.executeQuery(query);
             ResultSetMetaData rsmd = rs.getMetaData();
