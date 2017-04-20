@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -159,6 +161,7 @@ public class ImportCSVFileWithCopy {
             copyScript.append(" );\n");
             long insertedRows = copyManager.copyIn(copyScript.toString(), new FileInputStream(csvFile.getFileName()));
             if (logger.isDebugEnabled()) logger.debug("Inserted rows: " + insertedRows);
+            if (logger.isDebugEnabled()) logger.debug("Rows in file: " + loadFile(csvFile.getFileName(), csvFile.isHasHeader()));
             StringBuilder script = new StringBuilder();
             script.append("ANALYZE ").append(DBMSUtility.getSchemaNameAndDot(ac)).append(tableName).append(";");
             if (logger.isDebugEnabled()) logger.debug("--- Import file script:\n" + script.toString());
@@ -225,5 +228,30 @@ public class ImportCSVFileWithCopy {
             copyIn.writeToCopy(bytes, 0, bytes.length);
         }
         copyIn.endCopy();
+    }
+
+    private long loadFile(String fileName, boolean hasHeader) {
+        BufferedReader reader = null;
+        long line = 0;
+        try {
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "UTF8"));
+            while(reader.readLine() != null) {
+                line++;
+            }
+            if (hasHeader) {
+                line--;
+            }
+        } catch (Exception e) {
+            
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (Exception e) {
+                    
+                }
+            }
+        }
+        return line;
     }
 }
