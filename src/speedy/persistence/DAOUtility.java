@@ -1,4 +1,4 @@
-package speedy.comparison.repairs;
+package speedy.persistence;
 
 import java.io.*;
 import java.nio.charset.Charset;

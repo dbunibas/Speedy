@@ -3,6 +3,8 @@ package speedy.model.algebra.operators.sql.translator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import speedy.SpeedyConstants;
 import speedy.model.algebra.GroupBy;
 import speedy.model.algebra.IAlgebraOperator;
@@ -20,6 +22,7 @@ import speedy.utility.SpeedyUtility;
 
 public class TranslateGroupBy {
 
+    private final static Logger logger = LoggerFactory.getLogger(TranslateGroupBy.class);
     private ExpressionToSQL sqlGenerator = new ExpressionToSQL();
 
     public void translate(GroupBy operator, AlgebraTreeToSQLVisitor visitor) {
@@ -35,6 +38,7 @@ public class TranslateGroupBy {
         List<NestedOperator> nestedTables = findNestedTablesForGroupBy(operator, visitor);
         List<IAggregateFunction> aggregateFunctions = operator.getAggregateFunctions();
         List<String> havingFunctions = extractHavingFunctions(operator);
+        if (logger.isDebugEnabled()) logger.debug("Having functions:\n" + SpeedyUtility.printCollection(havingFunctions));
         for (IAggregateFunction aggregateFunction : aggregateFunctions) {
             AttributeRef attributeRef = aggregateFunction.getAttributeRef();
             if (attributeRef.toString().contains(SpeedyConstants.AGGR + "." + SpeedyConstants.COUNT)) {
@@ -102,7 +106,7 @@ public class TranslateGroupBy {
         List<Expression> expressionsToSelect = new ArrayList<Expression>();
         expressionsToSelect.addAll(operator.getSelections());
         IAlgebraOperator child = operator.getChildren().get(0);
-        while(child instanceof Select){
+        while (child instanceof Select) {
             Select selectChild = (Select) child;
             expressionsToSelect.addAll(selectChild.getSelections());
             child = selectChild.getChildren().get(0);
@@ -127,6 +131,7 @@ public class TranslateGroupBy {
 
     @SuppressWarnings("unchecked")
     private List<String> extractHavingFunctions(GroupBy operator) {
+        if (logger.isDebugEnabled()) logger.debug("GroupBy father: " + operator.getFather());
         if (!(operator.getFather() instanceof Select)) {
             return Collections.EMPTY_LIST;
         }
@@ -135,8 +140,10 @@ public class TranslateGroupBy {
             return Collections.EMPTY_LIST;
         }
         Expression expression = select.getSelections().get(0).clone();
+        if (logger.isDebugEnabled()) logger.debug("Expression: " + expression);
         if (!expression.toString().contains(SpeedyConstants.AGGR + "." + SpeedyConstants.COUNT)) {
-            return Collections.EMPTY_LIST;
+            throw new IllegalArgumentException("Having function " + expression + " is not yet supported!");
+//            return Collections.EMPTY_LIST;
         }
         List<String> havingFunctions = new ArrayList<String>();
         if (expression.toString().contains("count")) {

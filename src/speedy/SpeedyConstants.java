@@ -35,6 +35,18 @@ public class SpeedyConstants {
 
     public static final int MIN_LENGTH_FOR_NUMERIC_PLACEHOLDERS = 10;
 
+    private static String[] stringSkolemPrefixes = {SpeedyConstants.SKOLEM_PREFIX, "_N"};
+
+    private static String[] numericSkolemPrefixes = {
+        SpeedyConstants.BIGINT_SKOLEM_PREFIX,
+        SpeedyConstants.DOUBLE_SKOLEM_PREFIX};
+
+    private static String[] stringLlunPrefixes = {SpeedyConstants.LLUN_PREFIX, "_V"};
+
+    private static String[] numericLlunPrefixes = {
+        SpeedyConstants.BIGINT_LLUN_PREFIX,
+        SpeedyConstants.REAL_LLUN_PREFIX};
+
     public static final String SUFFIX_SEPARATOR = "_";
 
     public static String STANDARD_QUERY_TYPE = "Standard Query";
@@ -101,7 +113,7 @@ public class SpeedyConstants {
     public static String CSV = "CSV";
     public static String XML = "XML";
     public static String WORK_DIR = ".temp";
-    
+
     /////////////////////// INSTANCE COMPARISON
     public static IValue WILDCARD = new ConstantValue("*");
 
@@ -111,4 +123,37 @@ public class SpeedyConstants {
     ///////////////    DEBUG MODE     ///////////////////
 //    public static final boolean DBMS_DEBUG = true;
     public static final boolean DBMS_DEBUG = false;
+
+    ///////////////    GETTER AND SETTER     ///////////////////
+    public static String[] getStringSkolemPrefixes() {
+        return stringSkolemPrefixes;
+    }
+
+    public static void setStringSkolemPrefixes(String[] s) {
+        stringSkolemPrefixes = s;
+    }
+
+    public static String[] getStringLlunPrefixes() {
+        return stringLlunPrefixes;
+    }
+
+    public static void setStringLlunPrefixes(String[] s) {
+        stringLlunPrefixes = s;
+    }
+
+    public static String[] getNumericSkolemPrefixes() {
+        return numericSkolemPrefixes;
+    }
+
+    public static void setNumericSkolemPrefixes(String[] s) {
+        numericSkolemPrefixes = s;
+    }
+
+    public static String[] getNumericLlunPrefixes() {
+        return numericLlunPrefixes;
+    }
+
+    public static void setNumericLlunPrefixes(String[] numericLlunPrefixes) {
+        numericLlunPrefixes = numericLlunPrefixes;
+    }
 }

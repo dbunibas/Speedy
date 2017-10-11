@@ -33,10 +33,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import org.apache.commons.io.FilenameUtils;
-import speedy.comparison.ComparisonConfiguration;
-import speedy.comparison.TupleWithTable;
 import speedy.model.algebra.ProjectionAttribute;
 import speedy.model.database.LLUNValue;
+import speedy.model.database.TupleWithTable;
 import speedy.model.database.dbms.DBMSDB;
 import speedy.utility.comparator.StringComparator;
 import speedy.utility.comparator.TableComparatorBySizeAndName;
@@ -421,7 +420,7 @@ public class SpeedyUtility {
     // SKOLEM METHODS
     public static boolean isSkolem(Object o) {
         String stringValue = o.toString();
-        for (String nullPrefix : ComparisonConfiguration.getStringSkolemPrefixes()) {
+        for (String nullPrefix : SpeedyConstants.getStringSkolemPrefixes()) {
             if (stringValue.startsWith(nullPrefix)) {
                 return true;
             }
@@ -432,7 +431,7 @@ public class SpeedyUtility {
         if (!isNumericalValue(stringValue)) {
             return false;
         }
-        for (String nullPrefix : ComparisonConfiguration.getNumericSkolemPrefixes()) {
+        for (String nullPrefix : SpeedyConstants.getNumericSkolemPrefixes()) {
             if (stringValue.startsWith(nullPrefix)) {
                 return true;
             }
@@ -442,7 +441,7 @@ public class SpeedyUtility {
 
     public static boolean isVariable(Object o) {
         String stringValue = o.toString();
-        for (String llunPrefix : ComparisonConfiguration.getStringLlunPrefixes()) {
+        for (String llunPrefix : SpeedyConstants.getStringLlunPrefixes()) {
             if (stringValue.startsWith(llunPrefix)) {
                 return true;
             }
@@ -453,7 +452,7 @@ public class SpeedyUtility {
         if (!isNumericalValue(stringValue)) {
             return false;
         }
-        for (String nullPrefix : ComparisonConfiguration.getNumericLlunPrefixes()) {
+        for (String nullPrefix : SpeedyConstants.getNumericLlunPrefixes()) {
             if (stringValue.startsWith(nullPrefix)) {
                 return true;
             }

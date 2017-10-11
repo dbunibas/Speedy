@@ -1,17 +1,15 @@
 package speedy.test.combinatorics;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import junit.framework.TestCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import speedy.comparison.operators.ComputeSetIntersection;
-import speedy.comparison.operators.ComputeSetIntersectionMultiple;
 import speedy.utility.StopWatch;
+import speedy.utility.collection.ComputeSetIntersection;
+import speedy.utility.collection.ComputeSetIntersectionMultiple;
 
 public class ScalabilityTestComputeSetIntersection extends TestCase {
 

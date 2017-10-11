@@ -7,8 +7,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.LoggerFactory;
 
 public class PooledDbConnectionFactory implements IConnectionFactory {

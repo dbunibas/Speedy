@@ -1,4 +1,4 @@
-package speedy.comparison.repairs;
+package speedy.persistence;
 
 
 public class DAOException extends RuntimeException {

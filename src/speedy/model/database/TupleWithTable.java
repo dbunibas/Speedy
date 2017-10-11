@@ -1,4 +1,4 @@
-package speedy.comparison;
+package speedy.model.database;
 
 import speedy.model.database.Tuple;
 

@@ -1,6 +1,5 @@
-package speedy.comparison.operators;
+package speedy.utility.collection;
 
-import speedy.utility.comparator.SizeComparator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -10,6 +9,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.utility.SpeedyUtility;
+import speedy.utility.comparator.SizeComparator;
 
 public class ComputeSetIntersection<T> {
 

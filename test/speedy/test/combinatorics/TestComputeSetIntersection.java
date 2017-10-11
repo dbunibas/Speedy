@@ -9,7 +9,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import speedy.comparison.operators.ComputeSetIntersection;
+import speedy.utility.collection.ComputeSetIntersection;
 
 public class TestComputeSetIntersection extends TestCase {
 
