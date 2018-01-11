@@ -79,7 +79,6 @@ public class QueryManager {
     public static ResultSet executeQuery(String query, AccessConfiguration accessConfiguration) {
         Connection connection = null;
         try {
-            if (logger.isTraceEnabled()) logger.trace("Executing query " + intoSingleLine(query));
             long start = new Date().getTime();
             connection = getConnection(accessConfiguration);
             ResultSet resultSet = executeQuery(query, connection, accessConfiguration);

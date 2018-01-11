@@ -183,15 +183,11 @@ public class DBMSUtility {
     public static boolean isDBExists(AccessConfiguration accessConfiguration) {
         Connection connection = null;
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Checking if db exists: " + accessConfiguration);
-            }
+            if (logger.isDebugEnabled()) logger.debug("Checking if db exists: " + accessConfiguration);
             connection = simpleDataSourceDB.getConnection(accessConfiguration);
             return true;
-        } catch (Exception daoe) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Error checking if db exists: " + daoe.getLocalizedMessage());
-            }
+        } catch (DAOException daoe) {
+            if (logger.isDebugEnabled()) logger.debug("Error checking if db exists: " + daoe.getLocalizedMessage());
         } finally {
             simpleDataSourceDB.close(connection);
         }
@@ -213,9 +209,7 @@ public class DBMSUtility {
                 }
             }
         } catch (Exception daoe) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Error checking if schema exists: " + daoe.getLocalizedMessage());
-            }
+            if (logger.isDebugEnabled()) logger.debug("Error checking if schema exists: " + daoe.getLocalizedMessage());
         } finally {
             simpleDataSourceDB.close(schemaResultSet);
             simpleDataSourceDB.close(connection);

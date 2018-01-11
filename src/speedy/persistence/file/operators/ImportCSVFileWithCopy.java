@@ -52,9 +52,6 @@ public class ImportCSVFileWithCopy {
         if (fileToImport.isRandomizeInput()) {
             throw new DAOException("Randomize input is not available using copy statements");
         }
-        if (fileToImport.getRecordsToImport() != null) {
-            throw new DAOException("Record to import is not available using copy statements");
-        }
         Reader in = null;
         try {
             if (logger.isDebugEnabled()) logger.debug("Beginning of try block...");
@@ -82,11 +79,10 @@ public class ImportCSVFileWithCopy {
                 database.loadTables();
                 attributes = SpeedyUtility.extractAttributesFromDB(tableName, database);
             }
-            if (valueEncoder != null) {
-//                encodeCSVFile(fileToImport, it);
-                encodeAndInsertCSVTuples(tableName, attributes, database, it, fileToImport);
+            if (valueEncoder != null || fileToImport.getRecordsToImport() != null) {
+                insertCSVTuplesFromStream(tableName, attributes, database, it, fileToImport);
             } else {
-                insertCSVTuples(tableName, attributes, database, fileToImport);
+                insertCSVTuplesFromFile(tableName, attributes, database, fileToImport);
             }
         } catch (Exception ex) {
             logger.error(ex.getLocalizedMessage());
@@ -136,7 +132,7 @@ public class ImportCSVFileWithCopy {
         return attributes;
     }
 
-    private void insertCSVTuples(String tableName, List<Attribute> attributes, DBMSDB database, CSVFile csvFile) {
+    private void insertCSVTuplesFromFile(String tableName, List<Attribute> attributes, DBMSDB database, CSVFile csvFile) {
         if (logger.isDebugEnabled()) logger.debug("Starting to insert csv tuples...");
         Connection con = null;
         try {
@@ -179,7 +175,7 @@ public class ImportCSVFileWithCopy {
         }
     }
 
-    private void encodeAndInsertCSVTuples(String tableName, List<Attribute> attributes, DBMSDB database, MappingIterator<String[]> it, CSVFile csvFile) {
+    private void insertCSVTuplesFromStream(String tableName, List<Attribute> attributes, DBMSDB database, MappingIterator<String[]> it, CSVFile csvFile) {
         Connection con = null;
         try {
             AccessConfiguration ac = database.getAccessConfiguration();
@@ -201,7 +197,7 @@ public class ImportCSVFileWithCopy {
             copyScript.append("DELIMITER '").append(csvFile.getSeparator()).append("'");
             copyScript.append(" );\n");
             CopyIn copyIn = copyManager.copyIn(copyScript.toString());
-            copyStream(copyIn, it, csvFile.getSeparator());
+            copyStream(copyIn, it, csvFile.getSeparator(), csvFile.getRecordsToImport());
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new DAOException(ex);
@@ -215,12 +211,18 @@ public class ImportCSVFileWithCopy {
         }
     }
 
-    private void copyStream(CopyIn copyIn, MappingIterator<String[]> it, char separator) throws SQLException {
-        while (it.hasNext()) {
+    private void copyStream(CopyIn copyIn, MappingIterator<String[]> it, char separator, Integer maxTuples) throws SQLException {
+        int tuples = 0;
+        while (it.hasNext() && (maxTuples == null || tuples <= maxTuples)) {
             String[] record = it.next();
+            tuples++;
             StringBuilder row = new StringBuilder();
             for (String value : record) {
-                row.append(valueEncoder.encode(value)).append(separator);
+                String valueToWrite = value;
+                if (valueEncoder != null) {
+                    valueToWrite = valueEncoder.encode(value);
+                }
+                row.append(valueToWrite).append(separator);
             }
             SpeedyUtility.removeChars(1, row);
             row.append("\n");
@@ -235,20 +237,20 @@ public class ImportCSVFileWithCopy {
         long line = 0;
         try {
             reader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "UTF8"));
-            while(reader.readLine() != null) {
+            while (reader.readLine() != null) {
                 line++;
             }
             if (hasHeader) {
                 line--;
             }
         } catch (Exception e) {
-            
+
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
                 } catch (Exception e) {
-                    
+
                 }
             }
         }
