@@ -189,7 +189,7 @@ public class DBMSUtility {
         } catch (DAOException daoe) {
             if (logger.isDebugEnabled()) logger.debug("Error checking if db exists: " + daoe.getLocalizedMessage());
         } finally {
-            simpleDataSourceDB.close(connection);
+            QueryManager.closeConnection(connection);
         }
         return false;
     }
@@ -211,8 +211,8 @@ public class DBMSUtility {
         } catch (Exception daoe) {
             if (logger.isDebugEnabled()) logger.debug("Error checking if schema exists: " + daoe.getLocalizedMessage());
         } finally {
-            simpleDataSourceDB.close(schemaResultSet);
-            simpleDataSourceDB.close(connection);
+            QueryManager.closeResultSet(schemaResultSet);
+            QueryManager.closeConnection(connection);
         }
         return false;
     }
@@ -239,7 +239,7 @@ public class DBMSUtility {
         } catch (Exception daoe) {
             throw new DBMSException("Unable to create new database " + accessConfiguration.getDatabaseName() + ".\n" + tempAccessConfiguration + "\n" + daoe.getLocalizedMessage());
         } finally {
-            simpleDataSourceDB.close(connection);
+            QueryManager.closeConnection(connection);
         }
     }
 
@@ -258,7 +258,7 @@ public class DBMSUtility {
         } catch (Exception daoe) {
             throw new DBMSException("Unable to drop database " + accessConfiguration.getDatabaseName() + ".\n" + tempAccessConfiguration + "\n" + daoe.getLocalizedMessage());
         } finally {
-            simpleDataSourceDB.close(connection);
+            QueryManager.closeConnection(connection);
         }
     }
 
@@ -306,7 +306,6 @@ public class DBMSUtility {
         try {
             if (logger.isDebugEnabled()) logger.debug("Loading attributes: " + accessConfiguration);
             connection = QueryManager.getConnection(accessConfiguration);
-
             Statement stmt = connection.createStatement();
             String query = "SELECT " + SpeedyConstants.OID + ",* FROM " + getSchemaNameAndDot(accessConfiguration) + tableName + " LIMIT 1";
             if (logger.isDebugEnabled()) logger.debug(query);
@@ -630,7 +629,7 @@ public class DBMSUtility {
         } catch (Exception daoe) {
             throw new DBMSException("Unable to drop schema " + accessConfiguration.getDatabaseName() + ".\n" + daoe.getLocalizedMessage());
         } finally {
-            simpleDataSourceDB.close(connection);
+            QueryManager.closeConnection(connection);
         }
     }
 
@@ -656,7 +655,7 @@ public class DBMSUtility {
             daoe.printStackTrace();
             throw new DBMSException("Unable to execute\n" + script + "\n on " + accessConfiguration + "\n" + daoe.getLocalizedMessage());
         } finally {
-            simpleDataSourceDB.close(connection);
+            QueryManager.closeConnection(connection);
         }
     }
 
@@ -718,7 +717,7 @@ public class DBMSUtility {
                 throw new DBMSException("Unable to drop schema " + accessConfiguration.getDatabaseName() + ".\n" + ex.getLocalizedMessage());
             }
         } finally {
-            simpleDataSourceDB.close(connection);
+            QueryManager.closeConnection(connection);
         }
     }
 
@@ -748,7 +747,7 @@ public class DBMSUtility {
                 throw new DBMSException("Unable to drop schema " + accessConfiguration.getDatabaseName() + ".\n" + ex.getLocalizedMessage());
             }
         } finally {
-            simpleDataSourceDB.close(connection);
+            QueryManager.closeConnection(connection);
         }
     }
 

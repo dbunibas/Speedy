@@ -121,24 +121,13 @@ public class QueryManager {
         return dataSourceDB.getConnection(accessConfiguration);
     }
 
-    public static void closeConnection(Connection connection) {
-        if (connection == null) {
-            return;
-        }
-        try {
-            dataSourceDB.close(connection);
-        } catch (Exception daoe) {
-            logger.warn("Unable to close connection. " + daoe);
-        }
-    }
-
     public static void closeResultSet(ResultSet resultSet) {
         if (resultSet == null) {
             return;
         }
         try {
             Statement statement = resultSet.getStatement();
-            dataSourceDB.close(resultSet);
+            resultSet.close();
             closeStatement(statement);
         } catch (Exception daoe) {
             logger.warn("Unable to close result set. " + daoe);
@@ -151,10 +140,20 @@ public class QueryManager {
         }
         try {
             Connection connection = statement.getConnection();
-            dataSourceDB.close(statement);
+            statement.close();
             closeConnection(connection);
         } catch (Exception daoe) {
             logger.warn("Unable to close statement. " + daoe);
+        }
+    }
+
+    public static void closeConnection(Connection connection) {
+        try {
+            if (connection != null) {
+                connection.close();
+            }
+        } catch (SQLException sqle) {
+            logger.warn("Unable to close connection. " + sqle.getMessage());
         }
     }
 
@@ -177,4 +176,7 @@ public class QueryManager {
         QueryManager.dataSourceDB = dataSourceDB;
     }
 
+    public static void close() {
+        dataSourceDB.close();
+    }
 }

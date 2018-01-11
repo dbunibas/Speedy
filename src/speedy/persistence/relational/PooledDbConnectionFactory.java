@@ -4,9 +4,7 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 import com.mchange.v2.c3p0.DataSources;
 import speedy.exceptions.DAOException;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import org.slf4j.LoggerFactory;
 
 public class PooledDbConnectionFactory implements IConnectionFactory {
@@ -56,43 +54,13 @@ public class PooledDbConnectionFactory implements IConnectionFactory {
             connection = cpds.getConnection();
             if (logger.isTraceEnabled()) logger.trace("Opened connections: " + cpds.getNumConnections());
         } catch (SQLException sqle) {
-            close(connection);
+            QueryManager.closeConnection(connection);
             throw new DAOException(" getConnection: " + sqle + "\n\ndriver: " + configuration.getDriver() + " - uri: " + configuration.getUri() + " - login: " + configuration.getLogin() + " - password: " + configuration.getPassword() + "\n");
         }
         if (connection == null) {
             throw new DAOException("Connection is NULL !" + "\n\ndriver: " + configuration.getDriver() + " - uri: " + configuration.getUri() + " - login: " + configuration.getLogin() + " - password: " + configuration.getPassword() + "\n");
         }
         return connection;
-    }
-
-    public void close(Connection connection) {
-        try {
-            if (connection != null) {
-                connection.close();
-            }
-        } catch (SQLException sqle) {
-            logger.error(sqle.toString());
-        }
-    }
-
-    public void close(Statement statement) {
-        try {
-            if (statement != null) {
-                statement.close();
-            }
-        } catch (SQLException sqle) {
-            logger.error(sqle.toString());
-        }
-    }
-
-    public void close(ResultSet resultSet) {
-        try {
-            if (resultSet != null) {
-                resultSet.close();
-            }
-        } catch (SQLException sqle) {
-            logger.error(sqle.toString());
-        }
     }
 
     public void closeFactory() {
@@ -109,5 +77,10 @@ public class PooledDbConnectionFactory implements IConnectionFactory {
             return false;
         }
         return currentConfiguration.getDatabaseName().equals(configuration.getDatabaseName()) && currentConfiguration.getDriver().equals(configuration.getDriver());
+    }
+
+    public void close() {
+        closeFactory();
+        cpds = null;
     }
 }
