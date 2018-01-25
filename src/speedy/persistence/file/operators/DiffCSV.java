@@ -98,17 +98,14 @@ public class DiffCSV {
 
     private List<String> readLine(BufferedReader reader) throws IOException {
         String line = reader.readLine();
-        if (line == null) return null;
-        line += " "; //To handle row that finish with separator
+        if (line == null || line.trim().isEmpty()) return null;
         List<String> result = new ArrayList<String>();
-        for (String token : line.split(separator)) {
-            result.add(token.trim());
+        for (String token : line.split(separator, -1)) {
+            String attributeWithType = token.trim();
+            String attribute = (attributeWithType.contains("(") ? attributeWithType.substring(0, attributeWithType.indexOf("(")) : attributeWithType);
+            result.add(attribute.trim());
         }
         return result;
-    }
-
-    private boolean equals(List<String> srcHeader, List<String> destHeader) {
-        return srcHeader.equals(destHeader);
     }
 
     public String getSeparator() {

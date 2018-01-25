@@ -30,7 +30,6 @@ import speedy.model.database.dbms.DBMSDB;
 import speedy.model.database.dbms.InitDBConfiguration;
 import speedy.model.database.mainmemory.datasource.IntegerOIDGenerator;
 import speedy.model.database.operators.dbms.IValueEncoder;
-import speedy.persistence.Types;
 import speedy.persistence.file.CSVFile;
 import speedy.utility.SpeedyUtility;
 
@@ -67,7 +66,7 @@ public class ImportCSVFile {
             }
             if (fileToImport.isHasHeader()) {
                 String[] headers = it.next();
-                attributes = readCSVAttributes(tableName, headers);
+                attributes = CSVUtility.readCSVAttributes(tableName, headers);
                 System.out.println("Importing file " + csvFile + " into table " + tableName + "...");
                 if (!tablesAdded.containsKey(tableName)) {
                     tablesAdded.put(tableName, attributes);
@@ -96,36 +95,6 @@ public class ImportCSVFile {
                 }
             }
         }
-    }
-
-    private List<Attribute> readCSVAttributes(String tableName, String[] headers) {
-        List<Attribute> attributes = new ArrayList<Attribute>();
-        for (String attributeName : headers) {
-            String attributeType = Types.STRING;
-            String integerSuffix = "(" + Types.INTEGER + ")";
-            if (attributeName.endsWith(integerSuffix)) {
-                attributeType = Types.INTEGER;
-                attributeName = attributeName.substring(0, attributeName.length() - integerSuffix.length()).trim();
-            }
-            String doubleSuffix = "(" + Types.REAL + ")";
-            if (attributeName.endsWith(doubleSuffix)) {
-                attributeType = Types.REAL;
-                attributeName = attributeName.substring(0, attributeName.length() - doubleSuffix.length()).trim();
-            }
-            String booleanSuffix = "(" + Types.BOOLEAN + ")";
-            if (attributeName.endsWith(booleanSuffix)) {
-                attributeType = Types.BOOLEAN;
-                attributeName = attributeName.substring(0, attributeName.length() - booleanSuffix.length()).trim();
-            }
-            String dateSuffix = "(" + Types.DATE + ")";
-            if (attributeName.endsWith(dateSuffix)) {
-                attributeType = Types.DATE;
-                attributeName = attributeName.substring(0, attributeName.length() - dateSuffix.length()).trim();
-            }
-            Attribute attribute = new Attribute(tableName.trim(), attributeName.trim(), attributeType);
-            attributes.add(attribute);
-        }
-        return attributes;
     }
 
     private void insertCSVTuples(String tableName, List<Attribute> attributes, Iterator<String[]> it, DBMSDB target, String csvFile, Integer recordsToImport, boolean randomizeInput) {

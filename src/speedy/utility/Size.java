@@ -18,8 +18,10 @@ public class Size implements Comparable<Size> {
     public static final Size S_200K = new Size(200000, "200k");
     public static final Size S_250K = new Size(250000, "250k");
     public static final Size S_400K = new Size(400000, "400k");
+    public static final Size S_700K = new Size(800000, "700k");
     public static final Size S_800K = new Size(800000, "800k");
     public static final Size S_500K = new Size(500000, "500k");
+    public static final Size S_1000K = new Size(500000, "1000k");
     public static final Size S_1M = new Size(1000000, "1M");
     private int size;
     private String string;

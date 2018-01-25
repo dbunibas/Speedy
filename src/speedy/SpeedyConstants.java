@@ -114,6 +114,9 @@ public class SpeedyConstants {
     public static String XML = "XML";
     public static String WORK_DIR = ".temp";
 
+    public static final String SINGLE_FILE = "singleFile";
+    public static final String MULTIPLE_FILES = "multipleFiles";
+
     /////////////////////// INSTANCE COMPARISON
     public static IValue WILDCARD = new ConstantValue("*");
 
