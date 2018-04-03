@@ -13,6 +13,7 @@ import java.io.Reader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.postgresql.copy.CopyIn;
@@ -165,7 +166,11 @@ public class ImportCSVFileWithCopy {
             copyScript.append("DELIMITER '").append(csvFile.getSeparator()).append("'");
             copyScript.append(" );\n");
             CopyIn copyIn = copyManager.copyIn(copyScript.toString());
-            copyStream(copyIn, it, csvFile.getSeparator(), csvFile.getRecordsToImport());
+            copyStream(copyIn, it, csvFile.getQuoteCharacter(), csvFile.getSeparator(), csvFile.getRecordsToImport());
+            StringBuilder script = new StringBuilder();
+            script.append("ANALYZE ").append(DBMSUtility.getSchemaNameAndDot(ac)).append(tableName).append(";");
+            if (logger.isDebugEnabled()) logger.debug("--- Import file script:\n" + script.toString());
+            QueryManager.executeScript(script.toString(), ac, true, true, true, false);
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new DAOException(ex);
@@ -179,7 +184,7 @@ public class ImportCSVFileWithCopy {
         }
     }
 
-    private void copyStream(CopyIn copyIn, MappingIterator<String[]> it, char separator, Integer maxTuples) throws SQLException {
+    private void copyStream(CopyIn copyIn, MappingIterator<String[]> it, Character quoteChar, char separator, Integer maxTuples) throws SQLException {
         int tuples = 0;
         while (it.hasNext() && (maxTuples == null || tuples <= maxTuples)) {
             String[] record = it.next();
@@ -190,7 +195,10 @@ public class ImportCSVFileWithCopy {
                 if (valueEncoder != null) {
                     valueToWrite = valueEncoder.encode(value);
                 }
-                row.append(valueToWrite).append(separator);
+                if (quoteChar != null) row.append(quoteChar);
+                row.append(valueToWrite);
+                if (quoteChar != null) row.append(quoteChar);
+                row.append(separator);
             }
             SpeedyUtility.removeChars(1, row);
             row.append("\n");
