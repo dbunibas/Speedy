@@ -89,7 +89,7 @@ public class DAOUtility {
         try {
             File file = new java.io.File(filename);
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            transformerFactory.setAttribute("indent-number", new Integer(2));
+            transformerFactory.setAttribute("indent-number", 2);
             Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.METHOD, "xml");
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");

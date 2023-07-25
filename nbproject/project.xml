@@ -19,32 +19,35 @@
                     <type>java</type>
                     <location>${test.src.dir}</location>
                 </source-folder>
-                <build-folder>
-                    <location>${build.top.dir}</location>
-                </build-folder>
             </folders>
             <ide-actions>
                 <action name="build">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>build</target>
                 </action>
                 <action name="clean">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>clean</target>
                 </action>
                 <action name="javadoc">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>javadoc</target>
                 </action>
                 <action name="run">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>run</target>
                 </action>
                 <action name="test">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>test</target>
                 </action>
                 <action name="rebuild">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>clean</target>
                     <target>build</target>
                 </action>
                 <action name="compile.single">
-                    <script>nbproject/file-targets.xml</script>
+                    <script>nbproject/nbjdk.xml</script>
                     <target>compile-selected</target>
                     <context>
                         <property>includes</property>
@@ -57,7 +60,7 @@
                     </context>
                 </action>
                 <action name="compile.single">
-                    <script>nbproject/file-targets.xml</script>
+                    <script>nbproject/nbjdk.xml</script>
                     <target>compile-selected-test</target>
                     <context>
                         <property>includes</property>
@@ -70,6 +73,7 @@
                     </context>
                 </action>
                 <action name="run.single">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>run</target>
                     <context>
                         <property>main.class</property>
@@ -82,7 +86,7 @@
                     </context>
                 </action>
                 <action name="run.single">
-                    <script>nbproject/file-targets.xml</script>
+                    <script>nbproject/nbjdk.xml</script>
                     <target>run-selected-tests</target>
                     <context>
                         <property>includes</property>
@@ -95,25 +99,23 @@
                     </context>
                 </action>
                 <action name="debug">
-                    <script>nbproject/ide-file-targets.xml</script>
+                    <script>nbproject/nbjdk.xml</script>
                     <target>debug-nb</target>
                 </action>
                 <action name="profile">
-                    <script>nbproject/ide-targets.xml</script>
+                    <script>nbproject/nbjdk.xml</script>
                     <target>profile-nb</target>
                 </action>
             </ide-actions>
             <export>
-                <type>jar</type>
-                <location>${jar.file}</location>
-                <build-target>jar</build-target>
-                <clean-target>clean</clean-target>
+                <type>folder</type>
+                <location>${build.dir}</location>
+                <build-target>build</build-target>
             </export>
             <export>
                 <type>folder</type>
                 <location>${test.build.dir}</location>
-                <build-target>compile-tests</build-target>
-                <clean-target>clean</clean-target>
+                <build-target>build</build-target>
             </export>
             <view>
                 <items>
@@ -124,14 +126,6 @@
                     <source-folder style="packages">
                         <label>Tests</label>
                         <location>${test.src.dir}</location>
-                    </source-folder>
-                    <source-folder style="packages">
-                        <label>Resources</label>
-                        <location>${resources.dir}</location>
-                    </source-folder>
-                    <source-folder style="packages">
-                        <label>Experiments</label>
-                        <location>${experiments.dir}</location>
                     </source-folder>
                     <source-file>
                         <location>build.xml</location>
@@ -152,7 +146,9 @@
                     <ide-action name="profile"/>
                 </context-menu>
             </view>
-            <subprojects/>
+            <subprojects>
+                <project>.</project>
+            </subprojects>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
             <compilation-unit>

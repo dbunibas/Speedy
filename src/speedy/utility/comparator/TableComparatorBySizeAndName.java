@@ -18,7 +18,9 @@ public class TableComparatorBySizeAndName implements Comparator<String> {
         if(t1.getSize() == t2.getSize()){
             return tn1.compareTo(tn2);
         }
-        return new Long(t1.getSize()).compareTo(t2.getSize());
+        Long l1 = t1.getSize();
+        Long l2 = t2.getSize();
+        return l1.compareTo(l2);
     }
 
 }

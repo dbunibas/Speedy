@@ -34,7 +34,7 @@ import speedy.persistence.relational.QueryStatManager;
 import speedy.utility.test.UtilityForTests;
 import speedy.utility.SpeedyUtility;
 
-public class TestDBMSCSV {
+public class TestElection {
 
     private static Logger logger = LoggerFactory.getLogger(TestDBMSCSV.class);
 
