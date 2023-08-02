@@ -1,11 +1,10 @@
 package speedy.model.database;
 
-import speedy.model.database.Tuple;
-
-public class TupleWithTable {
+public class TupleWithTable implements Cloneable {
 
     private String table;
     private Tuple tuple;
+    private boolean isForGeneration = false;
 
     public TupleWithTable(String table, Tuple tuple) {
         this.table = table;
@@ -20,8 +19,32 @@ public class TupleWithTable {
         return tuple;
     }
 
+    public void setIsForGeneration(boolean isForGeneration) {
+        this.isForGeneration = isForGeneration;
+    }
+
+    public boolean isIsForGeneration() {
+        return isForGeneration;
+    }
+
     private String hashString() {
+        if (isForGeneration) {
+            return table + "." + tuple.toStringWithOID();
+        }
         return table + "." + tuple.getOid();
+    }
+
+    @Override
+    public TupleWithTable clone() {
+        TupleWithTable clone = null;
+        try {
+            clone = (TupleWithTable) super.clone();
+            clone.table = table;
+            clone.tuple = tuple.clone();
+            clone.isForGeneration = isForGeneration;
+        } catch (CloneNotSupportedException ex) {
+        }
+        return clone;
     }
 
     @Override
@@ -31,16 +54,22 @@ public class TupleWithTable {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
         final TupleWithTable other = (TupleWithTable) obj;
         return other.hashString().equals(this.hashString());
     }
 
     @Override
     public String toString() {
-        return table + "." + tuple;
+        return table + "." + tuple.toStringWithOID();
     }
 
 }

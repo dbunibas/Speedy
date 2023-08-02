@@ -20,6 +20,16 @@ public class Tuple implements Cloneable {
     public void setOid(TupleOID oid) {
         this.oid = oid;
     }
+    
+    public void setOidNested(TupleOID oid) {
+        this.oid = oid;
+        for (Cell cell : cells) {
+            if (cell.isOID()) {
+                cell.setValue(new ConstantValue(oid.getNumericalValue()));
+                break;
+            }
+        }
+    }
 
     public void addCell(Cell cell) {
         for (Cell existingCell : cells) {
@@ -66,6 +76,7 @@ public class Tuple implements Cloneable {
         Tuple clone = null;
         try {
             clone = (Tuple) super.clone();
+            clone.oid = new TupleOID(this.oid.getNumericalValue());
             clone.cells = new ArrayList<Cell>();
             for (Cell cell : this.cells) {
                 clone.cells.add(new Cell(cell, clone));

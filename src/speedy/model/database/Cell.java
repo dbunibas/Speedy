@@ -51,6 +51,10 @@ public class Cell implements Serializable, Cloneable {
         return value;
     }
 
+    public void setValue(IValue value) {
+        this.value = value;
+    }
+
     public TupleOID getTupleOID() {
         return tupleOid;
     }

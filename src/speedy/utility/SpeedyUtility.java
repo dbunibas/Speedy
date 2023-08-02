@@ -410,6 +410,22 @@ public class SpeedyUtility {
         }
         return result;
     }
+    
+    public static List<TupleWithTable> extractAllTuplesFromDatabaseForGeneration(IDatabase db) {
+        List<TupleWithTable> result = new ArrayList<TupleWithTable>();
+        List<String> sortedTables = orderTablesBySizeAndName(db);
+        for (String tableName : sortedTables) {
+            ITable table = db.getTable(tableName);
+            ITupleIterator iterator = table.getTupleIterator();
+            while (iterator.hasNext()) {
+                TupleWithTable tupleWithTable = new TupleWithTable(tableName, iterator.next());
+                tupleWithTable.setIsForGeneration(true);
+                result.add(tupleWithTable);
+            }
+            iterator.close();
+        }
+        return result;
+    }
 
     private static List<String> orderTablesBySizeAndName(IDatabase db) {
         List<String> sortedTableNames = new ArrayList<String>(db.getTableNames());
