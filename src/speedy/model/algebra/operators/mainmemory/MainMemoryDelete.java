@@ -42,7 +42,7 @@ public class MainMemoryDelete implements IDelete {
         return deletedTuples;
     }
 
-    private boolean deleteTuples(String tableName, List<TupleOID> oidsToDelete, IDatabase database) {
+    public boolean deleteTuples(String tableName, List<TupleOID> oidsToDelete, IDatabase database) {
         boolean deletions = false;
         INode instanceRoot = ((MainMemoryDB) database).getDataSource().getInstances().get(0);
         for (INode set : instanceRoot.getChildren()) {

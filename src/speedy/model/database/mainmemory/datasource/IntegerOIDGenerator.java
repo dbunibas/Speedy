@@ -19,6 +19,14 @@ public class IntegerOIDGenerator {
     public static void resetCounter() {
         counter = 0;
     }
+    
+    public static void setCounter(int value) {
+        counter = value;
+    }
+    
+    public static Integer getCounter() {
+        return counter;
+    }
 
     public static OID generateOIDForSkolemString(String string) {
         OID oid = cache.get(string);
