@@ -102,10 +102,11 @@ public class Tuple implements Cloneable {
     }
 
     public String toStringWithOID() {
-        StringBuilder result = new StringBuilder();
-        result.append("oid: ").append(oid).append(" ");
-        result.append(toString());
-        return result.toString();
+        return String.format("oid: %s %s", oid, toString());
+//        StringBuilder result = new StringBuilder();
+//        result.append("oid: ").append(oid).append(" ");
+//        result.append(toString());
+//        return result.toString();
     }
 
     public String toStringWithAlias() {
