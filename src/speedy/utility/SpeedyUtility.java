@@ -37,6 +37,7 @@ import speedy.model.algebra.ProjectionAttribute;
 import speedy.model.database.LLUNValue;
 import speedy.model.database.TupleWithTable;
 import speedy.model.database.dbms.DBMSDB;
+import speedy.model.database.operators.dbms.IValueEncoder;
 import speedy.utility.comparator.StringComparator;
 import speedy.utility.comparator.TableComparatorBySizeAndName;
 
@@ -398,27 +399,53 @@ public class SpeedyUtility {
     }
 
     public static List<TupleWithTable> extractAllTuplesFromDatabase(IDatabase db) {
+        return extractAllTuplesFromDatabase(db, null);
+    }
+
+    public static List<TupleWithTable> extractAllTuplesFromDatabase(IDatabase db, IValueEncoder valueEncoder) {
         List<TupleWithTable> result = new ArrayList<TupleWithTable>();
         List<String> sortedTables = orderTablesBySizeAndName(db);
         for (String tableName : sortedTables) {
             ITable table = db.getTable(tableName);
             ITupleIterator iterator = table.getTupleIterator();
             while (iterator.hasNext()) {
-                result.add(new TupleWithTable(tableName, iterator.next()));
+                Tuple tuple = iterator.next();
+                for (Cell cell : tuple.getCells()) {
+                    if (cell.getValue() instanceof ConstantValue) {
+                        String encodedValue = valueEncoder.encode(cell.getValue().toString());
+                        if (!encodedValue.equals(cell.getValue().toString())) {
+                            cell.setValue(new ConstantValue(encodedValue));
+                        }
+                    }
+                }
+                result.add(new TupleWithTable(tableName, tuple));
             }
             iterator.close();
         }
         return result;
     }
-    
+
     public static List<TupleWithTable> extractAllTuplesFromDatabaseForGeneration(IDatabase db) {
+        return extractAllTuplesFromDatabaseForGeneration(db, null);
+    }
+
+    public static List<TupleWithTable> extractAllTuplesFromDatabaseForGeneration(IDatabase db, IValueEncoder valueEncoder) {
         List<TupleWithTable> result = new ArrayList<TupleWithTable>();
         List<String> sortedTables = orderTablesBySizeAndName(db);
         for (String tableName : sortedTables) {
             ITable table = db.getTable(tableName);
             ITupleIterator iterator = table.getTupleIterator();
             while (iterator.hasNext()) {
-                TupleWithTable tupleWithTable = new TupleWithTable(tableName, iterator.next());
+                Tuple tuple = iterator.next();
+                for (Cell cell : tuple.getCells()) {
+                    if (cell.getValue() instanceof ConstantValue) {
+                        String encodedValue = valueEncoder.encode(cell.getValue().toString());
+                        if (!encodedValue.equals(cell.getValue().toString())) {
+                            cell.setValue(new ConstantValue(encodedValue));
+                        }
+                    }
+                }
+                TupleWithTable tupleWithTable = new TupleWithTable(tableName, tuple);
                 tupleWithTable.setIsForGeneration(true);
                 result.add(tupleWithTable);
             }
