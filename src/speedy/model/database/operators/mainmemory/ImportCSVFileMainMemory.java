@@ -5,9 +5,6 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,12 +15,14 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.SpeedyConstants;
+import static speedy.SpeedyConstants.OID;
 import speedy.exceptions.DAOException;
 import speedy.model.database.IValue;
 import speedy.model.database.NullValue;
 import speedy.model.database.mainmemory.datasource.DataSource;
 import speedy.model.database.mainmemory.datasource.INode;
 import speedy.model.database.mainmemory.datasource.IntegerOIDGenerator;
+import speedy.model.database.mainmemory.datasource.OID;
 import speedy.model.database.mainmemory.datasource.nodes.AttributeNode;
 import speedy.model.database.mainmemory.datasource.nodes.LeafNode;
 import speedy.model.database.mainmemory.datasource.nodes.SetNode;
@@ -185,10 +184,14 @@ public class ImportCSVFileMainMemory {
             if (record.length != csvTable.getAttributes().size()) {
                 throw new DAOException("Line " + Arrays.toString(record) + " doesn't contains " + csvTable.getAttributes().size() + " values. but " + record.length);
             }
-            TupleNode tupleNodeInstance = new TupleNode(csvTable.getName() + "Tuple", IntegerOIDGenerator.getNextOID());
+            OID tupleOID = getTupleOID(csvTable, record);
+            TupleNode tupleNodeInstance = new TupleNode(csvTable.getName() + "Tuple", tupleOID);
             setNodeTable.addChild(tupleNodeInstance);
             for (int i = 0; i < csvTable.getAttributes().size(); i++) {
                 String attributeName = csvTable.getAttributes().get(i);
+                if(OID.equals(attributeName)){
+                    continue;
+                }
                 String value = record[i];
                 if (value != null) {
                     value = value.trim();
@@ -199,6 +202,18 @@ public class ImportCSVFileMainMemory {
         }
     }
 
+    private OID getTupleOID(CSVTable csvTable, String[] record) {
+        int oidIndex = csvTable.getAttributes().indexOf(OID);
+        if (oidIndex != -1) {
+            try{
+                return new OID(Integer.valueOf(record[oidIndex]));
+            }catch(Exception e){
+                logger.warn("Unable to load OID value from attribute {} from record {}", oidIndex, record, e);
+            }
+        }
+        return IntegerOIDGenerator.getNextOID();
+    }
+
     private List<File> getFileInFolder(String folderPath, String extension) {
         File folder = new File(folderPath);
         if (!folder.exists()) {
@@ -206,7 +221,7 @@ public class ImportCSVFileMainMemory {
         }
         List<File> files = new ArrayList<File>();
         File[] listFiles = folder.listFiles();
-        if(listFiles == null){
+        if (listFiles == null) {
             throw new DAOException("No files in folder " + folder.toString());
         }
         for (File file : listFiles) {
