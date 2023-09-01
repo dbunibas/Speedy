@@ -179,7 +179,7 @@ public class SpeedyUtility {
         String indent = "    ";
         StringBuilder result = new StringBuilder("----------------------------- MAP (size =").append(m.size()).append(") ------------\n");
         List<Object> keys = new ArrayList<Object>(m.keySet());
-        Collections.sort(keys, new StringComparator());
+        if (!keys.isEmpty()) Collections.sort(keys, new StringComparator());
         for (Object key : keys) {
             result.append("***************** Key ******************\n").append(key).append("\n");
             Object value = m.get(key);
@@ -411,7 +411,7 @@ public class SpeedyUtility {
             while (iterator.hasNext()) {
                 Tuple tuple = iterator.next();
                 for (Cell cell : tuple.getCells()) {
-                    if (cell.getValue() instanceof ConstantValue) {
+                    if (valueEncoder != null && cell.getValue() instanceof ConstantValue) {
                         String encodedValue = valueEncoder.encode(cell.getValue().toString());
                         if (!encodedValue.equals(cell.getValue().toString())) {
                             cell.setValue(new ConstantValue(encodedValue));
@@ -438,7 +438,7 @@ public class SpeedyUtility {
             while (iterator.hasNext()) {
                 Tuple tuple = iterator.next();
                 for (Cell cell : tuple.getCells()) {
-                    if (cell.getValue() instanceof ConstantValue) {
+                    if (valueEncoder != null && cell.getValue() instanceof ConstantValue) {
                         String encodedValue = valueEncoder.encode(cell.getValue().toString());
                         if (!encodedValue.equals(cell.getValue().toString())) {
                             cell.setValue(new ConstantValue(encodedValue));

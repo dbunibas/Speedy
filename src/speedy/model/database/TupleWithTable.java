@@ -20,7 +20,7 @@ public class TupleWithTable implements Cloneable {
     }
 
     public void setIsForGeneration(boolean isForGeneration) {
-//        this.isForGeneration = isForGeneration;
+        this.isForGeneration = isForGeneration;
     }
 
     public boolean isIsForGeneration() {
@@ -29,10 +29,12 @@ public class TupleWithTable implements Cloneable {
 
     private String hashString() {
         if (isForGeneration) {
-            return String.format("%s.%s", table, tuple.toStringWithOID());
+            return new StringBuilder().append(table).append(".").append(tuple.toStringWithOID()).toString();
+//            return String.format("%s.%s", table, tuple.toStringWithOID());
 //            return table + "." + tuple.toStringWithOID();
         }
-        return String.format("%s.%s", table, tuple.getOid());
+        return new StringBuilder().append(table).append(".").append(tuple.getOid()).toString();
+//        return String.format("%s.%s", table, tuple.getOid());
 //        return table + "." + tuple.getOid();
     }
 
@@ -71,7 +73,8 @@ public class TupleWithTable implements Cloneable {
 
     @Override
     public String toString() {
-        return table + "." + tuple.toStringWithOID();
+        return new StringBuilder().append(table).append(".").append(tuple.toStringWithOID()).toString();
+//        return table + "." + tuple.toStringWithOID();
     }
 
 }
