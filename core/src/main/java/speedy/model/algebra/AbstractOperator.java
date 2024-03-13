@@ -4,7 +4,7 @@ import speedy.model.algebra.operators.AlgebraTreeToString;
 import java.util.ArrayList;
 import java.util.List;
 
-abstract class AbstractOperator implements IAlgebraOperator {
+public abstract class AbstractOperator implements IAlgebraOperator {
 
     protected IAlgebraOperator father;
     protected List<IAlgebraOperator> children = new ArrayList<IAlgebraOperator>();
