@@ -1,4 +1,4 @@
-rootProject.name = "Speedy"
+rootProject.name = "speedy"
 
 include("core")
 include("jep")
