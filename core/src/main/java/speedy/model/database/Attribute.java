@@ -13,6 +13,13 @@ public class Attribute {
         this.type = type;
     }
 
+    public Attribute(String tableName, String name, String type, Boolean nullable) {
+        this.tableName = tableName;
+        this.name = name;
+        this.type = type;
+        this.nullable = nullable;
+    }
+
     public String getName() {
         return name;
     }
