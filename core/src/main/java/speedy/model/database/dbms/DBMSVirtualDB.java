@@ -60,6 +60,16 @@ public class DBMSVirtualDB implements IDatabase {
         return originalDB.getKeys(table);
     }
 
+    @Override
+    public List<Key> getPrimaryKeys() {
+        return originalDB.getPrimaryKeys();
+    }
+
+    @Override
+    public Key getPrimaryKey(String table) {
+        return originalDB.getPrimaryKey(table);
+    }
+
     public List<ForeignKey> getForeignKeys() {
         return originalDB.getForeignKeys();
     }

@@ -22,6 +22,16 @@ public class EmptyDB implements IDatabase {
         return Collections.EMPTY_LIST;
     }
 
+    @Override
+    public List<Key> getPrimaryKeys() {
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public Key getPrimaryKey(String table) {
+        return null;
+    }
+
     public List<ForeignKey> getForeignKeys() {
         return Collections.EMPTY_LIST;
     }

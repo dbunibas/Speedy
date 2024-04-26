@@ -82,6 +82,29 @@ public class MainMemoryDB implements IDatabase {
         return result;
     }
 
+    @Override
+    public List<Key> getPrimaryKeys() {
+        List<Key> result = new ArrayList<Key>();
+        for (KeyConstraint keyConstraint : dataSource.getKeyConstraints()) {
+            List<AttributeRef> attributeRefs = extractPaths(keyConstraint.getKeyPaths());
+            if (keyConstraint.isPrimaryKey()) {
+                result.add(new Key(attributeRefs, true));
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public Key getPrimaryKey(String table) {
+        for (Key key : getPrimaryKeys()) {
+            String tableName = key.getAttributes().get(0).getTableName();
+            if (tableName.equals(table)) {
+                return key;
+            }
+        }
+        return null;
+    }
+
     public List<ForeignKey> getForeignKeys() {
         List<ForeignKey> result = new ArrayList<ForeignKey>();
         for (ForeignKeyConstraint foreignKeyConstraint : dataSource.getForeignKeyConstraints()) {

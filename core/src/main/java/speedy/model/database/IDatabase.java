@@ -8,6 +8,8 @@ public interface IDatabase extends Cloneable {
     public List<String> getTableNames();
     public List<Key> getKeys();
     public List<Key> getKeys(String table);
+    public List<Key> getPrimaryKeys();
+    public Key getPrimaryKey(String table);
     public List<ForeignKey> getForeignKeys();
     public List<ForeignKey> getForeignKeys(String table);
     

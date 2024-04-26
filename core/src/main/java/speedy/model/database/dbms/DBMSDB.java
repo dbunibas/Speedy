@@ -17,6 +17,7 @@ public class DBMSDB implements IDatabase {
     private AccessConfiguration accessConfiguration;
     private List<String> tableNames;
     private List<Key> keys;
+    private List<Key> primaryKeys;
     private List<ForeignKey> foreignKeys;
     private boolean initialized = false;
     private List<DBMSTable> tables = new ArrayList<DBMSTable>();
@@ -96,6 +97,25 @@ public class DBMSDB implements IDatabase {
             }
         }
         return result;
+    }
+
+    @Override
+    public List<Key> getPrimaryKeys() {
+        initDBMS();
+        if (primaryKeys == null) {
+            primaryKeys = DBMSUtility.loadPrimaryKeys(accessConfiguration);
+        }
+        return primaryKeys;
+    }
+
+    public Key getPrimaryKey(String table) {
+        for (Key key : getPrimaryKeys()) {
+            String tableName = key.getAttributes().get(0).getTableName();
+            if (tableName.equals(table)) {
+                return key;
+            }
+        }
+        return null;
     }
 
     public List<ForeignKey> getForeignKeys() {

@@ -1,44 +1,25 @@
 package speedy.utility;
 
+import org.apache.ibatis.jdbc.ScriptRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import speedy.SpeedyConstants;
 import speedy.exceptions.DAOException;
 import speedy.exceptions.DBMSException;
+import speedy.model.database.*;
+import speedy.model.database.dbms.DBMSDB;
+import speedy.model.database.dbms.DBMSVirtualDB;
 import speedy.model.database.mainmemory.datasource.IntegerOIDGenerator;
+import speedy.model.database.operators.lazyloading.DBMSTupleLoader;
 import speedy.persistence.Types;
 import speedy.persistence.relational.AccessConfiguration;
 import speedy.persistence.relational.QueryManager;
 import speedy.persistence.relational.SimpleDbConnectionFactory;
+
 import java.io.StringReader;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
+import java.sql.*;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.apache.ibatis.jdbc.ScriptRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import speedy.model.database.Attribute;
-import speedy.model.database.AttributeRef;
-import speedy.model.database.Cell;
-import speedy.model.database.ConstantValue;
-import speedy.model.database.ForeignKey;
-import speedy.model.database.IDatabase;
-import speedy.model.database.IValue;
-import speedy.model.database.Key;
-import speedy.model.database.LLUNValue;
-import speedy.model.database.NullValue;
-import speedy.model.database.TableAlias;
-import speedy.model.database.Tuple;
-import speedy.model.database.TupleOID;
-import speedy.model.database.dbms.DBMSDB;
-import speedy.model.database.dbms.DBMSVirtualDB;
-import speedy.model.database.operators.lazyloading.DBMSTupleLoader;
+import java.util.*;
 
 public class DBMSUtility {
 
@@ -115,6 +96,46 @@ public class DBMSUtility {
             throw new DBMSException("Error connecting to database.\n" + accessConfiguration + "\n" + daoe.getLocalizedMessage());
         } catch (SQLException sqle) {
             throw new DBMSException("Error connecting to database.\n" + accessConfiguration + "\n" + sqle.getLocalizedMessage());
+        } finally {
+            QueryManager.closeResultSet(tableResultSet);
+            QueryManager.closeConnection(connection);
+        }
+        return result;
+    }
+
+    public static List<Key> loadPrimaryKeys(AccessConfiguration accessConfiguration) {
+        List<Key> result = new ArrayList<>();
+        String schemaName = accessConfiguration.getSchemaAndSuffix();
+        Connection connection = null;
+        ResultSet tableResultSet = null;
+        try {
+            if (logger.isDebugEnabled()) logger.debug("Loading primary keys: " + accessConfiguration);
+            connection = QueryManager.getConnection(accessConfiguration);
+            String catalog = connection.getCatalog();
+            if (catalog == null) {
+                catalog = accessConfiguration.getUri();
+                if (logger.isDebugEnabled()) logger.debug("Catalog is null. Catalog name will be: " + catalog);
+            }
+            DatabaseMetaData databaseMetaData = connection.getMetaData();
+            tableResultSet = databaseMetaData.getTables(catalog, schemaName, null, new String[]{"TABLE"});
+            while (tableResultSet.next()) {
+                List<AttributeRef> attributes = new ArrayList<AttributeRef>();
+                String tableName = tableResultSet.getString("TABLE_NAME");
+                if (logger.isDebugEnabled()) logger.debug("Searching unique. ANALYZING TABLE  = " + tableName);
+                ResultSet resultSet = databaseMetaData.getPrimaryKeys(catalog, null, tableName);
+                while (resultSet.next()) {
+                    String columnName = resultSet.getString("COLUMN_NAME");
+                    if (logger.isDebugEnabled()) logger.debug("Analyzing: " + columnName);
+                    if (logger.isDebugEnabled()) logger.debug("Found a primary key: " + columnName);
+                    AttributeRef attributeRef = new AttributeRef(tableName, columnName);
+                    if (!attributes.contains(attributeRef)) {
+                        attributes.add(attributeRef);
+                    }
+                }
+                if (!attributes.isEmpty()) result.add(new Key(attributes, true));
+            }
+        } catch (DAOException | SQLException daoe) {
+            throw new DBMSException("Error connecting to database.\n" + accessConfiguration + "\n" + daoe.getLocalizedMessage());
         } finally {
             QueryManager.closeResultSet(tableResultSet);
             QueryManager.closeConnection(connection);
@@ -534,25 +555,25 @@ public class DBMSUtility {
     }
 
     public static String convertDataSourceTypeToDBType(String columnType) {
-        if (columnType.equals(Types.DATE)) {
+        if (columnType.equalsIgnoreCase(Types.DATE)) {
             return "date";
         }
-        if (columnType.equals(Types.DATETIME)) {
+        if (columnType.equalsIgnoreCase(Types.DATETIME)) {
             return "datetime";
         }
-        if (columnType.equals(Types.INTEGER)) {
+        if (columnType.equalsIgnoreCase(Types.INTEGER)) {
             return "bigint";
         }
-        if (columnType.equals(Types.REAL)) {
+        if (columnType.equalsIgnoreCase(Types.REAL)) {
             return "float";
         }
-        if (columnType.equals(Types.BOOLEAN)) {
+        if (columnType.equalsIgnoreCase(Types.BOOLEAN)) {
             return "bool";
         }
-        if (columnType.equals(Types.LONG)) {
+        if (columnType.equalsIgnoreCase(Types.LONG)) {
             return "int8";
         }
-        if (columnType.equals(Types.DOUBLE_PRECISION)) {
+        if (columnType.equalsIgnoreCase(Types.DOUBLE_PRECISION)) {
             return "float8";
         }
         return "text";
@@ -675,7 +696,7 @@ public class DBMSUtility {
         return accessConfiguration;
     }
 
-//    public static void cleanWorkTargetSchemas(AccessConfiguration accessConfiguration) {
+    //    public static void cleanWorkTargetSchemas(AccessConfiguration accessConfiguration) {
 //        if (accessConfiguration == null) {
 //            return;
 //        }
