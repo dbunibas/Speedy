@@ -6,6 +6,7 @@ import speedy.model.algebra.Difference;
 import speedy.model.algebra.Distinct;
 import speedy.model.algebra.ExtractRandomSample;
 import speedy.model.algebra.GroupBy;
+import speedy.model.algebra.Intersection;
 import speedy.model.algebra.Join;
 import speedy.model.algebra.Limit;
 import speedy.model.algebra.Offset;
@@ -41,5 +42,6 @@ public interface IAlgebraTreeVisitor {
     void visitRestoreOIDs(RestoreOIDs operator);
     void visitCreateTable(CreateTableAs operator);
     void visitExtractRandomSample(ExtractRandomSample operator);
+    void visitIntersection(Intersection operator);
     Object getResult();
 }

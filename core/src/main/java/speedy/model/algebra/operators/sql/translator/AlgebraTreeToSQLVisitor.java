@@ -12,6 +12,7 @@ import speedy.model.algebra.Distinct;
 import speedy.model.algebra.ExtractRandomSample;
 import speedy.model.algebra.GroupBy;
 import speedy.model.algebra.IAlgebraOperator;
+import speedy.model.algebra.Intersection;
 import speedy.model.algebra.Join;
 import speedy.model.algebra.Limit;
 import speedy.model.algebra.Offset;
@@ -80,6 +81,7 @@ public class AlgebraTreeToSQLVisitor implements IAlgebraTreeVisitor {
     private TranslateRestoreOIDs restoreOIDsTranslator = new TranslateRestoreOIDs();
     private TranslateCreateTableAs createTableAsTranslator = new TranslateCreateTableAs();
     private TranslateDistinct distinctTranslator = new TranslateDistinct();
+    private TranslateIntersection intersectionTranslator = new TranslateIntersection();
 
     public AlgebraTreeToSQLVisitor(IDatabase source, IDatabase target, String initialIndent) {
         this.source = source;
@@ -171,6 +173,10 @@ public class AlgebraTreeToSQLVisitor implements IAlgebraTreeVisitor {
         throw new UnsupportedOperationException("Not supported yet."); //TODO Implement method
     }
 
+    public void visitIntersection(Intersection operator) {
+        intersectionTranslator.translate(operator, this);
+    }
+    
     ///////////////////////////////////////////////////////////
     protected void visitChildren(IAlgebraOperator operator) {
         List<IAlgebraOperator> listOfChildren = operator.getChildren();

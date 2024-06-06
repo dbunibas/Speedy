@@ -8,6 +8,7 @@ import speedy.model.algebra.Distinct;
 import speedy.model.algebra.ExtractRandomSample;
 import speedy.model.algebra.GroupBy;
 import speedy.model.algebra.IAlgebraOperator;
+import speedy.model.algebra.Intersection;
 import speedy.model.algebra.Join;
 import speedy.model.algebra.Limit;
 import speedy.model.algebra.Offset;
@@ -158,6 +159,11 @@ class AlgebraTreeToStringVisitor implements IAlgebraTreeVisitor {
     }
 
     public void visitOffset(Offset operator) {
+        result.append(this.indentString()).append(operator.getName()).append("\n");
+        visitChildren(operator);
+    }
+    
+    public void visitIntersection(Intersection operator) {
         result.append(this.indentString()).append(operator.getName()).append("\n");
         visitChildren(operator);
     }
