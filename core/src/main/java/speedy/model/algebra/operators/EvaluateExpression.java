@@ -35,7 +35,10 @@ public class EvaluateExpression {
         if (expression.toString().equals("true")) {
             return SpeedyConstants.TRUE;
         }
-        setVariableValues(expression, tuple);
+        boolean contaiNulls = setVariableValues(expression, tuple);
+        if (contaiNulls) {
+            return SpeedyConstants.FALSE;
+        }
         Object value = expression.getJepExpression().getValueAsObject();
         if (expression.getJepExpression().hasError()) {
             throw new ExpressionSyntaxException(expression.getJepExpression().getErrorInfo());
@@ -50,10 +53,11 @@ public class EvaluateExpression {
         }
     }
 
-    private void setVariableValues(Expression expression, Tuple tuple) {
+    private boolean setVariableValues(Expression expression, Tuple tuple) {
         if (logger.isDebugEnabled()) logger.debug("Evaluating expression " + expression.toLongString() + "\n on tuple " + tuple);
         JEP jepExpression = expression.getJepExpression();
         SymbolTable symbolTable = jepExpression.getSymbolTable();
+        boolean containNulls = false;
         for (Variable jepVariable : symbolTable.getVariables()) {
             if (AlgebraUtility.isPlaceholder(jepVariable)) {
                 continue;
@@ -62,12 +66,18 @@ public class EvaluateExpression {
             Object variableValue = findAttributeValue(tuple, variableDescription);
             assert (variableValue != null) : "Value of variable: " + jepVariable + " is null in tuple " + tuple;
             IValue cellValue = findValueForAttribute(tuple, variableDescription);
+            if (logger.isTraceEnabled()) logger.trace("CellValue is null?:" + (cellValue instanceof NullValue));
             if (cellValue instanceof NullValue
                     && !expression.getExpressionString().toLowerCase().contains("not null")
-                    && !expression.getExpressionString().toLowerCase().contains("is null")) continue; // TODO: is that true ? check it
+                    && !expression.getExpressionString().toLowerCase().contains("is null")){
+                containNulls = true;
+//                continue;
+                // TODO: is that true ? check it
+            }
             if (logger.isTraceEnabled()) logger.trace("Setting var value: " + jepVariable.getDescription() + " = " + variableValue);
             jepExpression.setVarValue(jepVariable.getName(), variableValue);
         }
+        return containNulls;
     }
 
     private Object findAttributeValue(Tuple tuple, Object description) {
