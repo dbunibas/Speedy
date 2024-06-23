@@ -21,6 +21,11 @@ public class CSVUtility {
                 attributeType = Types.REAL;
                 attributeName = attributeName.substring(0, attributeName.length() - doubleSuffix.length()).trim();
             }
+            String doublePrecisionSuffix = "(" + Types.DOUBLE_PRECISION + ")";
+            if (attributeName.toLowerCase().endsWith(doublePrecisionSuffix.toLowerCase())) {
+                attributeType = Types.DOUBLE_PRECISION;
+                attributeName = attributeName.substring(0, attributeName.length() - doublePrecisionSuffix.length()).trim();
+            }
             String longSuffix = "(" + Types.LONG + ")";
             if (attributeName.toLowerCase().endsWith(longSuffix.toLowerCase())) {
                 attributeType = Types.LONG;
