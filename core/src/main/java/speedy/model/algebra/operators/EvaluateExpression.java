@@ -35,6 +35,7 @@ public class EvaluateExpression {
         if (expression.toString().equals("true")) {
             return SpeedyConstants.TRUE;
         }
+        if (tuple == null) return SpeedyConstants.FALSE;
         boolean contaiNulls = setVariableValues(expression, tuple);
         if (contaiNulls) {
             return SpeedyConstants.FALSE;
