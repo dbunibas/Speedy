@@ -16,8 +16,12 @@ import speedy.utility.DBMSUtility;
 import speedy.utility.SpeedyUtility;
 
 import static java.lang.Boolean.TRUE;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SQLCreateTable implements ICreateTable {
+
+    private static Logger logger = LoggerFactory.getLogger(SQLCreateTable.class);
 
     public void createTable(String tableName, List<Attribute> attributes, IDatabase target) {
         createTable(tableName, attributes, null, target);
@@ -46,6 +50,7 @@ public class SQLCreateTable implements ICreateTable {
         }
 //        sb.append(") with oids;");
         sb.append(");");
+        logger.debug("Create Table Script: \n" + sb.toString());
         QueryManager.executeScript(sb.toString(), accessConfiguration, true, true, false, false);
         DBMSTable table = new DBMSTable(tableName, accessConfiguration);
         ((DBMSDB) target).addTable(table);

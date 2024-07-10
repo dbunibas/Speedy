@@ -68,6 +68,7 @@ public class Project extends AbstractOperator {
     private void materializeResult(ITupleIterator originalTuples, List<Tuple> result) {
         while (originalTuples.hasNext()) {
             Tuple originalTuple = originalTuples.next();
+            if (originalTuple == null) continue;
             if (logger.isDebugEnabled()) logger.debug("Original tuple: " + originalTuple.toStringWithOIDAndAlias());
             Tuple projectedTuple = projectTuple(originalTuple);
             if (logger.isDebugEnabled()) logger.debug("Projected tuple: " + projectedTuple.toStringWithOIDAndAlias());
