@@ -37,6 +37,7 @@ public class CSVUtility {
                 attributeName = attributeName.substring(0, attributeName.length() - dateSuffix.length()).trim();
             }
             Attribute attribute = new Attribute(tableName.trim(), attributeName.trim(), attributeType);
+            attribute.setNullable(true);
             attributes.add(attribute);
         }
         return attributes;
