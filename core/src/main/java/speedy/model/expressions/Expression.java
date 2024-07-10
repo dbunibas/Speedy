@@ -22,6 +22,8 @@ public class Expression implements Cloneable {
     }
     private JEP jepExpression;
 
+    private String expressionString;
+
     public Expression(String expression) throws ExpressionSyntaxException {
         jepExpression = new JEP();
         jepExpression.setAllowUndeclared(true);
@@ -31,6 +33,7 @@ public class Expression implements Cloneable {
         if (jepExpression.hasError()) {
             throw new ExpressionSyntaxException("Unable to parse expression " + expression + ". " + jepExpression.getErrorInfo());
         }
+        expressionString = expression;
         if (logger.isDebugEnabled()) logger.debug("Created expression: " + jepExpression);
     }
 
@@ -89,6 +92,10 @@ public class Expression implements Cloneable {
         }
         if (logger.isDebugEnabled()) logger.debug("Value of function: " + value);
         return value;
+    }
+
+    public String getExpressionString() {
+        return this.expressionString;
     }
 
     @Override

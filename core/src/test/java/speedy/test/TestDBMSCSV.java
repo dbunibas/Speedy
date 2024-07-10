@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import speedy.OperatorFactory;
 import speedy.SpeedyConstants;
 import speedy.model.algebra.GroupBy;
+import speedy.model.algebra.Intersection;
 import speedy.model.algebra.Join;
 import speedy.model.algebra.Limit;
 import speedy.model.algebra.OrderBy;
@@ -53,6 +54,7 @@ public class TestDBMSCSV {
         database.getInitDBConfiguration().setCreateTablesFromFiles(true);
 //        database.getInitDBConfiguration().setUseCopyStatement(false);
         CSVFile fileToImport = new CSVFile(UtilityForTests.getAbsoluteFileName("/employees/csv/50_emp.csv"));
+//        CSVFile fileToImport = new CSVFile(UtilityForTests.getAbsoluteFileName("/employees/csv/50_emp_with_duplicates.csv"));
         fileToImport.setSeparator(',');
         database.getInitDBConfiguration().addFileToImportForTable("emp", fileToImport);
 //        UtilityForTests.deleteDB(database.getAccessConfiguration());
@@ -289,6 +291,32 @@ public class TestDBMSCSV {
         if (logger.isInfoEnabled()) logger.info(stringResult);
         result.close();
         Assert.assertTrue(stringResult.startsWith("Number of tuples: 3\n"));
+    }
+    
+    @Test
+    public void testIntersection() {
+        TableAlias tableAlias = new TableAlias("emp");
+        Scan scan = new Scan(tableAlias);
+        Expression expression = new Expression("salary < 2000");
+        expression.changeVariableDescription("salary", new AttributeRef(tableAlias, "salary"));
+        Select select1 = new Select(expression);
+        select1.addChild(scan);
+
+        Expression expression2 = new Expression("manager == \"Paolo\"");
+        expression2.changeVariableDescription("manager", new AttributeRef(tableAlias, "manager"));
+        Select select2 = new Select(expression2);
+        select2.addChild(scan);
+
+        Intersection intersection = new Intersection();
+        intersection.addChild(select1);
+        intersection.addChild(select2);
+        if (logger.isDebugEnabled()) logger.debug(intersection.toString());
+        ITupleIterator result = queryRunner.run(intersection, null, database);
+        String stringResult = SpeedyUtility.printTupleIterator(result);
+        if (logger.isDebugEnabled()) logger.debug(stringResult);
+        result.close();
+        Assert.assertTrue(stringResult.startsWith("Number of tuples: 1\n"));
+        QueryStatManager.getInstance().printStatistics();
     }
 
 }
