@@ -42,7 +42,7 @@ public class GroupBy extends AbstractOperator {
     }
 
     public ITupleIterator execute(IDatabase source, IDatabase target) {
-        if (logger.isDebugEnabled()) logger.debug("Executing groupby: " + getName() + " on source\n" + (source == null ? "" : source.printInstances()) + "\nand target:\n" + target.printInstances());
+        if (logger.isDebugEnabled()) logger.debug("Executing group-by: {} on source\n{}\nand target:\n{}", getName(), source == null ? "" : source.printInstances(), target.printInstances());
         List<Tuple> result = new ArrayList<Tuple>();
         ITupleIterator originalTuples = children.get(0).execute(source, target);
         materializeResult(originalTuples, result);
@@ -63,6 +63,7 @@ public class GroupBy extends AbstractOperator {
             }
             result.add(tuple);
         }
+        logger.trace("GroupBy Result: {}", result);
     }
 
     public static List<Object> getTupleValues(Tuple tuple, List<AttributeRef> attributes) {

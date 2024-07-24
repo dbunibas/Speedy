@@ -23,7 +23,7 @@ public class CountAggregateFunction implements IAggregateFunction {
     }
 
     public String toString() {
-        return "count(*)";
+        return "count(" + attributeRef + ")";
     }
 
     public AttributeRef getAttributeRef() {

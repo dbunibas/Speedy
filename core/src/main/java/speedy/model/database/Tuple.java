@@ -1,10 +1,15 @@
 package speedy.model.database;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import speedy.SpeedyConstants;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Tuple implements Cloneable {
+
+    private Logger logger = LoggerFactory.getLogger(Tuple.class);
 
     private TupleOID oid;
     private List<Cell> cells = new ArrayList<Cell>();
@@ -35,6 +40,7 @@ public class Tuple implements Cloneable {
         for (Cell existingCell : cells) {
             if (cell.isOID()) continue;
             if (cell.getAttributeRef().equals(existingCell.getAttributeRef())) {
+                logger.warn("Unable to add cell {} in tuple {}", cell, this);
                 throw new IllegalArgumentException("Tuple " + this.toStringWithOIDAndAlias() + " already contains a cell for attribute " + cell.getAttributeRef());
             }
         }
