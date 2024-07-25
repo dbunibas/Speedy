@@ -9,9 +9,16 @@ import java.util.List;
 public class ValueAggregateFunction implements IAggregateFunction {
 
     private AttributeRef attributeRef;
+    private AttributeRef newAttributeRef;
 
     public ValueAggregateFunction(AttributeRef attributeRef) {
         this.attributeRef = attributeRef;
+        this.newAttributeRef = attributeRef;
+    }
+
+    public ValueAggregateFunction(AttributeRef attributeRef, AttributeRef newAttributeRef) {
+        this.attributeRef = attributeRef;
+        this.newAttributeRef = newAttributeRef;
     }
 
     public IValue evaluate(IDatabase db, List<Tuple> tuples) {
@@ -49,6 +56,13 @@ public class ValueAggregateFunction implements IAggregateFunction {
 
     public void setAttributeRef(AttributeRef attributeRef) {
         this.attributeRef = attributeRef;
+    }
+    public AttributeRef getNewAttributeRef() {
+        return newAttributeRef;
+    }
+
+    public void setNewAttributeRef(AttributeRef newAttributeRef) {
+        this.newAttributeRef = newAttributeRef;
     }
 
     public ValueAggregateFunction clone() {

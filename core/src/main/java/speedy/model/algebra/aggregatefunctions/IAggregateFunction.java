@@ -15,6 +15,10 @@ public interface IAggregateFunction extends Cloneable{
     AttributeRef getAttributeRef();
 
     void setAttributeRef(AttributeRef attributeRef);
+
+    AttributeRef getNewAttributeRef();
+
+    void setNewAttributeRef(AttributeRef newAttributeRef);
     
     IAggregateFunction clone();
 

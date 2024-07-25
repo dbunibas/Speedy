@@ -138,7 +138,7 @@ public class Project extends AbstractOperator {
         for (int i = 0; i < attributes.size(); i++) {
             ProjectionAttribute attribute = attributes.get(i);
             IAggregateFunction function = attribute.getAggregateFunction();
-            AttributeRef newAttribute = function.getAttributeRef();
+            AttributeRef newAttribute = function.getNewAttributeRef();
             if (newAttributes != null) {
                 newAttribute = newAttributes.get(i);
             }

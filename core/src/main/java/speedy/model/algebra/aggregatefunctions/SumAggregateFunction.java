@@ -8,9 +8,16 @@ import java.util.List;
 public class SumAggregateFunction implements IAggregateFunction {
 
     private AttributeRef attributeRef;
+    private AttributeRef newAttributeRef;
 
     public SumAggregateFunction(AttributeRef attributeRef) {
         this.attributeRef = attributeRef;
+        this.newAttributeRef = attributeRef;
+    }
+
+    public SumAggregateFunction(AttributeRef attributeRef, AttributeRef newAttributeRef) {
+        this.attributeRef = attributeRef;
+        this.newAttributeRef = newAttributeRef;
     }
 
     public IValue evaluate(IDatabase db, List<Tuple> tuples) {
@@ -44,6 +51,13 @@ public class SumAggregateFunction implements IAggregateFunction {
 
     public void setAttributeRef(AttributeRef attributeRef) {
         this.attributeRef = attributeRef;
+    }
+    public AttributeRef getNewAttributeRef() {
+        return newAttributeRef;
+    }
+
+    public void setNewAttributeRef(AttributeRef newAttributeRef) {
+        this.newAttributeRef = newAttributeRef;
     }
 
     public SumAggregateFunction clone() {

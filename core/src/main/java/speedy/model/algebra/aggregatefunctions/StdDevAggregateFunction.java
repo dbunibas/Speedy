@@ -9,9 +9,16 @@ import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 public class StdDevAggregateFunction implements IAggregateFunction {
 
     private AttributeRef attributeRef;
+    private AttributeRef newAttributeRef;
 
     public StdDevAggregateFunction(AttributeRef attributeRef) {
         this.attributeRef = attributeRef;
+        this.newAttributeRef = attributeRef;
+    }
+
+    public StdDevAggregateFunction(AttributeRef attributeRef, AttributeRef newAttributeRef) {
+        this.attributeRef = attributeRef;
+        this.newAttributeRef = newAttributeRef;
     }
 
     public IValue evaluate(IDatabase db, List<Tuple> tuples) {
@@ -45,6 +52,13 @@ public class StdDevAggregateFunction implements IAggregateFunction {
 
     public void setAttributeRef(AttributeRef attributeRef) {
         this.attributeRef = attributeRef;
+    }
+    public AttributeRef getNewAttributeRef() {
+        return newAttributeRef;
+    }
+
+    public void setNewAttributeRef(AttributeRef newAttributeRef) {
+        this.newAttributeRef = newAttributeRef;
     }
 
     public StdDevAggregateFunction clone() {

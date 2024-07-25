@@ -58,7 +58,7 @@ public class GroupBy extends AbstractOperator {
             Tuple tuple = new Tuple(new TupleOID(IntegerOIDGenerator.getNextOID()));
             for (IAggregateFunction function : aggregateFunctions) {
                 IValue aggregateValue = function.evaluate(db, group);
-                Cell cell = new Cell(tuple.getOid(), function.getAttributeRef(), aggregateValue);
+                Cell cell = new Cell(tuple.getOid(), function.getNewAttributeRef(), aggregateValue);
                 tuple.addCell(cell);
             }
             result.add(tuple);

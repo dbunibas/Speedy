@@ -10,9 +10,16 @@ import speedy.utility.comparator.TupleComparatorAttributeValue;
 public class MinAggregateFunction implements IAggregateFunction {
 
     private AttributeRef attributeRef;
+    private AttributeRef newAttributeRef;
 
     public MinAggregateFunction(AttributeRef attributeRef) {
         this.attributeRef = attributeRef;
+        this.newAttributeRef = attributeRef;
+    }
+
+    public MinAggregateFunction(AttributeRef attributeRef, AttributeRef newAttributeRef) {
+        this.attributeRef = attributeRef;
+        this.newAttributeRef = newAttributeRef;
     }
 
     public IValue evaluate(IDatabase db, List<Tuple> tuples) {
@@ -38,6 +45,13 @@ public class MinAggregateFunction implements IAggregateFunction {
 
     public void setAttributeRef(AttributeRef attributeRef) {
         this.attributeRef = attributeRef;
+    }
+    public AttributeRef getNewAttributeRef() {
+        return newAttributeRef;
+    }
+
+    public void setNewAttributeRef(AttributeRef newAttributeRef) {
+        this.newAttributeRef = newAttributeRef;
     }
 
     public MinAggregateFunction clone() {

@@ -18,7 +18,7 @@ public class ProjectionAttribute implements Cloneable {
 
     public AttributeRef getAttributeRef() {
         if (isAggregative()) {
-            return aggregateFunction.getAttributeRef();
+            return aggregateFunction.getNewAttributeRef();
         } else {
             return attributeRef;
         }
@@ -31,7 +31,7 @@ public class ProjectionAttribute implements Cloneable {
     @Override
     public String toString() {
         if (isAggregative()) {
-            return aggregateFunction.getAttributeRef().toString();
+            return aggregateFunction.getNewAttributeRef().toString();
         } else {
             return attributeRef.toString();
         }

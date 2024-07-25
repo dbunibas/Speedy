@@ -11,7 +11,7 @@
                                     <xs:sequence>
                                         <xs:element name="name" nillable="false" type="xs:string"/>
                                         <xs:element name="dept" nillable="false" type="xs:string"/>
-                                        <xs:element name="salary" nillable="false" type="xs:string"/>
+                                        <xs:element name="salary" nillable="false" type="xs:integer"/>
                                         <xs:element name="manager" nillable="false" type="xs:string"/>
                                     </xs:sequence>
                                 </xs:complexType>

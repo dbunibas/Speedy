@@ -15,9 +15,16 @@ public class MaxAggregateFunction implements IAggregateFunction {
     private static Logger logger = LoggerFactory.getLogger(MaxAggregateFunction.class);
 
     private AttributeRef attributeRef;
+    private AttributeRef newAttributeRef;
 
     public MaxAggregateFunction(AttributeRef attributeRef) {
         this.attributeRef = attributeRef;
+        this.newAttributeRef = attributeRef;
+    }
+
+    public MaxAggregateFunction(AttributeRef attributeRef, AttributeRef newAttributeRef) {
+        this.attributeRef = attributeRef;
+        this.newAttributeRef = newAttributeRef;
     }
 
     public IValue evaluate(IDatabase db, List<Tuple> tuples) {
@@ -43,6 +50,13 @@ public class MaxAggregateFunction implements IAggregateFunction {
 
     public void setAttributeRef(AttributeRef attributeRef) {
         this.attributeRef = attributeRef;
+    }
+    public AttributeRef getNewAttributeRef() {
+        return newAttributeRef;
+    }
+
+    public void setNewAttributeRef(AttributeRef newAttributeRef) {
+        this.newAttributeRef = newAttributeRef;
     }
 
     public MaxAggregateFunction clone() {

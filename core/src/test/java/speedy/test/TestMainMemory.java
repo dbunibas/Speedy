@@ -6,19 +6,25 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.OperatorFactory;
-import speedy.model.algebra.Intersection;
-import speedy.model.algebra.Scan;
-import speedy.model.algebra.Select;
+import speedy.model.algebra.*;
+import speedy.model.algebra.aggregatefunctions.*;
 import speedy.model.algebra.operators.ITupleIterator;
 import speedy.model.database.AttributeRef;
 import speedy.model.database.TableAlias;
+import speedy.model.database.Tuple;
+import speedy.model.database.VirtualAttributeRef;
 import speedy.model.database.mainmemory.MainMemoryDB;
 import speedy.model.database.operators.IRunQuery;
 import speedy.model.expressions.Expression;
 import speedy.persistence.DAOMainMemoryDatabase;
+import speedy.persistence.Types;
 import speedy.persistence.relational.QueryStatManager;
 import speedy.test.utility.UtilityForTests;
 import speedy.utility.SpeedyUtility;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedMap;
 
 public class TestMainMemory {
 
@@ -100,5 +106,90 @@ public class TestMainMemory {
         result.close();
         Assert.assertTrue(stringResult.startsWith("Number of tuples: 1\n"));
         QueryStatManager.getInstance().printStatistics();
+    }
+
+    @Test
+    public void testOrderBy() {
+        TableAlias tableAlias = new TableAlias("EmpTable");
+        Scan scan = new Scan(tableAlias);
+        if (logger.isDebugEnabled()) logger.debug(scan.toString());
+        AttributeRef salary = new AttributeRef(tableAlias, "salary");
+        OrderBy orderBy = new OrderBy(List.of(salary));
+        orderBy.setOrder(OrderBy.ORDER_ASC);
+        orderBy.addChild(scan);
+        ITupleIterator result = queryRunner.run(orderBy, null, database);
+        List<Tuple> orderedList = new ArrayList<>();
+        while (result.hasNext()) {
+            Tuple tuple = result.next();
+            orderedList.add(tuple);
+            logger.info(tuple.getCell(salary).getValue().toString());
+        }
+        result.close();
+        logger.info("First tuple {}", orderedList.get(0));
+        logger.info("Last tuple {}", orderedList.get(orderedList.size() - 1));
+        Assert.assertTrue(orderedList.get(0).getCell(salary).getValue().toString().equals("1"));
+        Assert.assertTrue(orderedList.get(orderedList.size() - 1).getCell(salary).getValue().toString().equals("100000"));
+    }
+
+
+    @Test
+    public void testGroupByWithSort() {
+        TableAlias tableAlias = new TableAlias("EmpTable");
+        Scan scan = new Scan(tableAlias);
+        if (logger.isDebugEnabled()) logger.debug(scan.toString());
+        AttributeRef salary = new AttributeRef(tableAlias, "salary");
+        AttributeRef countAlias = new VirtualAttributeRef(tableAlias, "count", Types.INTEGER);
+        AttributeRef maxAlias = new VirtualAttributeRef(tableAlias, "max", Types.INTEGER);
+        AttributeRef minAlias = new VirtualAttributeRef(tableAlias, "min", Types.INTEGER);
+        AttributeRef avgAlias = new VirtualAttributeRef(tableAlias, "avg", Types.REAL);
+        AttributeRef dept = new AttributeRef(tableAlias, "dept");
+        GroupBy groupBy = new GroupBy(List.of(
+                dept),
+                List.of(new ValueAggregateFunction(dept),
+                        new CountAggregateFunction(salary, countAlias),
+                        new MaxAggregateFunction(salary, maxAlias),
+                        new MinAggregateFunction(salary, minAlias),
+                        new AvgAggregateFunction(salary, avgAlias))
+        );
+        groupBy.addChild(scan);
+        OrderBy orderBy = new OrderBy(List.of(countAlias));
+        orderBy.setOrder(OrderBy.ORDER_DESC);
+        orderBy.addChild(groupBy);
+//        Limit limit = new Limit(1);
+//        limit.addChild(orderBy);
+        ITupleIterator result = queryRunner.run(orderBy, null, database);
+        List<Tuple> orderedList = new ArrayList<>();
+        while (result.hasNext()) {
+            Tuple tuple = result.next();
+            orderedList.add(tuple);
+            logger.info(tuple.toString());
+//            logger.info(tuple.getCell(salary).getValue().toString());
+        }
+        result.close();
+//        logger.info("First tuple {}", orderedList.get(0));
+//        logger.info("Last tuple {}", orderedList.get(orderedList.size() - 1));
+//        Assert.assertTrue(orderedList.get(0).getCell(salary).getValue().toString().equals("1"));
+//        Assert.assertTrue(orderedList.get(orderedList.size() - 1).getCell(salary).getValue().toString().equals("10000"));
+    }
+
+    @Test
+    public void testMin() {
+        TableAlias tableAlias = new TableAlias("EmpTable");
+        Scan scan = new Scan(tableAlias);
+        if (logger.isDebugEnabled()) logger.debug(scan.toString());
+        AttributeRef salary = new AttributeRef(tableAlias, "salary");
+        AttributeRef min = new VirtualAttributeRef(tableAlias, "min", Types.INTEGER);
+        Project project = new Project(List.of(new ProjectionAttribute(new MinAggregateFunction(salary, min))));
+        project.addChild(scan);
+        ITupleIterator result = queryRunner.run(project, null, database);
+        List<Tuple> orderedList = new ArrayList<>();
+        while (result.hasNext()) {
+            Tuple tuple = result.next();
+            orderedList.add(tuple);
+            logger.info(tuple.getCell(min).getValue().toString());
+        }
+        result.close();
+        logger.info("First tuple {}", orderedList.get(0));
+        Assert.assertTrue(orderedList.get(0).getCell(min).getValue().toString().equals("1"));
     }
 }

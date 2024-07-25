@@ -545,8 +545,8 @@ public class SpeedyUtility {
     }
 
     public static String getCellValueForSorting(IDatabase db, Cell cell) {
-        Attribute attribute = db.getTable(cell.getAttributeRef().getTableName()).getAttribute(cell.getAttribute());
-        if (attribute.getType().equals(Types.INTEGER) || attribute.getType().equals(Types.REAL)) {
+        String attributeType = getAttributeType(db, cell);
+        if (attributeType.equals(Types.INTEGER) || attributeType.equals(Types.REAL)) {
             try {
                 Double doubleValue = Double.parseDouble(cell.getValue().toString());
                 String doubleStringValue = getNumberFormatForSorting() .format(doubleValue);
@@ -557,6 +557,15 @@ public class SpeedyUtility {
             }
         }
         return cell.getValue().toString();
+    }
+
+    private static String getAttributeType(IDatabase db, Cell cell) {
+        AttributeRef attributeRef = cell.getAttributeRef();
+        if(attributeRef instanceof VirtualAttributeRef){
+            return ((VirtualAttributeRef) attributeRef).getType();
+        }
+        Attribute attribute = db.getTable(attributeRef.getTableName()).getAttribute(cell.getAttribute());
+        return attribute.getType();
     }
 
     private static NumberFormat nf;
