@@ -1,9 +1,7 @@
 package speedy.model.algebra.aggregatefunctions;
 
-import speedy.model.database.AttributeRef;
-import speedy.model.database.ConstantValue;
-import speedy.model.database.IValue;
-import speedy.model.database.Tuple;
+import speedy.model.database.*;
+
 import java.util.List;
 
 public class CountAggregateFunction implements IAggregateFunction {
@@ -14,7 +12,7 @@ public class CountAggregateFunction implements IAggregateFunction {
         this.attributeRef = attributeRef;
     }
 
-    public IValue evaluate(List<Tuple> tuples) {
+    public IValue evaluate(IDatabase db, List<Tuple> tuples) {
         return new ConstantValue(tuples.size());
     }
 

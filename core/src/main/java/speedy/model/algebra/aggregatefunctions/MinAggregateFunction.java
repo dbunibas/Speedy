@@ -1,10 +1,8 @@
 package speedy.model.algebra.aggregatefunctions;
 
 import speedy.SpeedyConstants;
-import speedy.model.database.AttributeRef;
-import speedy.model.database.IValue;
-import speedy.model.database.Tuple;
-import speedy.model.database.NullValue;
+import speedy.model.database.*;
+
 import java.util.Collections;
 import java.util.List;
 import speedy.utility.comparator.TupleComparatorAttributeValue;
@@ -17,11 +15,11 @@ public class MinAggregateFunction implements IAggregateFunction {
         this.attributeRef = attributeRef;
     }
 
-    public IValue evaluate(List<Tuple> tuples) {
+    public IValue evaluate(IDatabase db, List<Tuple> tuples) {
         if (tuples.isEmpty()) {
             return new NullValue(SpeedyConstants.NULL_VALUE);
         }
-        Collections.sort(tuples, new TupleComparatorAttributeValue(attributeRef));
+        Collections.sort(tuples, new TupleComparatorAttributeValue(db, attributeRef));
         Collections.reverse(tuples);
         return tuples.get(0).getCell(attributeRef).getValue();
     }

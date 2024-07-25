@@ -45,19 +45,19 @@ public class GroupBy extends AbstractOperator {
         if (logger.isDebugEnabled()) logger.debug("Executing group-by: {} on source\n{}\nand target:\n{}", getName(), source == null ? "" : source.printInstances(), target.printInstances());
         List<Tuple> result = new ArrayList<Tuple>();
         ITupleIterator originalTuples = children.get(0).execute(source, target);
-        materializeResult(originalTuples, result);
+        materializeResult(target, originalTuples, result);
         Collections.sort(result, new TupleComparatorOIDs());
         originalTuples.close();
         if (logger.isDebugEnabled()) logger.debug("Result:\n" + SpeedyUtility.printCollection(result));
         return new ListTupleIterator(result);
     }
 
-    private void materializeResult(ITupleIterator originalTuples, List<Tuple> result) {
+    private void materializeResult(IDatabase db, ITupleIterator originalTuples, List<Tuple> result) {
         Map<String, List<Tuple>> groups = groupTuples(originalTuples);
         for (List<Tuple> group : groups.values()) {
             Tuple tuple = new Tuple(new TupleOID(IntegerOIDGenerator.getNextOID()));
             for (IAggregateFunction function : aggregateFunctions) {
-                IValue aggregateValue = function.evaluate(group);
+                IValue aggregateValue = function.evaluate(db, group);
                 Cell cell = new Cell(tuple.getOid(), function.getAttributeRef(), aggregateValue);
                 tuple.addCell(cell);
             }

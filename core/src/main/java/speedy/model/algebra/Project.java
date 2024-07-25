@@ -59,7 +59,7 @@ public class Project extends AbstractOperator {
         if (logger.isDebugEnabled()) logger.debug(getName() + " - Result: \n" + SpeedyUtility.printCollection(result));
         originalTuples.close();
         if (isAggregative()) {
-            result = aggregateResult(result);
+            result = aggregateResult(target, result);
         }
         checkResult(result);
         return new ListTupleIterator(result);
@@ -133,7 +133,7 @@ public class Project extends AbstractOperator {
         return result;
     }
 
-    private List<Tuple> aggregateResult(List<Tuple> tuplesToAggregate) {
+    private List<Tuple> aggregateResult(IDatabase db, List<Tuple> tuplesToAggregate) {
         Tuple tuple = new Tuple(new TupleOID(IntegerOIDGenerator.getNextOID()));
         for (int i = 0; i < attributes.size(); i++) {
             ProjectionAttribute attribute = attributes.get(i);
@@ -142,7 +142,7 @@ public class Project extends AbstractOperator {
             if (newAttributes != null) {
                 newAttribute = newAttributes.get(i);
             }
-            IValue aggregateValue = function.evaluate(tuplesToAggregate);
+            IValue aggregateValue = function.evaluate(db, tuplesToAggregate);
             Cell cell = new Cell(tuple.getOid(), newAttribute, aggregateValue);
             tuple.addCell(cell);
         }

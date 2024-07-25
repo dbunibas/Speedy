@@ -41,18 +41,18 @@ public class Partition extends AbstractOperator {
         if (logger.isDebugEnabled()) logger.debug("Executing groupby: " + getName() + " on source\n" + (source == null ? "" : source.printInstances()) + "\nand target:\n" + target.printInstances());
         List<Tuple> result = new ArrayList<Tuple>();
         ITupleIterator originalTuples = children.get(0).execute(source, target);
-        materializeResult(originalTuples, result);
+        materializeResult(target, originalTuples, result);
         originalTuples.close();
         if (logger.isDebugEnabled()) logger.debug("Result:\n" + SpeedyUtility.printCollection(result));
         return new ListTupleIterator(result);
     }
 
-    private void materializeResult(ITupleIterator originalTuples, List<Tuple> result) {
+    private void materializeResult(IDatabase db, ITupleIterator originalTuples, List<Tuple> result) {
         Map<String, List<Tuple>> groups = groupTuples(originalTuples);
         for (List<Tuple> group : groups.values()) {
             for (Tuple tuple : group) {
                 for (IAggregateFunction function : aggregateFunctions) {
-                    IValue aggregateValue = function.evaluate(group);
+                    IValue aggregateValue = function.evaluate(db, group);
                     Cell cell = new Cell(tuple.getOid(), function.getAttributeRef(), aggregateValue);
                     tuple.addCell(cell);
                 }

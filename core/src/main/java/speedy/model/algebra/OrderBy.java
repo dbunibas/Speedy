@@ -1,21 +1,23 @@
 package speedy.model.algebra;
 
-import speedy.model.database.*;
-import speedy.persistence.Types;
-import speedy.utility.SpeedyUtility;
-import speedy.model.algebra.operators.ListTupleIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import speedy.model.algebra.operators.IAlgebraTreeVisitor;
 import speedy.model.algebra.operators.ITupleIterator;
+import speedy.model.algebra.operators.ListTupleIterator;
+import speedy.model.database.AttributeRef;
+import speedy.model.database.Cell;
+import speedy.model.database.IDatabase;
+import speedy.model.database.Tuple;
+import speedy.utility.SpeedyUtility;
+import speedy.utility.comparator.TupleComparatorOIDs;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import speedy.utility.comparator.TupleComparatorOIDs;
+
+import static speedy.utility.SpeedyUtility.getCellValueForSorting;
 
 public class OrderBy extends AbstractOperator {
 
@@ -80,7 +82,6 @@ public class OrderBy extends AbstractOperator {
 
 class TupleOrderByComparator implements Comparator<Tuple> {
 
-    private static Logger logger = LoggerFactory.getLogger(TupleOrderByComparator.class);
     private TupleComparatorOIDs tupleOIDComparator = new TupleComparatorOIDs();
     private List<AttributeRef> attributes;
     private IDatabase db;
@@ -104,31 +105,10 @@ class TupleOrderByComparator implements Comparator<Tuple> {
         result.append("[");
         for (AttributeRef attribute : attributes) {
             Cell cell = findCell(attribute, tuple);
-            result.append(getCellValueForSorting(cell)).append("|");
+            result.append(getCellValueForSorting(db, cell)).append("|");
         }
         result.append("]");
         return result.toString();
-    }
-
-    private String getCellValueForSorting(Cell cell) {
-        Attribute attribute = db.getTable(cell.getAttributeRef().getTableName()).getAttribute(cell.getAttribute());
-        if(attribute.getType().equals(Types.INTEGER) || attribute.getType().equals(Types.REAL)){
-            try {
-                NumberFormat nf = DecimalFormat.getInstance();
-                nf.setGroupingUsed(false);
-                nf.setMinimumFractionDigits(10);
-                nf.setMaximumFractionDigits(10);
-                nf.setMinimumIntegerDigits(10);
-                nf.setMaximumIntegerDigits(10);
-                Double doubleValue = Double.parseDouble(cell.getValue().toString());
-                String doubleStringValue = nf.format(doubleValue);
-                logger.trace("Converting numeric value {} into string sortable value {}", cell.getValue().toString(), doubleStringValue);
-                return doubleStringValue;
-            }catch (NumberFormatException e){
-                logger.warn("Unable to parse value {} from cell {} as number", cell.getValue().toString(), cell);
-            }
-        }
-        return cell.getValue().toString();
     }
 
     private Cell findCell(AttributeRef attribute, Tuple tuple) {

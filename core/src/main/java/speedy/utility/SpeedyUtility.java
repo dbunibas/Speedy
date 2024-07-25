@@ -1,47 +1,28 @@
 package speedy.utility;
 
+import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import speedy.SpeedyConstants;
+import speedy.model.algebra.ProjectionAttribute;
 import speedy.model.algebra.operators.ITupleIterator;
-import speedy.model.database.AttributeRef;
-import speedy.model.database.Cell;
-import speedy.model.database.ConstantValue;
-import speedy.model.database.IValue;
-import speedy.model.database.NullValue;
-import speedy.model.database.Tuple;
-import speedy.model.database.TupleOID;
+import speedy.model.database.*;
+import speedy.model.database.dbms.DBMSDB;
 import speedy.model.database.mainmemory.datasource.IDataSourceNullValue;
 import speedy.model.database.mainmemory.datasource.INode;
 import speedy.model.database.mainmemory.datasource.IntegerOIDGenerator;
-import speedy.model.database.mainmemory.datasource.nodes.AttributeNode;
-import speedy.model.database.mainmemory.datasource.nodes.LeafNode;
-import speedy.model.database.mainmemory.datasource.nodes.MetadataNode;
-import speedy.model.database.mainmemory.datasource.nodes.SequenceNode;
-import speedy.model.database.mainmemory.datasource.nodes.SetNode;
-import speedy.model.database.mainmemory.datasource.nodes.TupleNode;
-import speedy.SpeedyConstants;
-import speedy.model.database.Attribute;
-import speedy.model.database.CellRef;
-import speedy.model.database.IDatabase;
-import speedy.model.database.ITable;
-import speedy.model.database.TableAlias;
-import speedy.persistence.Types;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import org.apache.commons.io.FilenameUtils;
-import speedy.model.algebra.ProjectionAttribute;
-import speedy.model.database.LLUNValue;
-import speedy.model.database.TupleWithTable;
-import speedy.model.database.dbms.DBMSDB;
+import speedy.model.database.mainmemory.datasource.nodes.*;
 import speedy.model.database.operators.dbms.IValueEncoder;
+import speedy.persistence.Types;
 import speedy.utility.comparator.StringComparator;
 import speedy.utility.comparator.TableComparatorBySizeAndName;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.*;
+
 public class SpeedyUtility {
+    private static final Logger logger = LoggerFactory.getLogger(SpeedyUtility.class);
 
     /////////////////////////////////////   COLLECTIONS METHODS   /////////////////////////////////////
     @SuppressWarnings("unchecked")
@@ -561,6 +542,36 @@ public class SpeedyUtility {
             result.add(attribute);
         }
         return result;
+    }
+
+    public static String getCellValueForSorting(IDatabase db, Cell cell) {
+        Attribute attribute = db.getTable(cell.getAttributeRef().getTableName()).getAttribute(cell.getAttribute());
+        if (attribute.getType().equals(Types.INTEGER) || attribute.getType().equals(Types.REAL)) {
+            try {
+                Double doubleValue = Double.parseDouble(cell.getValue().toString());
+                String doubleStringValue = getNumberFormatForSorting() .format(doubleValue);
+                logger.trace("Converting numeric value {} into string sortable value {}", cell.getValue().toString(), doubleStringValue);
+                return doubleStringValue;
+            } catch (NumberFormatException e) {
+                logger.warn("Unable to parse value {} from cell {} as number", cell.getValue().toString(), cell);
+            }
+        }
+        return cell.getValue().toString();
+    }
+
+    private static NumberFormat nf;
+
+    private static NumberFormat getNumberFormatForSorting() {
+        if (nf == null) {
+            NumberFormat newNf = DecimalFormat.getInstance();
+            newNf.setGroupingUsed(false);
+            newNf.setMinimumFractionDigits(10);
+            newNf.setMaximumFractionDigits(10);
+            newNf.setMinimumIntegerDigits(10);
+            newNf.setMaximumIntegerDigits(10);
+            nf = newNf;
+        }
+        return nf;
     }
 
 }

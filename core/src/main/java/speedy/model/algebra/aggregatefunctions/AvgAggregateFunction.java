@@ -1,14 +1,11 @@
 package speedy.model.algebra.aggregatefunctions;
 
 import speedy.SpeedyConstants;
-import speedy.model.database.AttributeRef;
-import speedy.model.database.IValue;
-import speedy.model.database.Tuple;
-import speedy.model.database.NullValue;
+import speedy.model.database.*;
+
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import speedy.model.database.ConstantValue;
 
 public class AvgAggregateFunction implements IAggregateFunction {
 
@@ -18,7 +15,7 @@ public class AvgAggregateFunction implements IAggregateFunction {
         this.attributeRef = attributeRef;
     }
 
-    public IValue evaluate(List<Tuple> tuples) {
+    public IValue evaluate(IDatabase db, List<Tuple> tuples) {
         if (tuples.isEmpty()) {
             return new NullValue(SpeedyConstants.NULL_VALUE);
         }
