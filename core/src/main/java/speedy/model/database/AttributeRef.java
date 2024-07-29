@@ -1,6 +1,7 @@
 package speedy.model.database;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class AttributeRef implements Serializable, Cloneable {
 
@@ -58,12 +59,17 @@ public class AttributeRef implements Serializable, Cloneable {
         return this.name.equals(other.name) && this.tableAlias.getTableName().equals(other.tableAlias.getTableName());
     }
 
+    public boolean equalsModuloClass(AttributeRef other) {
+        return other != null && Objects.equals(this.tableAlias, other.tableAlias) && this.name.equalsIgnoreCase(other.name);
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         final AttributeRef other = (AttributeRef) obj;
-        if (this.tableAlias != other.tableAlias && (this.tableAlias == null || !this.tableAlias.equals(other.tableAlias))) return false;
+        if (this.tableAlias != other.tableAlias && (this.tableAlias == null || !this.tableAlias.equals(other.tableAlias)))
+            return false;
         if ((this.name == null) ? (other.name != null) : !this.name.equalsIgnoreCase(other.name)) return false;
         return true;
     }
