@@ -16,6 +16,7 @@ import speedy.model.database.VirtualAttributeRef;
 import speedy.model.database.mainmemory.MainMemoryDB;
 import speedy.model.database.operators.IRunQuery;
 import speedy.model.expressions.Expression;
+import speedy.model.expressions.ExpressionAttribute;
 import speedy.persistence.DAOMainMemoryDatabase;
 import speedy.persistence.Types;
 import speedy.persistence.relational.QueryStatManager;
@@ -191,5 +192,36 @@ public class TestMainMemory {
         result.close();
         logger.info("First tuple {}", orderedList.get(0));
         Assert.assertTrue(orderedList.get(0).getCell(min).getValue().toString().equals("1"));
+    }
+
+    @Test
+    public void testProjectExpression() {
+        TableAlias tableAlias = new TableAlias("EmpTable");
+        Scan scan = new Scan(tableAlias);
+        if (logger.isDebugEnabled()) logger.debug(scan.toString());
+        AttributeRef salary = new AttributeRef(tableAlias, "salary");
+        AttributeRef age = new AttributeRef(tableAlias, "age");
+        AttributeRef manager = new AttributeRef(tableAlias, "manager");
+        Expression expression = new Expression("salary - age");
+        expression.changeVariableDescription("salary", new AttributeRef(tableAlias, "salary"));
+        expression.changeVariableDescription("age", new AttributeRef(tableAlias, "age"));
+        AttributeRef expressionAttribute = new ExpressionAttribute(expression, tableAlias, "diff");
+        Project project = new Project(List.of(
+                new ProjectionAttribute(manager),
+                new ProjectionAttribute(age),
+                new ProjectionAttribute(salary),
+                new ProjectionAttribute(expressionAttribute)
+        )
+        );
+        project.addChild(scan);
+        ITupleIterator result = queryRunner.run(project, null, database);
+        List<Tuple> orderedList = new ArrayList<>();
+        while (result.hasNext()) {
+            Tuple tuple = result.next();
+            orderedList.add(tuple);
+            logger.info("{}", tuple);
+        }
+        result.close();
+        logger.info("First tuple {}", orderedList.get(0));
     }
 }

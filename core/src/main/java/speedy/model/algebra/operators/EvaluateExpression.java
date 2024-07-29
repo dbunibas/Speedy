@@ -30,7 +30,7 @@ public class EvaluateExpression {
         return value;
     }
 
-    public Double evaluateCondition(Expression expression, Tuple tuple) throws ExpressionSyntaxException {
+    public Object evaluateConditionRaw(Expression expression, Tuple tuple) throws ExpressionSyntaxException {
         if (logger.isDebugEnabled()) logger.debug("Evaluating condition: " + expression + " on tuple " + tuple);
         if (expression.toString().equals("true")) {
             return SpeedyConstants.TRUE;
@@ -41,10 +41,18 @@ public class EvaluateExpression {
             return SpeedyConstants.FALSE;
         }
         Object value = expression.getJepExpression().getValueAsObject();
+        if (logger.isDebugEnabled()) logger.debug("Value of condition: {}", value);
         if (expression.getJepExpression().hasError()) {
             throw new ExpressionSyntaxException(expression.getJepExpression().getErrorInfo());
         }
-        if (logger.isDebugEnabled()) logger.debug("Value of condition: " + value);
+        return value;
+    }
+
+    public Double evaluateCondition(Expression expression, Tuple tuple) throws ExpressionSyntaxException {
+        Object value = evaluateConditionRaw(expression, tuple);
+        if (expression.getJepExpression().hasError()) {
+            throw new ExpressionSyntaxException(expression.getJepExpression().getErrorInfo());
+        }
         try {
             Double result = Double.parseDouble(value.toString());
             return result;

@@ -1,6 +1,9 @@
 package speedy.model.algebra;
 
 import speedy.SpeedyConstants;
+import speedy.model.algebra.operators.EvaluateExpression;
+import speedy.model.database.*;
+import speedy.model.expressions.ExpressionAttribute;
 import speedy.utility.SpeedyUtility;
 import speedy.model.algebra.operators.ListTupleIterator;
 import speedy.model.algebra.operators.IAlgebraTreeVisitor;
@@ -11,19 +14,13 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.model.algebra.aggregatefunctions.IAggregateFunction;
-import speedy.model.database.AttributeRef;
-import speedy.model.database.Cell;
-import speedy.model.database.IDatabase;
-import speedy.model.database.IValue;
-import speedy.model.database.TableAlias;
-import speedy.model.database.Tuple;
-import speedy.model.database.TupleOID;
 import speedy.model.database.mainmemory.datasource.IntegerOIDGenerator;
 
 public class Project extends AbstractOperator {
 
     private static Logger logger = LoggerFactory.getLogger(Project.class);
 
+    private static EvaluateExpression expressionEvaluator = new EvaluateExpression();
     private List<ProjectionAttribute> attributes;
     private List<AttributeRef> newAttributes;
     private boolean discardOids;
@@ -97,8 +94,21 @@ public class Project extends AbstractOperator {
                 it.remove();
             }
         }
+        generateExpressionAttributes(tuple, originalTuple);
         sortTupleAttributes(tuple, this.attributes);
         return tuple;
+    }
+
+    private void generateExpressionAttributes(Tuple tuple, Tuple originalTuple) {
+        for (ProjectionAttribute attribute : this.attributes) {
+            if(!(attribute.getAttributeRef() instanceof ExpressionAttribute)){
+                continue;
+            }
+            ExpressionAttribute expressionAttribute = (ExpressionAttribute) attribute.getAttributeRef();
+            Object value = expressionEvaluator.evaluateConditionRaw(expressionAttribute.getExpression(), originalTuple);
+            Cell cell = new Cell(tuple.getOid(), expressionAttribute, new ConstantValue(value));
+            tuple.addCell(cell);
+        }
     }
 
     protected void sortTupleAttributes(Tuple tuple, List<ProjectionAttribute> projectionAttributes) {
