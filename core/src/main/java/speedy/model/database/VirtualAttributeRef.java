@@ -1,7 +1,5 @@
 package speedy.model.database;
 
-import java.io.Serializable;
-
 public class VirtualAttributeRef extends AttributeRef {
 
     private final String type;

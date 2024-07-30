@@ -3,7 +3,7 @@ package speedy.model.algebra;
 import speedy.SpeedyConstants;
 import speedy.model.algebra.operators.EvaluateExpression;
 import speedy.model.database.*;
-import speedy.model.expressions.ExpressionAttribute;
+import speedy.model.expressions.ExpressionAttributeRef;
 import speedy.utility.SpeedyUtility;
 import speedy.model.algebra.operators.ListTupleIterator;
 import speedy.model.algebra.operators.IAlgebraTreeVisitor;
@@ -101,12 +101,12 @@ public class Project extends AbstractOperator {
 
     private void generateExpressionAttributes(Tuple tuple, Tuple originalTuple) {
         for (ProjectionAttribute attribute : this.attributes) {
-            if(!(attribute.getAttributeRef() instanceof ExpressionAttribute)){
+            if(!(attribute.getAttributeRef() instanceof ExpressionAttributeRef)){
                 continue;
             }
-            ExpressionAttribute expressionAttribute = (ExpressionAttribute) attribute.getAttributeRef();
-            Object value = expressionEvaluator.evaluateConditionRaw(expressionAttribute.getExpression(), originalTuple);
-            Cell cell = new Cell(tuple.getOid(), expressionAttribute, new ConstantValue(value));
+            ExpressionAttributeRef expressionAttributeRef = (ExpressionAttributeRef) attribute.getAttributeRef();
+            Object value = expressionEvaluator.evaluateConditionRaw(expressionAttributeRef.getExpression(), originalTuple);
+            Cell cell = new Cell(tuple.getOid(), expressionAttributeRef, new ConstantValue(value));
             tuple.addCell(cell);
         }
     }

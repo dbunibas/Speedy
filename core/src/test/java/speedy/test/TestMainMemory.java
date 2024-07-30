@@ -16,7 +16,7 @@ import speedy.model.database.VirtualAttributeRef;
 import speedy.model.database.mainmemory.MainMemoryDB;
 import speedy.model.database.operators.IRunQuery;
 import speedy.model.expressions.Expression;
-import speedy.model.expressions.ExpressionAttribute;
+import speedy.model.expressions.ExpressionAttributeRef;
 import speedy.persistence.DAOMainMemoryDatabase;
 import speedy.persistence.Types;
 import speedy.persistence.relational.QueryStatManager;
@@ -25,7 +25,6 @@ import speedy.utility.SpeedyUtility;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedMap;
 
 public class TestMainMemory {
 
@@ -205,7 +204,7 @@ public class TestMainMemory {
         Expression expression = new Expression("salary - age");
         expression.changeVariableDescription("salary", new AttributeRef(tableAlias, "salary"));
         expression.changeVariableDescription("age", new AttributeRef(tableAlias, "age"));
-        AttributeRef expressionAttribute = new ExpressionAttribute(expression, tableAlias, "diff");
+        AttributeRef expressionAttribute = new ExpressionAttributeRef(expression, tableAlias, "diff", Types.REAL);
         Project project = new Project(List.of(
                 new ProjectionAttribute(manager),
                 new ProjectionAttribute(age),
