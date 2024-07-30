@@ -564,8 +564,11 @@ public class SpeedyUtility {
         if(attributeRef instanceof VirtualAttributeRef){
             return ((VirtualAttributeRef) attributeRef).getType();
         }
-        Attribute attribute = db.getTable(attributeRef.getTableName()).getAttribute(cell.getAttribute());
-        return attribute.getType();
+        Optional<Attribute> optionalAttribute = db.getTable(attributeRef.getTableName()).getAttributes().stream().filter(a -> a.getName().equals(cell.getAttribute())).findFirst();;
+        if(optionalAttribute.isEmpty()){
+            return Types.STRING;
+        }
+        return optionalAttribute.get().getType();
     }
 
     private static NumberFormat nf;
