@@ -28,6 +28,7 @@ public class StdDevAggregateFunction implements IAggregateFunction {
         SummaryStatistics stats = new SummaryStatistics();
         for (Tuple tuple : tuples) {
             IValue value = tuple.getCell(attributeRef).getValue();
+            if (tuple.getCell(attributeRef).getValue() instanceof NullValue) continue;
             try {
                 double doubleValue = Double.parseDouble(value.toString());
                 stats.addValue(doubleValue);

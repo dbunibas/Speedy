@@ -30,6 +30,7 @@ public class AvgAggregateFunction implements IAggregateFunction {
         long count = 0;
         for (Tuple tuple : tuples) {
             IValue value = tuple.getCell(attributeRef).getValue();
+            if (tuple.getCell(attributeRef).getValue() instanceof NullValue) continue;
             try {
                 double doubleValue = Double.parseDouble(value.toString());
                 sum += doubleValue;
