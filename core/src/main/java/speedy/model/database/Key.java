@@ -38,6 +38,10 @@ public class Key {
         return primaryKey;
     }
 
+    public boolean isCompositeKey() {
+        return this.attributes.size() > 1;
+    }
+
     public String toString() {
         String result = "";
         if (this.primaryKey) {
