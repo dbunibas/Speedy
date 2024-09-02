@@ -45,6 +45,14 @@ public class Types {
                 throw new DAOException(ex.getMessage());
             }
         }
+        if (type.equals(DOUBLE_PRECISION)) {
+            try {
+                return Double.parseDouble(value.toString());
+            } catch (NumberFormatException ex) {
+                logger.error(ex.getLocalizedMessage());
+                throw new DAOException(ex.getMessage());
+            }
+        }
         if (type.equals(DATE) || type.equals(DATETIME)) {
             return value.toString();
 //            try {
@@ -55,6 +63,24 @@ public class Types {
 //            }
         }
         return value.toString();
+    }
+    
+    public static boolean isNumerical(String type) {
+        String[] numericalTypes = {INTEGER, LONG, REAL, DOUBLE_PRECISION};
+        for (String numericalType : numericalTypes) {
+            if (type.equalsIgnoreCase(numericalType)) return true;
+        }
+        return false;
+    }
+    
+    public static boolean checkType(String type, String value) {
+        try {
+            Object typedValue = getTypedValue(type, value);
+            if (typedValue != null) return true;
+        } catch (DAOException daoException) {
+            return false;
+        }
+        return false;
     }
 
 }

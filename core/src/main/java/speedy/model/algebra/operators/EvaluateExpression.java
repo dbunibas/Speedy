@@ -18,7 +18,7 @@ import speedy.model.database.NullValue;
 public class EvaluateExpression {
 
     private static Logger logger = LoggerFactory.getLogger(EvaluateExpression.class);
-
+        
     public Object evaluateFunction(Expression expression, Tuple tuple) throws ExpressionSyntaxException {
         if (logger.isDebugEnabled()) logger.debug("Evaluating function: " + expression + " on tuple " + tuple);
         setVariableValues(expression, tuple);
@@ -68,9 +68,7 @@ public class EvaluateExpression {
         SymbolTable symbolTable = jepExpression.getSymbolTable();
         boolean containNulls = false;
         for (Variable jepVariable : symbolTable.getVariables()) {
-            if (AlgebraUtility.isPlaceholder(jepVariable)) {
-                continue;
-            }
+            if (AlgebraUtility.isPlaceholder(jepVariable)) continue;
             Object variableDescription = jepVariable.getDescription();
             Object variableValue = findAttributeValue(tuple, variableDescription);
             assert (variableValue != null) : "Value of variable: " + jepVariable + " is null in tuple " + tuple;
@@ -88,7 +86,7 @@ public class EvaluateExpression {
         }
         return containNulls;
     }
-
+    
     private Object findAttributeValue(Tuple tuple, Object description) {
         if (logger.isTraceEnabled()) logger.trace("Searching variable: " + description + " in tuple " + tuple);
         AttributeRef attributeRef = null;
@@ -105,6 +103,12 @@ public class EvaluateExpression {
     
     private IValue findValueForAttribute(Tuple tuple, Object description) {
         if (logger.isTraceEnabled()) logger.trace("Searching variable: " + description + " in tuple " + tuple);
+        AttributeRef attributeRef = findAttributeRef(tuple, description);
+        return AlgebraUtility.getCellValue(tuple, attributeRef);
+    }
+    
+    private AttributeRef findAttributeRef(Tuple tuple, Object description) {
+        if (logger.isTraceEnabled()) logger.trace("Searching variable: " + description + " in tuple " + tuple);
         AttributeRef attributeRef = null;
         if (description instanceof IVariableDescription) {
             IVariableDescription variableDescription = (IVariableDescription) description;
@@ -114,7 +118,7 @@ public class EvaluateExpression {
         } else {
             throw new IllegalArgumentException("Illegal variable description in expression: " + description + " of type " + description.getClass().getName());
         }
-        return AlgebraUtility.getCellValue(tuple, attributeRef);
+        return attributeRef;
     }
 
     private AttributeRef findOccurrenceInTuple(IVariableDescription variableDescription, Tuple tuple) {
