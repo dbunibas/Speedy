@@ -15,6 +15,7 @@ import speedy.model.database.Cell;
 import speedy.model.database.IValue;
 import speedy.model.database.Tuple;
 import speedy.utility.comparator.StringComparator;
+import speedy.utility.comparator.TupleComparatorWithoutOIDs;
 
 @SuppressWarnings("unchecked")
 public class AlgebraUtility {
@@ -90,6 +91,25 @@ public class AlgebraUtility {
         while (tupleIterator.hasNext()) {
             Object currentTuple = tupleIterator.next();
             String currentValues = currentTuple.toString();
+            if (prevValues.equals(currentValues)) {
+                tupleIterator.remove();
+            } else {
+                prevValues = currentValues;
+            }
+        }
+    }
+    
+    public static void removeTupleDuplicatesIgnoreOID(List<Tuple> result) {
+        if (result.isEmpty()) {
+            return;
+        }
+        if (logger.isDebugEnabled()) logger.debug("Tuples: {}", result);
+        Collections.sort(result, new TupleComparatorWithoutOIDs());
+        Iterator<Tuple> tupleIterator = result.iterator();
+        String prevValues = tupleIterator.next().toStringNoOID();
+        while (tupleIterator.hasNext()) {
+            Tuple currentTuple = tupleIterator.next();
+            String currentValues = currentTuple.toStringNoOID();
             if (prevValues.equals(currentValues)) {
                 tupleIterator.remove();
             } else {
