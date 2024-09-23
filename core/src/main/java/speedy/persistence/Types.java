@@ -31,7 +31,31 @@ public class Types {
         }
         if (type.equals(INTEGER)) {
             try {
-                return Integer.parseInt(value.toString());
+                String valueS = value.toString();
+                logger.debug("Value to parse: " + valueS);
+                double d = Double.parseDouble(value.toString());
+                if (d == Math.floor(d)) {
+                    //integer value
+                    return (int)d;
+                } else {
+                    throw new DAOException("Not Integer Value: " + valueS);
+                }
+            } catch (NumberFormatException ex) {
+                logger.error(ex.getLocalizedMessage());
+                throw new DAOException(ex.getMessage());
+            }
+        }
+        if (type.equals(LONG)) {
+            try {
+                String valueS = value.toString();
+                logger.debug("Value to parse: " + valueS);
+                double d = Double.parseDouble(value.toString());
+                if (d == Math.floor(d)) {
+                    //integer value
+                    return (long)d;
+                } else {
+                    throw new DAOException("Not Long Value: " + valueS);
+                }
             } catch (NumberFormatException ex) {
                 logger.error(ex.getLocalizedMessage());
                 throw new DAOException(ex.getMessage());
