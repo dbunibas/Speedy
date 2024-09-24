@@ -546,7 +546,8 @@ public class SpeedyUtility {
 
     public static String getCellValueForSorting(IDatabase db, Cell cell) {
         String attributeType = getAttributeType(db, cell);
-        if (attributeType.equals(Types.INTEGER) || attributeType.equals(Types.REAL)) {
+//        if (attributeType.equals(Types.INTEGER) || attributeType.equals(Types.REAL))
+        if (Types.isNumerical(attributeType)){
             try {
                 Double doubleValue = Double.parseDouble(cell.getValue().toString());
                 String doubleStringValue = getNumberFormatForSorting() .format(doubleValue);
