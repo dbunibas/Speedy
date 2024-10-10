@@ -123,6 +123,7 @@ public class ImportCSVFileWithCopy {
                 copyScript.append(", ");
             }
             copyScript.append("DELIMITER '").append(csvFile.getSeparator()).append("'");
+            copyScript.append(", NULL '").append("null").append("'");
             copyScript.append(" );\n");
             long insertedRows = copyManager.copyIn(copyScript.toString(), new FileInputStream(csvFile.getFileName()));
             if (logger.isDebugEnabled()) logger.debug("Inserted rows: " + insertedRows);

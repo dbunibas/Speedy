@@ -24,6 +24,7 @@ import org.nfunk.jep.function.Cast;
 import org.nfunk.jep.function.Ceil;
 import org.nfunk.jep.function.ComplexPFMC;
 import org.nfunk.jep.function.Conjugate;
+import org.nfunk.jep.function.Contains;
 import org.nfunk.jep.function.Cosine;
 import org.nfunk.jep.function.CosineH;
 import org.nfunk.jep.function.Date;
@@ -272,6 +273,7 @@ public class JEP implements Cloneable {
         funTab.put("append", new Append());
         funTab.put("split", new Split());
         funTab.put("substring", new Substring());
+        funTab.put("contains", new Contains());
         funTab.put("indexof", new IndexOf());
         funTab.put("startswith", new StartsWith());
         funTab.put("length", new Length());
