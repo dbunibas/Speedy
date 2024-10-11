@@ -130,6 +130,8 @@ public class Comparative extends PostfixMathCommand {
     }
 
     public boolean eq(Object param1, Object param2) throws ParseException {
+        param1 = convertStringToNumericalValue(param1);
+        param2 = convertStringToNumericalValue(param2);
         if ((param1 instanceof Complex) && (param2 instanceof Complex)) {
             return ((Complex) param1).equals((Complex) param2, tolerance);
         }
@@ -162,6 +164,17 @@ public class Comparative extends PostfixMathCommand {
 
         // if we get to here, just use the equal function
         return param1.equals(param2);
+    }
+
+    private Object convertStringToNumericalValue(Object v) {
+        try{
+            String stringValue = v.toString();
+            if(stringValue.equalsIgnoreCase("true")) return 1;
+            if(stringValue.equalsIgnoreCase("false")) return 0;
+            return Double.parseDouble(stringValue);
+        }catch(Exception e){
+            return v;
+        }
     }
 
     public boolean ne(Object param1, Object param2) throws ParseException {

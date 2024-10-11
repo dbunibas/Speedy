@@ -1,9 +1,9 @@
 package speedy.persistence;
 
-import speedy.exceptions.DAOException;
-import speedy.model.database.mainmemory.datasource.NullValueFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import speedy.exceptions.DAOException;
+import speedy.model.database.mainmemory.datasource.NullValueFactory;
 
 public class Types {
 
@@ -23,17 +23,20 @@ public class Types {
         if (value == null || value.toString().equalsIgnoreCase("NULL")) {
             return NullValueFactory.getNullValue();
         }
+        String stringValue = value.toString();
         if (type.equals(BOOLEAN)) {
-            return Boolean.parseBoolean(value.toString());
+            if(stringValue.equalsIgnoreCase("YES")) return Boolean.TRUE;
+            if(stringValue.equalsIgnoreCase("NO")) return Boolean.FALSE;
+            return Boolean.parseBoolean(stringValue);
         }
         if (type.equals(STRING)) {
-            return value.toString();
+            return stringValue;
         }
         if (type.equals(INTEGER)) {
             try {
-                String valueS = value.toString();
+                String valueS = stringValue;
                 logger.debug("Value to parse: " + valueS);
-                double d = Double.parseDouble(value.toString());
+                double d = Double.parseDouble(stringValue);
                 if (d == Math.floor(d)) {
                     //integer value
                     return (int)d;
@@ -47,9 +50,9 @@ public class Types {
         }
         if (type.equals(LONG)) {
             try {
-                String valueS = value.toString();
+                String valueS = stringValue;
                 logger.debug("Value to parse: " + valueS);
-                double d = Double.parseDouble(value.toString());
+                double d = Double.parseDouble(stringValue);
                 if (d == Math.floor(d)) {
                     //integer value
                     return (long)d;
@@ -63,7 +66,7 @@ public class Types {
         }
         if (type.equals(REAL)) {
             try {
-                return Double.parseDouble(value.toString());
+                return Double.parseDouble(stringValue);
             } catch (NumberFormatException ex) {
                 logger.error(ex.getLocalizedMessage());
                 throw new DAOException(ex.getMessage());
@@ -71,14 +74,14 @@ public class Types {
         }
         if (type.equals(DOUBLE_PRECISION)) {
             try {
-                return Double.parseDouble(value.toString());
+                return Double.parseDouble(stringValue);
             } catch (NumberFormatException ex) {
                 logger.error(ex.getLocalizedMessage());
                 throw new DAOException(ex.getMessage());
             }
         }
         if (type.equals(DATE) || type.equals(DATETIME)) {
-            return value.toString();
+            return stringValue;
 //            try {
 //                return DateFormat.getDateInstance().parse(value.toString());
 //            } catch (ParseException ex) {
@@ -86,7 +89,7 @@ public class Types {
 //                throw new DAOException(ex.getMessage());
 //            }
         }
-        return value.toString();
+        return stringValue;
     }
     
     public static boolean isNumerical(String type) {

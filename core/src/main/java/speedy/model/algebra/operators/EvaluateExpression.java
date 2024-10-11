@@ -32,7 +32,7 @@ public class EvaluateExpression {
 
     public Object evaluateConditionRaw(Expression expression, Tuple tuple) throws ExpressionSyntaxException {
         if (logger.isDebugEnabled()) logger.debug("Evaluating condition: " + expression + " on tuple " + tuple);
-        if (expression.toString().equals("true")) {
+        if (expression.toString().equalsIgnoreCase("true")) {
             return SpeedyConstants.TRUE;
         }
         if (tuple == null) return SpeedyConstants.FALSE;
