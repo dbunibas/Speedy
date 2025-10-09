@@ -22,6 +22,7 @@ import speedy.model.algebra.Select;
 import speedy.model.algebra.SelectIn;
 import speedy.model.algebra.SelectNotIn;
 import speedy.model.algebra.Union;
+import speedy.model.algebra.udf.UserDefinedFunction;
 
 public class AlgebraTreeToString {
 
@@ -164,6 +165,11 @@ class AlgebraTreeToStringVisitor implements IAlgebraTreeVisitor {
     }
     
     public void visitIntersection(Intersection operator) {
+        result.append(this.indentString()).append(operator.getName()).append("\n");
+        visitChildren(operator);
+    }
+
+    public void visitUserDefinedFunction(UserDefinedFunction operator) {
         result.append(this.indentString()).append(operator.getName()).append("\n");
         visitChildren(operator);
     }

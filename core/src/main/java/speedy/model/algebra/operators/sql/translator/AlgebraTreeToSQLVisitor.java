@@ -2,6 +2,7 @@ package speedy.model.algebra.operators.sql.translator;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.SpeedyConstants;
@@ -36,6 +37,7 @@ import speedy.model.algebra.aggregatefunctions.SumAggregateFunction;
 import speedy.model.algebra.aggregatefunctions.ValueAggregateFunction;
 import speedy.model.algebra.operators.IAlgebraTreeVisitor;
 import speedy.model.algebra.operators.sql.ExpressionToSQL;
+import speedy.model.algebra.udf.UserDefinedFunction;
 import speedy.model.database.Attribute;
 import speedy.model.database.AttributeRef;
 import speedy.model.database.IDatabase;
@@ -176,8 +178,12 @@ public class AlgebraTreeToSQLVisitor implements IAlgebraTreeVisitor {
     public void visitIntersection(Intersection operator) {
         intersectionTranslator.translate(operator, this);
     }
-    
-    ///////////////////////////////////////////////////////////
+
+    public void visitUserDefinedFunction(UserDefinedFunction operator) {
+        throw new UnsupportedOperationException("Cannot translate UDF to SQL!");
+    }
+
+    /// ////////////////////////////////////////////////////////
     protected void visitChildren(IAlgebraOperator operator) {
         List<IAlgebraOperator> listOfChildren = operator.getChildren();
         if (listOfChildren != null) {
@@ -318,7 +324,8 @@ public class AlgebraTreeToSQLVisitor implements IAlgebraTreeVisitor {
             }
             newAttributes = project.getNewAttributes();
         }
-        if (logger.isDebugEnabled()) logger.debug("Setting current projection attribute for operator " + operator + "\n: *** " + currentProjectionAttribute);
+        if (logger.isDebugEnabled())
+            logger.debug("Setting current projection attribute for operator " + operator + "\n: *** " + currentProjectionAttribute);
         this.currentProjectionAttribute = attributes;
         sqlQueryBuilder.append("\n").append(this.indentString());
         if (this.addOIDColumn) {
@@ -602,8 +609,9 @@ public class AlgebraTreeToSQLVisitor implements IAlgebraTreeVisitor {
     }
 
     private String attributesToSQL(List<AttributeRef> attributes, List<IAggregateFunction> aggregateFunctions,
-            List<AttributeRef> newAttributes, List<NestedOperator> nestedSelect, boolean useTableName) {
-        if (logger.isDebugEnabled()) logger.debug("Generating SQL for attributes\n\nAttributes: " + attributes + "\n\t" + newAttributes + "\n\tNested Select: " + nestedSelect + "\n\tuseTableName: " + useTableName);
+                                   List<AttributeRef> newAttributes, List<NestedOperator> nestedSelect, boolean useTableName) {
+        if (logger.isDebugEnabled())
+            logger.debug("Generating SQL for attributes\n\nAttributes: " + attributes + "\n\t" + newAttributes + "\n\tNested Select: " + nestedSelect + "\n\tuseTableName: " + useTableName);
         StringBuilder sb = new StringBuilder();
         if (attributes != null) {
             List<String> sqlAttributes = new ArrayList<String>();

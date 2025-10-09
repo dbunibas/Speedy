@@ -1,25 +1,7 @@
 package speedy.model.algebra.operators;
 
-import speedy.model.algebra.CartesianProduct;
-import speedy.model.algebra.CreateTableAs;
-import speedy.model.algebra.Difference;
-import speedy.model.algebra.Distinct;
-import speedy.model.algebra.ExtractRandomSample;
-import speedy.model.algebra.GroupBy;
-import speedy.model.algebra.Intersection;
-import speedy.model.algebra.Join;
-import speedy.model.algebra.Limit;
-import speedy.model.algebra.Offset;
-import speedy.model.algebra.OrderBy;
-import speedy.model.algebra.OrderByRandom;
-import speedy.model.algebra.Partition;
-import speedy.model.algebra.Project;
-import speedy.model.algebra.RestoreOIDs;
-import speedy.model.algebra.Scan;
-import speedy.model.algebra.Select;
-import speedy.model.algebra.SelectIn;
-import speedy.model.algebra.SelectNotIn;
-import speedy.model.algebra.Union;
+import speedy.model.algebra.*;
+import speedy.model.algebra.udf.UserDefinedFunction;
 
 public interface IAlgebraTreeVisitor {
 
@@ -43,5 +25,6 @@ public interface IAlgebraTreeVisitor {
     void visitCreateTable(CreateTableAs operator);
     void visitExtractRandomSample(ExtractRandomSample operator);
     void visitIntersection(Intersection operator);
+    void visitUserDefinedFunction(UserDefinedFunction operator);
     Object getResult();
 }
