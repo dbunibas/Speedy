@@ -22,7 +22,7 @@ public class UserDefinedFunction extends AbstractOperator {
 
     @Override
     public String getName() {
-        return "USER_DEFINED_FUNCTION-[(" + function.getClass().getSimpleName() + " )]";
+        return "USER_DEFINED_FUNCTION-[(" + function.getClass().getSimpleName() + ")]";
     }
 
     @Override
