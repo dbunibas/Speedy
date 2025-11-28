@@ -340,7 +340,7 @@ public class DBMSUtility {
                 if (logger.isDebugEnabled()) logger.debug("Column type: " + columnType);
                 if (logger.isDebugEnabled()) logger.debug("Nullable: " + isNullable);
                 Attribute attribute = new Attribute(tableName, columnName, DBMSUtility.convertDBTypeToDataSourceType(columnType));
-                attribute.setNullable(isNullable == 0);
+                attribute.setNullable(isNullable == ResultSetMetaData.columnNullable);
                 if (logger.isDebugEnabled()) logger.debug("Attribute: " + attribute);
                 SpeedyUtility.addIfNotContained(result, attribute);
             }
