@@ -124,8 +124,8 @@ public class SpeedyConstants {
         EQUAL_CONSTANTS, BOTH_PLACEHOLDER, PLACEHOLDER_TO_CONSTANT, CONSTANT_TO_PLACEHOLDER, NOT_MATCHING
     }
     ///////////////    DEBUG MODE     ///////////////////
-//    public static final boolean DBMS_DEBUG = true;
-    public static final boolean DBMS_DEBUG = false;
+    public static final boolean DBMS_DEBUG = true;
+//    public static final boolean DBMS_DEBUG = false;
 
     ///////////////    GETTER AND SETTER     ///////////////////
     public static String[] getStringSkolemPrefixes() {
