@@ -20,6 +20,10 @@ public class UserDefinedFunction extends AbstractOperator {
         this.function = function;
     }
 
+    public IUserDefinedFunction getFunction() {
+        return function;
+    }
+
     @Override
     public String getName() {
         return "USER_DEFINED_FUNCTION-[(" + function.getClass().getSimpleName() + ")]";
