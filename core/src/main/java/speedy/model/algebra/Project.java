@@ -2,6 +2,8 @@ package speedy.model.algebra;
 
 import speedy.SpeedyConstants;
 import speedy.model.algebra.operators.EvaluateExpression;
+import speedy.model.algebra.udf.IUserDefinedFunction;
+import speedy.model.algebra.udf.UserDefinedAttributeRef;
 import speedy.model.database.*;
 import speedy.model.expressions.ExpressionAttributeRef;
 import speedy.utility.SpeedyUtility;
@@ -94,20 +96,28 @@ public class Project extends AbstractOperator {
                 it.remove();
             }
         }
-        generateExpressionAttributes(tuple, originalTuple);
+        generateExpressionOrUDFAttributes(tuple, originalTuple);
         sortTupleAttributes(tuple, this.attributes);
         return tuple;
     }
 
-    private void generateExpressionAttributes(Tuple tuple, Tuple originalTuple) {
+    private void generateExpressionOrUDFAttributes(Tuple tuple, Tuple originalTuple) {
         for (ProjectionAttribute attribute : this.attributes) {
-            if(!(attribute.getAttributeRef() instanceof ExpressionAttributeRef)){
-                continue;
+            if (attribute.getAttributeRef() instanceof UserDefinedAttributeRef) {
+                UserDefinedAttributeRef udfAttributeRef = (UserDefinedAttributeRef) attribute.getAttributeRef();
+                IUserDefinedFunction userDefinedFunction = udfAttributeRef.getUserDefinedFunction();
+                Object value = userDefinedFunction.execute(tuple);
+                Cell cell = new Cell(tuple.getOid(), udfAttributeRef, new ConstantValue(value));
+                tuple.addCell(cell);
             }
-            ExpressionAttributeRef expressionAttributeRef = (ExpressionAttributeRef) attribute.getAttributeRef();
-            Object value = expressionEvaluator.evaluateConditionRaw(expressionAttributeRef.getExpression(), originalTuple);
-            Cell cell = new Cell(tuple.getOid(), expressionAttributeRef, new ConstantValue(value));
-            tuple.addCell(cell);
+
+            if(attribute.getAttributeRef() instanceof ExpressionAttributeRef){
+                ExpressionAttributeRef expressionAttributeRef = (ExpressionAttributeRef) attribute.getAttributeRef();
+                Object value = expressionEvaluator.evaluateConditionRaw(expressionAttributeRef.getExpression(), originalTuple);
+                Cell cell = new Cell(tuple.getOid(), expressionAttributeRef, new ConstantValue(value));
+                tuple.addCell(cell);
+            }
+
         }
     }
 

@@ -38,7 +38,12 @@ public class TestUDF {
 
         Scan scan = new Scan(tableAlias);
 
-        UserDefinedFunction udf = new UserDefinedFunction((iter) -> iter);
+        UserDefinedFunction udf = new UserDefinedFunction(new IUserDefinedFunction() {
+            @Override
+            public ITupleIterator execute(ITupleIterator iterator) {
+                return iterator;
+            }
+        });
         udf.addChild(scan);
 
         ITupleIterator iterator = udf.execute(db, db);
