@@ -1,6 +1,7 @@
 package speedy.model.algebra;
 
 import speedy.SpeedyConstants;
+import speedy.model.algebra.aggregatefunctions.CountAggregateFunction;
 import speedy.model.algebra.operators.EvaluateExpression;
 import speedy.model.algebra.udf.IUserDefinedFunction;
 import speedy.model.algebra.udf.UserDefinedAttributeRef;
@@ -80,9 +81,9 @@ public class Project extends AbstractOperator {
     }
 
     protected Tuple projectTuple(Tuple originalTuple) {
-        if (isAggregative()) {
-            return originalTuple;
-        }
+//        if (isAggregative()) {
+//            return originalTuple;
+//        }
         Tuple tuple = originalTuple.clone();
         List<Cell> cells = tuple.getCells();
         for (Iterator<Cell> it = cells.iterator(); it.hasNext();) {
@@ -103,21 +104,18 @@ public class Project extends AbstractOperator {
 
     private void generateExpressionOrUDFAttributes(Tuple tuple, Tuple originalTuple) {
         for (ProjectionAttribute attribute : this.attributes) {
-            if (attribute.getAttributeRef() instanceof UserDefinedAttributeRef) {
-                UserDefinedAttributeRef udfAttributeRef = (UserDefinedAttributeRef) attribute.getAttributeRef();
+            if (attribute.getAttributeRef() instanceof UserDefinedAttributeRef udfAttributeRef) {
                 IUserDefinedFunction userDefinedFunction = udfAttributeRef.getUserDefinedFunction();
                 Object value = userDefinedFunction.execute(tuple);
                 Cell cell = new Cell(tuple.getOid(), udfAttributeRef, new ConstantValue(value));
                 tuple.addCell(cell);
             }
 
-            if(attribute.getAttributeRef() instanceof ExpressionAttributeRef){
-                ExpressionAttributeRef expressionAttributeRef = (ExpressionAttributeRef) attribute.getAttributeRef();
+            if (attribute.getAttributeRef() instanceof ExpressionAttributeRef expressionAttributeRef) {
                 Object value = expressionEvaluator.evaluateConditionRaw(expressionAttributeRef.getExpression(), originalTuple);
                 Cell cell = new Cell(tuple.getOid(), expressionAttributeRef, new ConstantValue(value));
                 tuple.addCell(cell);
             }
-
         }
     }
 
@@ -129,6 +127,7 @@ public class Project extends AbstractOperator {
             }
         }
         for (ProjectionAttribute projectionAttribute : projectionAttributes) {
+            if (projectionAttribute.getAggregateFunction() instanceof CountAggregateFunction && projectionAttribute.getAttributeRef().getName().equals(SpeedyConstants.COUNT)) continue;
             SpeedyUtility.addIfNotContained(sortedCells, tuple.getCell(projectionAttribute.getAttributeRef()));
         }
         if (tuple.getCells().size() != sortedCells.size()) {
@@ -195,7 +194,7 @@ public class Project extends AbstractOperator {
 
     protected boolean isToProject(AttributeRef attributeRef, List<ProjectionAttribute> projectionAttributes) {
         for (ProjectionAttribute attribute : projectionAttributes) {
-            if (attribute.getAttributeRef().equals(attributeRef)) {
+            if (attribute.getAttributeRef().equalsModuloClass(attributeRef)) {
                 return true;
             }
         }
