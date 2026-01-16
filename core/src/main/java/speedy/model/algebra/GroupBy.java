@@ -1,22 +1,22 @@
 package speedy.model.algebra;
 
 import speedy.model.algebra.aggregatefunctions.IAggregateFunction;
+import speedy.model.algebra.udf.IUserDefinedFunction;
+import speedy.model.algebra.udf.UserDefinedAttributeRef;
+import speedy.model.algebra.udf.UserDefinedFunction;
+import speedy.model.database.*;
 import speedy.utility.SpeedyUtility;
 import speedy.model.algebra.operators.ListTupleIterator;
 import speedy.model.algebra.operators.IAlgebraTreeVisitor;
 import speedy.model.algebra.operators.ITupleIterator;
-import speedy.model.database.AttributeRef;
-import speedy.model.database.Cell;
-import speedy.model.database.IDatabase;
-import speedy.model.database.IValue;
-import speedy.model.database.Tuple;
-import speedy.model.database.TupleOID;
 import speedy.model.database.mainmemory.datasource.IntegerOIDGenerator;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import speedy.utility.comparator.TupleComparatorOIDs;
@@ -53,7 +53,8 @@ public class GroupBy extends AbstractOperator {
     }
 
     private void materializeResult(IDatabase db, ITupleIterator originalTuples, List<Tuple> result) {
-        Map<String, List<Tuple>> groups = groupTuples(originalTuples);
+        List<Tuple> newTuples = generateUDFAttributes(originalTuples);
+        Map<String, List<Tuple>> groups = groupTuples(new ListTupleIterator(newTuples));
         for (List<Tuple> group : groups.values()) {
             Tuple tuple = new Tuple(new TupleOID(IntegerOIDGenerator.getNextOID()));
             for (IAggregateFunction function : aggregateFunctions) {
@@ -64,6 +65,28 @@ public class GroupBy extends AbstractOperator {
             result.add(tuple);
         }
         logger.trace("GroupBy Result: {}", result);
+    }
+
+    private List<Tuple> generateUDFAttributes(ITupleIterator originalTuples) {
+        List<UserDefinedAttributeRef> userDefinedAttributeRefs = new ArrayList<>();
+        for (IAggregateFunction function : aggregateFunctions) {
+            if (!(function.getAttributeRef() instanceof UserDefinedAttributeRef udfRef)) continue;
+            userDefinedAttributeRefs.add(udfRef);
+        }
+
+        List<Tuple> newTuples = new ArrayList<>();
+        while (originalTuples.hasNext()) {
+            Tuple tuple = originalTuples.next().clone();
+            for (UserDefinedAttributeRef udfAttributeRef : userDefinedAttributeRefs) {
+                IUserDefinedFunction userDefinedFunction = udfAttributeRef.getUserDefinedFunction();
+                Object value = userDefinedFunction.execute(tuple);
+                Cell cell = new Cell(tuple.getOid(), udfAttributeRef, new ConstantValue(value));
+                tuple.addCell(cell);
+            }
+            newTuples.add(tuple);
+        }
+
+        return newTuples;
     }
 
     public static List<Object> getTupleValues(Tuple tuple, List<AttributeRef> attributes) {

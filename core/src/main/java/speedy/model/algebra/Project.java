@@ -104,9 +104,9 @@ public class Project extends AbstractOperator {
 
     private void generateExpressionOrUDFAttributes(Tuple tuple, Tuple originalTuple) {
         for (ProjectionAttribute attribute : this.attributes) {
-            if (attribute.getAttributeRef() instanceof UserDefinedAttributeRef udfAttributeRef) {
+            if (attribute.getAttributeRef() instanceof UserDefinedAttributeRef udfAttributeRef && !containsAttribute(originalTuple, udfAttributeRef)) {
                 IUserDefinedFunction userDefinedFunction = udfAttributeRef.getUserDefinedFunction();
-                Object value = userDefinedFunction.execute(tuple);
+                Object value = userDefinedFunction.execute(originalTuple);
                 Cell cell = new Cell(tuple.getOid(), udfAttributeRef, new ConstantValue(value));
                 tuple.addCell(cell);
             }
